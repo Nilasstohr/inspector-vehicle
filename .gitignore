@@ -1,8 +1,2 @@
 /.metadata/
-/vechicle-driver/*.o
-/vechicle-driver/*.d
-/vechicle-driver/*.elf
-/vechicle-driver/*.hex
-/vechicle-driver/.setings
 /vechicle-driver/tools/
-
