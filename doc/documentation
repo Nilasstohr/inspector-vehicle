@@ -1,0 +1,4 @@
+Add Defines to eclipse project
+	project properties -> search for "paths and symbols" -> in symbol entry -> choose GNU C++
+	1. add symbol "_MK20DX256_" (dependending on platform) 
+	2. add symbol "F_CPU" with value "48000000"
