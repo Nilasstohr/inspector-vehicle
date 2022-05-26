@@ -40,7 +40,7 @@ CPUARCH = cortex-m4
 TOOLSPATH = tools/
 
 # path location for Arduino libraries (currently not used)
-SOURCE = /src/
+SOURCE = src/
 
 # path location for the arm-none-eabi compiler
 COMPILERPATH = tools/arm/bin

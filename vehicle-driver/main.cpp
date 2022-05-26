@@ -1,12 +1,8 @@
 #include <Arduino.h>
+#include <src/TestClass.h>
 
 extern "C" int main(void)
 {
-	pinMode(13, OUTPUT);
-	while (1) {
-		digitalWriteFast(13, HIGH);
-		delay(200);
-		digitalWriteFast(13, LOW);
-		delay(200);
-	}
+	TestClass *t = new TestClass();
+	t->TestLoop();
 }
