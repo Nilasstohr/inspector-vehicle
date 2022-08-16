@@ -121,6 +121,11 @@ remote to build/deploy to linux via clion
 https://www.jetbrains.com/help/clion/remote-projects-support.html
 
 
+Add ssh key to between pc and host
+---------------------------------------------
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent (!!! remember to type in a passphase, important )
+
+
 
 
 
