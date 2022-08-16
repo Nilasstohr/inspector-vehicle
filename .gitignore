@@ -9,3 +9,7 @@
 /vehicle-driver/.cproject
 /vehicle-driver/.project
 /vehicle-driver/.settings/language.settings.xml
+/ros2_ws/build/
+/ros2_ws/install/
+/ros2_ws/log/
+/ros2_ws/src/rplidar_ros2/
