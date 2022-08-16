@@ -1,16 +1,126 @@
-Add Defines to eclipse project
+Eclipse Dev Invironment
+	1. install Eclipse IDE for C/C++ Developers
+	2. files -> new -> Makefile project with exsisting code
+	3. name project "vechicle driver"
+	4. At section "Exsisting Code Location" browse to "vehicle-driver" project located at repo
+	  "inspector-vehicle"
+	5. at section "toolchain for indexer Settings" choose "Cross GCC"
+	6. finish
+
+
+	Add Defines to eclipse project
 	project properties -> search for "paths and symbols" -> in symbol entry -> choose GNU C++
-	1. add symbol "_MK20DX256_" (dependending on platform) 
+	1. add symbol "_MK20DX256_" (dependending on platform)
 	2. add symbol "F_CPU" with value "48000000"
-	
+
+Ros and Clion
+
+General Process
+
+Terminal 1. ( source underlay "source /opt/ros/foxy/setup.bash" )
+-----------------------------------------------------------------
+-Create Workspace
+
+-Clone desired repos in src / create a new package
+
+-Resolve dependencies in workspace root
+
+-build workspace ( following dir will be created "build  install  log  src")
+	Install contains workspace setup files "source overlay"
+	Build is where your packeges build result are placed. 
+
+Terminal 2. ( source underlay "source /opt/ros/foxy/setup.bash" )
+-----------------------------------------------------------------
+-Source overlay (from your workspace ". install/local_setup.bash")
+-Modify overlay (then from Terminal 1 Build workspace)
+
+Clion
+	1. Create ros workspace e.g dev_ws and create package e.g my_package and perform 		   build with with 
+	   "colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja" 
+	2. Open terminal, source overlay in worspace, then navigatet to CLion-XXX.X.X/bin execute 
+           "./clion.sh" to run CLion.
+	3. if previously project is open, close it from file -> close project
+	4. From here a welcome will popnu, choose "open" and point to ros target package (e.g 
+	   my_package) created in step1.
+	5. A project wizard will popup with a suggested debug profile, in "Build directory" point 		   to target package in ros build directory e.g from "dev_ws/build/my_pacakge" and click 
+	   OK.
+	   Now you have a target package project with run/debug configuration. 
+	stop here...
+	6. To build ros workspace from within Clion before run/debug open "Run/Debug 	   	      Configurations" and remove default "Build" task in "Before launch" then a new task
+	   to "External Tools" Called e.g "Colcon Build" in the tool insert "colcon" as program 
+	   "build" as argument and working directory to ros workspace. 
+
+
+Added rplidar SDK to ros package
+--------------------------------------------------------------------
+	1.open terminal in target package folder then perform 
+"git clone https://github.com/Slamtec/rplidar_sdk.git" this will create a folder "rplidar_sdk"
+	2. In target package create a folder called "sdk" a copy the "include" and "src" folder   
+	   from "rplidar_sdk->sdk" into it. 
+	3. Now add the below to the target package CMakeLists.txt
+		3.1
+			set(RPLIDAR_SDK_PATH "./sdk/")
+		3.2
+			FILE(GLOB RPLIDAR_SDK_SRC
+			  "${RPLIDAR_SDK_PATH}/src/arch/linux/*.cpp"
+			  "${RPLIDAR_SDK_PATH}/src/hal/*.cpp"
+			  "${RPLIDAR_SDK_PATH}/src/*.cpp"
+			)
+		3.3
+			Add ${RPLIDAR_SDK_SRC} to any "add_executable" where you need the sdk e.g
+			add_executable(my_package src/my_package.cpp ${RPLIDAR_SDK_SRC})
+	5. if started close Clion and Perform "Clion" guide above (!!! remember to run "sudo chmod 666 /dev/ttyUSB0" before starting Clion)
+inspiration from:
+git clone https://github.com/slamtec/rplidar_ros 
+https://github.com/CreedyNZ/rplidar_ros2 
+
+Viewing laser scan in RVIZ
+--------------------------------------------------------------------
+	1. run the rplidarNode node (https://github.com/CreedyNZ/rplidar_ros2, whick public laser 
+	   scanner data over a topic /scan) by commmand "ros2 run rplidar_ros rplidarNode node"
+	2. From a new terminal run "ros2 topic list -t" you see /scan topic
+	3. run "ros2 pkg executables" to verify that rviz2 exists then run the node rviz by 
+	   "ros2 run rviz2 rviz2"
+	4.  Add a new display and choose "LaserScan" set the topic name "/scan" and in global 
+	    options set Fixed Frame to "laser_frame" also Size(m) to 0,05
+
+
+
+
+SerialPort fra linux
+name = /dev/ttyACM0
 
 links:
-	ros 2 documentaion
-	https://docs.ros.org/en/galactic/
-	Installation from source: 
-	https://docs.ros.org/en/galactic/Installation/Alternatives/Latest-Development-Setup.html
 
-Getting Started With Teensy
+ros 2 documentaion
+------------------------------
+https://docs.ros.org/en/galactic/
+https://www.youtube.com/watch?v=Cv33X0z_elc
 
-install GNU make
+Installation from source:
+------------------------------
+https://docs.ros.org/en/galactic/Installation/Alternatives/Latest-Development-Setup.html
+http://wiki.ros.org/IDEs
+
+Api Documentaion
+------------------------------
+https://docs.ros2.org/latest/api/rclcpp/
+
+C++ documentation
+------------------------------
+https://en.cppreference.com/w/cpp
+
+
+Server/client between two linuc pc
+----------------------------------
+https://ubuntu.com/server/docs/service-openssh
+
+
+remote to build/deploy to linux via clion
+-------------------------------------------
+https://www.jetbrains.com/help/clion/remote-projects-support.html
+
+
+
+
 
