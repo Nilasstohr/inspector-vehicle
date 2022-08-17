@@ -2,6 +2,7 @@
 /vehicle-driver/*.o
 /vehicle-driver/src/*.o
 /vehicle-driver/*.d
+/vehicle-driver/src/*.d
 /vehicle-driver/*.elf
 /vehicle-driver/*.hex
 /vehicle-driver/.setings

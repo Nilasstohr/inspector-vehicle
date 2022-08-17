@@ -2,7 +2,7 @@
 
 // This is the library for the TB6612 that contains the class Motor and all the
 // functions
-#include <src/SparkFun_TB6612.h>
+#include "SparkFun_TB6612.h"
 
 // Pins for all inputs, keep in mind the PWM defines must be on PWM pins
 // the default pins listed are the ones used on the Redbot (ROB-12097) with
@@ -39,7 +39,7 @@ Motor motor1 = Motor(AIN1, AIN2, PWMA, offsetA, STBY);
 Motor motor2 = Motor(BIN1, BIN2, PWMB, offsetB, STBY);
 
 
-int delaytime_ms = 200;
+int delaytime_ms = 500;
 int MOTOR_MAX = 255;
 
 TestClass::TestClass() {

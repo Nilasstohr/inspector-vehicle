@@ -22,7 +22,7 @@ Developed with ROB-9457
 #ifndef SPARKFUN_TB6612_h
 #define SPARKFUN_TB6612_h
 
-#include <Arduino.h>
+#include "Arduino.h"
 
 //used in some functions so you don't have to send a speed
 #define DEFAULTSPEED 255  
@@ -64,7 +64,7 @@ class Motor
 
 };
 
-//Takes 2 motors and goes forward, if it does not go forward adjust offset 
+//Takes 2 motors and goes forward, if it does not go forward adjust offset
 //values until it does.  These will also take a negative number and go backwards
 //There is also an optional speed input, if speed is not used, the function will
 //use the DEFAULTSPEED constant.

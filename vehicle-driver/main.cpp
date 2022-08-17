@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <src/TestClass.h>
+#include <TestClass.h>
 
 extern "C" int main(void)
 {
