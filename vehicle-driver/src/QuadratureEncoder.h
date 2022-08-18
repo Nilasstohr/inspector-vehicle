@@ -9,12 +9,14 @@
 #define SRC_QUADRATUREENCODER_H_
 
 #include <Arduino.h>
+#include "SyncEvent.h"
 
 class QuadratureEncoder {
 public:
 	QuadratureEncoder(int pinChannelA,int pinChannelB);
 	virtual ~QuadratureEncoder();
 private:
+
 	int pinChannelA;
 	int pinChannelB;
 
@@ -26,8 +28,9 @@ private:
 		return pinChannelB;
 	}
 
-	void setupChannel(int pinChannel);
-	void channelISR();
+	void setupChannels();
+    void channelAEventHandler();
+    void channelBEventHandler();
 };
 
 #endif /* SRC_QUADRATUREENCODER_H_ */

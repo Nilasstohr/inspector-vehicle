@@ -8,33 +8,24 @@
 #ifndef SRC_TESTQUADRATUREENCORDER_H_
 #define SRC_TESTQUADRATUREENCORDER_H_
 
+#include "Logger.h"
+#include "VehiclePins.h"
+#include "QuadratureEncoder.h"
+
 class TestQuadratureEncorder {
 public:
-	TestQuadratureEncorder(int pinChannelA,int pinChannelB);
+	TestQuadratureEncorder();
 
 	void canSetupQuadureEncoder();
 
 	virtual ~TestQuadratureEncorder();
 
-	int getPinChannelA() const {
-		return pinChannelA;
-	}
-
-	void setPinChannelA(int pinChannelA) {
-		this->pinChannelA = pinChannelA;
-	}
-
-	int getPinChannelB() const {
-		return pinChannelB;
-	}
-
-	void setPinChannelB(int pinChannelB) {
-		this->pinChannelB = pinChannelB;
-	}
 
 private:
-	int pinChannelA;
-	int pinChannelB;
+	QuadratureEncoder * quadratureEncoder;
+    QuadratureEncoder* getQuadratureEncoder() {
+		return quadratureEncoder;
+	}
 };
 
 #endif /* SRC_TESTQUADRATUREENCORDER_H_ */

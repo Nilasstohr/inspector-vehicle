@@ -4,6 +4,7 @@
 // functions
 #include "SparkFun_TB6612.h"
 
+
 // Pins for all inputs, keep in mind the PWM defines must be on PWM pins
 // the default pins listed are the ones used on the Redbot (ROB-12097) with
 // the exception of STBY which the Redbot controls with a physical switch
@@ -44,7 +45,9 @@ int MOTOR_MAX = 255;
 
 TestClass::TestClass() {
 	pinMode(13, OUTPUT);
-	Serial.begin(115200);
+	//Logger::setOutputFunction(TestClass::customLogger);
+	//Logger::warning(__FUNCTION__, "This is a warning message. 6");
+	//Serial.begin(115200);
 }
 
 void TestClass::TestLoop(){

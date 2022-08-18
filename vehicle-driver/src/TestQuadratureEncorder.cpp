@@ -6,24 +6,21 @@
  */
 
 #include "TestQuadratureEncorder.h"
-#include "src/QuadratureEncoder.h"
 
-
-
-TestQuadratureEncorder::TestQuadratureEncorder(int pinChannelA,int pinChannelB)
-:pinChannelA(pinChannelA),
- pinChannelB(pinChannelB)
+TestQuadratureEncorder::TestQuadratureEncorder()
 {
-	// TODO Auto-generated constructor stub
+	Logger::verbose(__FUNCTION__,"");
+	canSetupQuadureEncoder();
 }
 
 void TestQuadratureEncorder::canSetupQuadureEncoder(){
-	QuadratureEncoder * quadratureEncoder = new QuadratureEncoder(
-			this->getPinChannelA(),this->getPinChannelB());
+	Logger::verbose(__FUNCTION__, "");
+	this->quadratureEncoder = new QuadratureEncoder(
+				VEHICLE_PIN_QUADENCODER_MOTOR1_CHANNEL_A,
+				VEHICLE_PIN_QUADENCODER_MOTOR1_CHANNEL_B);
 
 }
 
 TestQuadratureEncorder::~TestQuadratureEncorder() {
 	// TODO Auto-generated destructor stub
 }
-
