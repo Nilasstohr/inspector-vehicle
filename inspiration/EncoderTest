@@ -1,0 +1,44 @@
+
+signed int EncoM1_PosTicks =0;
+
+#define CH_A_M1 6
+#define CH_B_M1 8
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(CH_A_M1,INPUT);
+  digitalWrite(CH_A_M1,LOW);
+  attachInterrupt(CH_A_M1,ISR_CH_A_M1 ,CHANGE);
+  
+  pinMode(CH_B_M1,INPUT);
+  digitalWrite(CH_B_M1,LOW);
+  attachInterrupt(CH_B_M1,ISR_CH_B_M1 ,CHANGE);
+
+}
+
+void loop() {
+  delay(10);
+  Serial.println(EncoM1_PosTicks);
+}
+
+
+void ISR_CH_A_M1(){
+
+  uint8_t B = digitalRead(CH_B_M1) ;
+
+  uint8_t A =digitalRead (CH_A_M1) ;
+  if((A&&B)||(!A&&!B))
+    EncoM1_PosTicks--;
+  else
+    EncoM1_PosTicks++;
+}
+
+void ISR_CH_B_M1(){
+
+  uint8_t B = digitalRead(CH_B_M1) ;
+  uint8_t A =digitalRead (CH_A_M1) ;
+  if((B&&A)||(!B&&!A))
+    EncoM1_PosTicks++;
+  else
+    EncoM1_PosTicks--;
+}

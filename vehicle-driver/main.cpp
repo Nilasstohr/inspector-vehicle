@@ -4,35 +4,28 @@
 #include <src/Logger.h>
 #include <src/VehicleTestRunner.h>
 
+void run();
 void isr();
 
-bool runTests = true;
+bool runTests = false;
 
 extern "C" int main(void)
 {
-	//pinMode(30, INPUT);
-	//digitalWrite(30, LOW);
-    //attachInterrupt(30,isr, CHANGE);
-	Serial.begin(115200);
-	Logger::setLogLevel(Logger::VERBOSE);
-	Logger::verbose(__FUNCTION__,":Starting Program");
 
-	if(runTests){
-		Logger::verbose(__FUNCTION__,":Started up in test mode");
-		new VehicleTestRunner();
-	}
-
-
-	delay(1000);
-
-
-
-	//TestClass *t = new TestClass();
-	//t->TestLoop();
+	TestClass *t = new TestClass();
+	t->TestLoop();
 	//Logger::warning(__FUNCTION__, "This is a warning message. 6");
 
 }
 
-void isr(){
 
+void run(){
+	pinMode(12, INPUT);
+    digitalWrite(12, LOW);
+	attachInterrupt(12,isr, CHANGE);
+	Logger::verbose(__FUNCTION__,":pins 11 set");
+}
+
+void isr(){
+	Logger::verbose(__FUNCTION__,"11");
 }
