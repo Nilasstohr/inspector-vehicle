@@ -86,7 +86,17 @@ Viewing laser scan in RVIZ
 
 
 
+Import ros2 project to pycharm
+----------------------------------------------------------------------------
+1. open python package in pycharm
+2. go to setting -> project -> project struture -> add root content
+   -> navigate tp "/opt/ros/foxy/lib/python3.8/site-packages" and add. 
 
+inspiration
+https://www.youtube.com/watch?v=lTew9mbXrAs
+
+Grand access to usb 
+-------------------------------------------------------------------------
 SerialPort fra linux
 name = /dev/ttyACM0
 
