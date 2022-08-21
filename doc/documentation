@@ -94,17 +94,15 @@ links:
 
 ros 2 documentaion
 ------------------------------
-https://docs.ros.org/en/galactic/
-https://www.youtube.com/watch?v=Cv33X0z_elc
-
-Installation from source:
-------------------------------
-https://docs.ros.org/en/galactic/Installation/Alternatives/Latest-Development-Setup.html
-http://wiki.ros.org/IDEs
 
 Api Documentaion
 ------------------------------
 https://docs.ros2.org/latest/api/rclcpp/
+
+c++
+https://docs.ros2.org/foxy/api/rclcpp/
+python
+https://docs.ros2.org/foxy/api/rclpy/
 
 C++ documentation
 ------------------------------
