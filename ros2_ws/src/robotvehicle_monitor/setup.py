@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        	'laserscan = robotvehicle_monitor.subscriber_laserscan:main'
+        	'laserscan = robotvehicle_monitor.subscriber_laserscan:main',
+        	'control_client = robotvehicle_monitor.client_member_function:main',
         ],
-    },
+    }, 
 )
