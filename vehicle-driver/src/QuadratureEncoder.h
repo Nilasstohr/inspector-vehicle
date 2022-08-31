@@ -15,10 +15,17 @@ class QuadratureEncoder {
 public:
 	QuadratureEncoder(int pinChannelA,int pinChannelB);
 	virtual ~QuadratureEncoder();
+
+	signed int getCounts();
+
+	void setupChannels();
+
 private:
 
 	int pinChannelA;
 	int pinChannelB;
+
+	signed int counts =0;
 
 	int getPinChannelA() const {
 		return pinChannelA;
@@ -28,7 +35,7 @@ private:
 		return pinChannelB;
 	}
 
-	void setupChannels();
+
     void channelAEventHandler();
     void channelBEventHandler();
 };

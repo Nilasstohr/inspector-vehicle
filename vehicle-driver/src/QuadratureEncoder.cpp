@@ -21,7 +21,6 @@ static void channel_b_isr(void){
 QuadratureEncoder::QuadratureEncoder(int pinChannelA, int pinChannelB) {
 	this->pinChannelA = pinChannelA;
 	this->pinChannelB = pinChannelB;
-	//this->setupChannels();
 }
 
 void QuadratureEncoder::setupChannels() {
@@ -37,14 +36,30 @@ void QuadratureEncoder::setupChannels() {
 	attachInterrupt(this->getPinChannelB(),channel_b_isr, CHANGE);
 }
 
-void QuadratureEncoder::channelAEventHandler() {
+signed int QuadratureEncoder::getCounts() {
+	return this->counts;
+}
 
+void QuadratureEncoder::channelAEventHandler() {
+	uint8_t B = digitalRead(this->pinChannelB);
+	uint8_t A = digitalRead(this->pinChannelA) ;
+	  if((A&&B)||(!A&&!B))
+		counts--;
+	  else
+		counts++;
 }
 
 void QuadratureEncoder::channelBEventHandler() {
-
+	uint8_t B = digitalRead(this->pinChannelB) ;
+	uint8_t A = digitalRead(this->pinChannelA) ;
+	if((B&&A)||(!B&&!A))
+		counts++;
+	else
+		counts--;
 }
 
 QuadratureEncoder::~QuadratureEncoder() {
 	// TODO Auto-generated destructor stub
 }
+
+
