@@ -16,7 +16,8 @@ public:
 	Experimentation();
 	virtual ~Experimentation();
 private:
-	QuadratureEncoder * quadratureEncoder;
+	QuadratureEncoder * quadratureEncoderM2;
+	QuadratureEncoder * quadratureEncoderM1;
 };
 
 #endif /* SRC_EXPERIMENTATION_H_ */
