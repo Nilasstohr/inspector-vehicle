@@ -9,15 +9,14 @@
 #define SRC_EXPERIMENTATION_H_
 
 #include <src/Logger.h>
-#include "QuadratureEncoder.h"
+#include "QuadratureEncoders.h"
 
 class Experimentation {
 public:
 	Experimentation();
 	virtual ~Experimentation();
 private:
-	QuadratureEncoder * quadratureEncoderM2;
-	QuadratureEncoder * quadratureEncoderM1;
+	QuadratureEncoders * quadratureEncoders;
 };
 
 #endif /* SRC_EXPERIMENTATION_H_ */

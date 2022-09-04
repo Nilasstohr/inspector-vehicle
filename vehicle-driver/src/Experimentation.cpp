@@ -15,11 +15,12 @@
 #define M1_IN1 36
 #define M1_IN2 37
 
-#define ENCODER_CH_A_M1 22
-#define ENCODER_CH_B_M1 23
+#define ENCODER_CH_A_M1 31
+#define ENCODER_CH_B_M1 32
 
-#define ENCODER_CH_A_M2 31
-#define ENCODER_CH_B_M2 32
+#define ENCODER_CH_A_M2 22
+#define ENCODER_CH_B_M2 23
+
 
 #define LED 13
 
@@ -28,25 +29,38 @@ Experimentation::Experimentation()
 	Serial.begin(115200);
 	pinMode(LED, OUTPUT);
 
-	this->quadratureEncoderM2 = new QuadratureEncoder(ENCODER_CH_A_M2,ENCODER_CH_B_M2);
-	this->quadratureEncoderM2->setupChannels();
+	int pwm = 0;
 
-	this->quadratureEncoderM1 = new QuadratureEncoder(ENCODER_CH_A_M1,ENCODER_CH_B_M1);
+	double freq = 187500;
+	int res = 16;
+
+	//this->quadratureEncoderM2 = new QuadratureEncoder(ENCODER_CH_A_M2,ENCODER_CH_B_M2);
+	//this->quadratureEncoderM2->setupChannels();
+	//this->quadratureEncoderM1 = new QuadratureEncoder(ENCODER_CH_A_M1,ENCODER_CH_B_M1);
 	//this->quadratureEncoderM1->setupChannels();
+
+	this->quadratureEncoders = new QuadratureEncoders(
+			ENCODER_CH_A_M1,
+			ENCODER_CH_B_M1,
+			ENCODER_CH_A_M2,
+			ENCODER_CH_B_M2);
+
+	this->quadratureEncoders->setupEncoders();
 
 	delay(1000);
 
 	Logger::setLogLevel(Logger::VERBOSE);
-	Logger::verbose(__FUNCTION__, "Running teensy experimentaion");
+	Logger::verbose(__FUNCTION__, "Running Teensy experimentation");
 
 	// setting pwm
 	Logger::verbose(__FUNCTION__, "setting analog resolution to 12 bit");
-	analogWriteResolution(12);
+	analogWriteResolution(res);
+
 
 	//---------------------------M1
 
 	Logger::verbose(__FUNCTION__, "setting M1 inv D2 pwm frequency to 11718.75 Hz");
-	analogWriteFrequency(M1_INV_D2, 11718.75);
+	analogWriteFrequency(M1_INV_D2, freq);
 
 
 	Logger::verbose(__FUNCTION__, "setting M1 IN1 to output and high");
@@ -58,12 +72,12 @@ Experimentation::Experimentation()
 	digitalWrite(M1_IN2, LOW);
 
 	Logger::verbose(__FUNCTION__, "setting M1 inv D2 output to 50% duty");
-	analogWrite(M1_INV_D2,4048);
+	analogWrite(M1_INV_D2,pwm);
 
 	//---------------------------M2
 
 	Logger::verbose(__FUNCTION__, "setting M2 inv D2 pwm frequency to 11718.75 Hz");
-	analogWriteFrequency(M2_INV_D2, 11718.75);
+	analogWriteFrequency(M2_INV_D2, freq);
 
 	Logger::verbose(__FUNCTION__, "setting M2 IN1 to output and high");
 	pinMode(M2_IN1, OUTPUT);
@@ -74,7 +88,7 @@ Experimentation::Experimentation()
 	digitalWrite(M2_IN2, LOW);
 
 	Logger::verbose(__FUNCTION__, "setting M2 inv D2 output to 50% duty");
-	analogWrite(M2_INV_D2,4048);
+	analogWrite(M2_INV_D2,pwm);
 
     char buffer[40];
 	while(true){
@@ -83,10 +97,10 @@ Experimentation::Experimentation()
 		digitalWrite(LED, LOW);    // turn the LED off by making the voltage LOW
 		delay(10);
 
-		//Serial.println("m1: ");
-		//Serial.print(this->quadratureEncoderM1->getCounts());
+		Serial.print("m1: ");
+		Serial.print(this->quadratureEncoders->getQuadratureEncoder1()->getCount());
 		Serial.print(" m2: ");
-		Serial.println(this->quadratureEncoderM2->getCounts());
+		Serial.println(this->quadratureEncoders->getQuadratureEncoder2()->getCount());
 
     }
 }

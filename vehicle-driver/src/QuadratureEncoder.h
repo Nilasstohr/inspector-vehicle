@@ -16,16 +16,9 @@ public:
 	QuadratureEncoder(int pinChannelA,int pinChannelB);
 	virtual ~QuadratureEncoder();
 
-	signed int getCounts();
+	signed int getCount();
 
 	void setupChannels();
-
-private:
-
-	int pinChannelA;
-	int pinChannelB;
-
-	signed int counts =0;
 
 	int getPinChannelA() const {
 		return pinChannelA;
@@ -35,9 +28,16 @@ private:
 		return pinChannelB;
 	}
 
-
-    void channelAEventHandler();
+	void channelAEventHandler();
     void channelBEventHandler();
+private:
+
+	int pinChannelA;
+	int pinChannelB;
+
+	signed int counts =0;
+
+
 };
 
 #endif /* SRC_QUADRATUREENCODER_H_ */
