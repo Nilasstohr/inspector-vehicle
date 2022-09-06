@@ -91,17 +91,13 @@ Experimentation::Experimentation()
 	analogWrite(M2_INV_D2,pwm);
 
     char buffer[40];
+    digitalWrite(LED, HIGH);
 	while(true){
-		digitalWrite(LED, HIGH);   // turn the LED on (HIGH is the voltage level)
-		delay(10);               // wait for a second
-		digitalWrite(LED, LOW);    // turn the LED off by making the voltage LOW
-		delay(10);
-
 		Serial.print("m1: ");
-		Serial.print(this->quadratureEncoders->getQuadratureEncoder1()->getCount());
+		Serial.print(this->quadratureEncoders->getQuadratureEncoder1()->getCountInterval());
 		Serial.print(" m2: ");
-		Serial.println(this->quadratureEncoders->getQuadratureEncoder2()->getCount());
-
+		Serial.println(this->quadratureEncoders->getQuadratureEncoder2()->getCountInterval());
+		delay(1);
     }
 }
 

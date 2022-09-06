@@ -30,14 +30,34 @@ public:
 
 	void channelAEventHandler();
     void channelBEventHandler();
+
+	uint16_t getCountInterval() {
+		return countInterval;
+	}
+
+
 private:
 
 	int pinChannelA;
 	int pinChannelB;
 
 	signed int counts =0;
+	uint64_t lastTimeStampMicros =0;
+	uint16_t countInterval=0;
 
+	uint64_t getLastTimeStampMicros() {
+			return lastTimeStampMicros;
+	}
 
+	void setLastTimeStampMicros(uint64_t timeStampMicros) {
+		this->lastTimeStampMicros = timeStampMicros;
+	}
+
+	void setCountInterval(uint16_t countInterval) {
+			this->countInterval = countInterval;
+	}
+
+	void updateCountInterval(uint64_t micros);
 };
 
 #endif /* SRC_QUADRATUREENCODER_H_ */

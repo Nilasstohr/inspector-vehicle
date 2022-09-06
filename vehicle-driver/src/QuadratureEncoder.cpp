@@ -29,6 +29,7 @@ signed int QuadratureEncoder::getCount() {
 }
 
 void QuadratureEncoder::channelAEventHandler() {
+	this->updateCountInterval(micros());
 	uint8_t B = digitalRead(this->pinChannelB);
 	uint8_t A = digitalRead(this->pinChannelA) ;
 	  if((A&&B)||(!A&&!B))
@@ -38,6 +39,7 @@ void QuadratureEncoder::channelAEventHandler() {
 }
 
 void QuadratureEncoder::channelBEventHandler() {
+	this->updateCountInterval(micros());
 	uint8_t B = digitalRead(this->pinChannelB) ;
 	uint8_t A = digitalRead(this->pinChannelA) ;
 	if((B&&A)||(!B&&!A))
@@ -50,4 +52,7 @@ QuadratureEncoder::~QuadratureEncoder() {
 	// TODO Auto-generated destructor stub
 }
 
-
+void QuadratureEncoder::updateCountInterval(uint64_t micros) {
+	this->setCountInterval(micros-this->getLastTimeStampMicros());
+	this->setLastTimeStampMicros(micros);
+}
