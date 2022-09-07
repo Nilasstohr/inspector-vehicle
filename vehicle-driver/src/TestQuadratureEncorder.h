@@ -8,24 +8,26 @@
 #ifndef SRC_TESTQUADRATUREENCORDER_H_
 #define SRC_TESTQUADRATUREENCORDER_H_
 
-#include "Logger.h"
-#include "VehiclePins.h"
+#include "VehicleTestBase.h"
 #include "QuadratureEncoder.h"
 
-class TestQuadratureEncorder {
+class TestQuadratureEncorder: private VehicleTestBase{
 public:
 	TestQuadratureEncorder();
 
 	void canSetupQuadureEncoder();
 
-	virtual ~TestQuadratureEncorder();
+	void canGetIntevalCount();
 
+	void canDetroyQuadureEncoder();
+
+	void canSetupQuadratureEncoders();
+
+	virtual ~TestQuadratureEncorder();
 
 private:
 	QuadratureEncoder * quadratureEncoder;
-    QuadratureEncoder* getQuadratureEncoder() {
-		return quadratureEncoder;
-	}
+	QuadratureEncoders * quadratureEncoders;
 };
 
 #endif /* SRC_TESTQUADRATUREENCORDER_H_ */

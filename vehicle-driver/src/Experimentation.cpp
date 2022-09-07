@@ -90,13 +90,12 @@ Experimentation::Experimentation()
 	Logger::verbose(__FUNCTION__, "setting M2 inv D2 output to 50% duty");
 	analogWrite(M2_INV_D2,pwm);
 
-    char buffer[40];
     digitalWrite(LED, HIGH);
 	while(true){
 		Serial.print("m1: ");
-		Serial.print(this->quadratureEncoders->getQuadratureEncoder1()->getCountInterval());
+		Serial.print(this->quadratureEncoders->getQuadratureEncoderLeft()->getCountInterval());
 		Serial.print(" m2: ");
-		Serial.println(this->quadratureEncoders->getQuadratureEncoder2()->getCountInterval());
+		Serial.println(this->quadratureEncoders->getQuadratureEncoderRight()->getCountInterval());
 		delay(1);
     }
 }

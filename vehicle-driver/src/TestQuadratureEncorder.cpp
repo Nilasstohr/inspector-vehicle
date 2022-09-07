@@ -9,18 +9,35 @@
 
 TestQuadratureEncorder::TestQuadratureEncorder()
 {
-	Logger::verbose(__FUNCTION__,"");
 	canSetupQuadureEncoder();
+	canGetIntevalCount();
+	canDetroyQuadureEncoder();
 }
 
 void TestQuadratureEncorder::canSetupQuadureEncoder(){
 	Logger::verbose(__FUNCTION__, "");
 	this->quadratureEncoder = new QuadratureEncoder(
-				VEHICLE_PIN_QUADENCODER_MOTOR1_CHANNEL_A,
-				VEHICLE_PIN_QUADENCODER_MOTOR1_CHANNEL_B);
+			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
+			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B);
+}
+
+void TestQuadratureEncorder::canGetIntevalCount() {
+	Logger::verbose(__FUNCTION__, "");
+	this->quadratureEncoder->getCountInterval();
+}
+
+void TestQuadratureEncorder::canDetroyQuadureEncoder() {
+	Logger::verbose(__FUNCTION__, "");
+	delete this->quadratureEncoder;
+}
+
+void TestQuadratureEncorder::canSetupQuadratureEncoders() {
+	Logger::verbose(__FUNCTION__, "");
+	this->quadratureEncoders = VehicleTestBase::
+			VehicleTestToolBox::createQuadratureEncoders();
 
 }
 
 TestQuadratureEncorder::~TestQuadratureEncorder() {
-	// TODO Auto-generated destructor stub
+
 }

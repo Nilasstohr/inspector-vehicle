@@ -31,36 +31,36 @@ static void channel_b_isr_2(void){
 
 QuadratureEncoders::QuadratureEncoders(int channel1A,int channel1B,int channel2A,int channel2B)
 {
-	this->quadratureEncoder1 = new QuadratureEncoder(channel1A,channel1B);
-	this->quadratureEncoder2 = new QuadratureEncoder(channel2A,channel2B);
+	this->quadratureEncoderLeft = new QuadratureEncoder(channel1A,channel1B);
+	this->quadratureEncoderRight = new QuadratureEncoder(channel2A,channel2B);
 }
 
 void QuadratureEncoders::setupEncoders() {
 
 	// encoder 1
 
-	channelA1Event.Bind(this->quadratureEncoder1,&QuadratureEncoder::channelAEventHandler);
-	attachInterrupt(this->quadratureEncoder1->getPinChannelA(),channel_a_isr_1, CHANGE);
+	channelA1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelAEventHandler);
+	attachInterrupt(this->quadratureEncoderLeft->getPinChannelA(),channel_a_isr_1, CHANGE);
 
-	channelB1Event.Bind(this->quadratureEncoder1,&QuadratureEncoder::channelBEventHandler);
-	attachInterrupt(this->quadratureEncoder1->getPinChannelB(),channel_b_isr_1, CHANGE);
+	channelB1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelBEventHandler);
+	attachInterrupt(this->quadratureEncoderLeft->getPinChannelB(),channel_b_isr_1, CHANGE);
 
 	// encoder 2
 
-	channelA2Event.Bind(this->quadratureEncoder2,&QuadratureEncoder::channelAEventHandler);
-	attachInterrupt(this->quadratureEncoder2->getPinChannelA(),channel_a_isr_2, CHANGE);
+	channelA2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelAEventHandler);
+	attachInterrupt(this->quadratureEncoderRight->getPinChannelA(),channel_a_isr_2, CHANGE);
 
-	channelB2Event.Bind(this->quadratureEncoder2,&QuadratureEncoder::channelBEventHandler);
-	attachInterrupt(this->quadratureEncoder2->getPinChannelB(),channel_b_isr_2, CHANGE);
+	channelB2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelBEventHandler);
+	attachInterrupt(this->quadratureEncoderRight->getPinChannelB(),channel_b_isr_2, CHANGE);
 
 }
 
-QuadratureEncoder* QuadratureEncoders::getQuadratureEncoder1() {
-	return quadratureEncoder1;
+QuadratureEncoder* QuadratureEncoders::getQuadratureEncoderLeft() {
+	return quadratureEncoderLeft;
 }
 
-QuadratureEncoder* QuadratureEncoders::getQuadratureEncoder2() {
-	return quadratureEncoder2;
+QuadratureEncoder* QuadratureEncoders::getQuadratureEncoderRight() {
+	return quadratureEncoderRight;
 }
 QuadratureEncoders::~QuadratureEncoders() {
 	// TODO Auto-generated destructor stub
