@@ -24,15 +24,23 @@ VehicleTestToolBox::~VehicleTestToolBox() {
 	// TODO Auto-generated destructor stub
 }
 
-MotorDrivers* VehicleTestToolBox::createMotorDrivers() {
-    return new MotorDrivers(
+MotorDrivers* VehicleTestToolBox::createMotorDrivers()
+{
+	return NULL;
+	/*
+    this->motorDrivers = new MotorDrivers(
 		new MotorDriverPins(
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2),
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+				VEHICLE_MOTOR_DRIVER_PWM_RESOLUTION
+				),
 		new MotorDriverPins(
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_D2,
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN1,
-				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN2)
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN2,
+				VEHICLE_MOTOR_DRIVER_PWM_RESOLUTION)
     );
+    return this->motorDrivers;
+    */
 }

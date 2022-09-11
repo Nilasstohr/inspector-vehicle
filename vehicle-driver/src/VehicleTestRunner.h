@@ -9,6 +9,9 @@
 #define SRC_VEHICLETESTRUNNER_H_
 
 #include "TestQuadratureEncorder.h"
+#include "TestMotorDrivers.h"
+#include "Logger.h"
+
 
 class VehicleTestRunner {
 public:

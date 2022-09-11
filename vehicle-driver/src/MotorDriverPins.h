@@ -8,31 +8,38 @@
 #ifndef SRC_MOTORDRIVERPINS_H_
 #define SRC_MOTORDRIVERPINS_H_
 
+#include "Logger.h"
+
 class MotorDriverPins {
 public:
-	MotorDriverPins(int pwmD2,int in1,int in2){
-		this->pwmD2 = pwmD2;
-		this->in1=in1;
-		this->in2=in2;
-	}
+	MotorDriverPins(
+			uint8_t pwmD2,
+			uint8_t in1,
+			uint8_t in2,
+			uint32_t pwmFrequency);
 	virtual ~MotorDriverPins();
 
-	int getIn1() const {
+	uint8_t getIn1() const {
 		return in1;
 	}
 
-	int getIn2() const {
+	uint8_t getIn2() const {
 		return in2;
 	}
 
-	int getPwmD2() const {
+	uint8_t getPwmD2() const {
 		return pwmD2;
 	}
 
+	uint32_t getPwmFrequency() const {
+		return pwmFrequency;
+	}
+
 private:
-	int pwmD2;
-	int in1;
-	int in2;
+	uint8_t pwmD2;
+	uint8_t in1;
+	uint8_t in2;
+	uint32_t pwmFrequency;
 };
 
 #endif /* SRC_MOTORDRIVERPINS_H_ */

@@ -7,6 +7,7 @@
 
 extern "C" int main(void)
 {
-	Experimentation *e = new Experimentation();
+	Serial.begin(115200);
+	new VehicleTestRunner();
 
 }

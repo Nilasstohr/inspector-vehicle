@@ -8,7 +8,10 @@
 #include <src/VehicleTestRunner.h>
 
 VehicleTestRunner::VehicleTestRunner() {
-	TestQuadratureEncorder *testQuadratureEncorder  = new TestQuadratureEncorder();
+	Logger::setLogLevel(Logger::VERBOSE);
+	Logger::verbose(__FUNCTION__, "Starting Vehicle Tests");
+	//new TestQuadratureEncorder();
+	new TestMotorDrivers();
 }
 
 VehicleTestRunner::~VehicleTestRunner() {

@@ -10,6 +10,7 @@
 
 #include "Logger.h"
 #include "VehiclePins.h"
+#include "VehicleParameters.h"
 #include "QuadratureEncoders.h"
 #include "MotorDrivers.h"
 class VehicleTestToolBox {
@@ -18,6 +19,10 @@ public:
 	QuadratureEncoders * createQuadratureEncoders();
 	MotorDrivers * createMotorDrivers();
 	virtual ~VehicleTestToolBox();
+
+private:
+	QuadratureEncoders * quadratureEncoders;
+	MotorDrivers * motorDrivers;
 };
 
 #endif /* SRC_VEHICLETESTTOOLBOX_H_ */

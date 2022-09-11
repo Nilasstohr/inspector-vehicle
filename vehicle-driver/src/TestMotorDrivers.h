@@ -14,10 +14,13 @@
 class TestMotorDrivers: private VehicleTestBase {
 public:
 	TestMotorDrivers();
+	// tests
 	void canSetupMotorDriver();
+	void canSetMotorDriverPins();
+	//
 	virtual ~TestMotorDrivers();
 private:
-	MotorDriver * motorDriverLeft;
+	void printMotorSettings(MotorDriverPins * motorDriverPins);
 };
 
 
