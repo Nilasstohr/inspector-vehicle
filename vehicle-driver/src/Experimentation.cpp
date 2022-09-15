@@ -34,6 +34,7 @@ Experimentation::Experimentation()
 	double freq = 187500;
 	int res = 16;
 
+
 	//this->quadratureEncoderM2 = new QuadratureEncoder(ENCODER_CH_A_M2,ENCODER_CH_B_M2);
 	//this->quadratureEncoderM2->setupChannels();
 	//this->quadratureEncoderM1 = new QuadratureEncoder(ENCODER_CH_A_M1,ENCODER_CH_B_M1);
@@ -91,13 +92,14 @@ Experimentation::Experimentation()
 	analogWrite(M2_INV_D2,pwm);
 
     digitalWrite(LED, HIGH);
-	while(true){
+	/*while(true){
 		Serial.print("m1: ");
 		Serial.print(this->quadratureEncoders->getQuadratureEncoderLeft()->getCountInterval());
 		Serial.print(" m2: ");
 		Serial.println(this->quadratureEncoders->getQuadratureEncoderRight()->getCountInterval());
 		delay(1);
-    }
+    }*/
+
 }
 
 Experimentation::~Experimentation()

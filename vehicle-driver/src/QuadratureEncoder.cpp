@@ -24,7 +24,7 @@ void QuadratureEncoder::setupChannels() {
 
 }
 
-signed int QuadratureEncoder::getCount() {
+signed int QuadratureEncoder::count() {
 	return this->counts;
 }
 
@@ -55,4 +55,10 @@ QuadratureEncoder::~QuadratureEncoder() {
 void QuadratureEncoder::updateCountInterval(uint64_t micros) {
 	this->setCountInterval(micros-this->getLastTimeStampMicros());
 	this->setLastTimeStampMicros(micros);
+}
+
+void QuadratureEncoder::reset() {
+	setCountInterval(0);
+	this->counts = 0 ;
+	this->lastTimeStampMicros = 0 ;
 }

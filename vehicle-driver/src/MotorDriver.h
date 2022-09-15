@@ -18,6 +18,8 @@ public:
 
 	// interface
 	void setMotorPwm(uint16_t pwm);
+	void setForward();
+	void stop();
 
 private:
 	MotorDriverPins * motorDriverPins;
@@ -28,6 +30,9 @@ private:
 		return pwmFrequency;
 	}
 	uint8_t  getPwmPin();
+
+	void setIn1(uint8_t state);
+	void setIn2(uint8_t state);
 
 };
 

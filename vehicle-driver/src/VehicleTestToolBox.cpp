@@ -26,8 +26,6 @@ VehicleTestToolBox::~VehicleTestToolBox() {
 
 MotorDrivers* VehicleTestToolBox::createMotorDrivers()
 {
-	return NULL;
-	/*
     this->motorDrivers = new MotorDrivers(
 		new MotorDriverPins(
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
@@ -42,5 +40,4 @@ MotorDrivers* VehicleTestToolBox::createMotorDrivers()
 				VEHICLE_MOTOR_DRIVER_PWM_RESOLUTION)
     );
     return this->motorDrivers;
-    */
 }

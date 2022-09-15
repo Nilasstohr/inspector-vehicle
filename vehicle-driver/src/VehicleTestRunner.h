@@ -10,6 +10,7 @@
 
 #include "TestQuadratureEncorder.h"
 #include "TestMotorDrivers.h"
+#include "TestVehicleSystem.h"
 #include "Logger.h"
 
 

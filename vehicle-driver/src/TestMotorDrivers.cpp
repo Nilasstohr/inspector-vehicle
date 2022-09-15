@@ -9,12 +9,15 @@
 
 TestMotorDrivers::TestMotorDrivers() {
 	Logger::setLogLevel(Logger::VERBOSE);
+	Logger::verbose(__FUNCTION__, "############# TEST CLASS ############# ");
 	canSetMotorDriverPins();
 	canSetupMotorDriver();
+	canSetupMotorDrivers();
+	canDriveForward();
 }
 
 void TestMotorDrivers::canSetMotorDriverPins() {
-	Logger::verbose(__FUNCTION__, "testing if all motor setting can be set");
+	Logger::verbose(__FUNCTION__, " - TEST");
 	MotorDriverPins  *motorDriverPins = new MotorDriverPins(
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
@@ -49,22 +52,46 @@ void TestMotorDrivers::printMotorSettings(MotorDriverPins *motorDriverPins) {
 }
 
 void TestMotorDrivers::canSetupMotorDriver() {
-	Logger::verbose(__FUNCTION__, "testing motor driver class");
-	MotorDriver  *motorDriver = new MotorDriver(
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDriver  *left = new MotorDriver(
 		new MotorDriverPins(
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
 			VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
 	);
-	motorDriver->setMotorPwm(30000);
+	left->setMotorPwm(30000);
 	delay(2000);
-	motorDriver->setMotorPwm(0);
+	left->setMotorPwm(0);
+
+	MotorDriver  *right = new MotorDriver(
+			new MotorDriverPins(
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_D2,
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN1,
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN2,
+				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
+		);
+	right->setMotorPwm(30000);
+	delay(2000);
+	right->setMotorPwm(0);
+
 }
 
+void TestMotorDrivers::canSetupMotorDrivers() {
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDrivers *motorDrivers = createMotorDrivers();
+}
+
+void TestMotorDrivers::canDriveForward() {
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDrivers *motorDrivers = createMotorDrivers();
+	motorDrivers->forward(30000);
+	delay(2000);
+	motorDrivers->stop();
+}
 
 TestMotorDrivers::~TestMotorDrivers() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

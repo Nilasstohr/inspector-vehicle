@@ -55,15 +55,17 @@ void QuadratureEncoders::setupEncoders() {
 
 }
 
-QuadratureEncoder* QuadratureEncoders::getQuadratureEncoderLeft() {
+QuadratureEncoder* QuadratureEncoders::left() {
 	return quadratureEncoderLeft;
 }
 
-QuadratureEncoder* QuadratureEncoders::getQuadratureEncoderRight() {
+QuadratureEncoder* QuadratureEncoders::right() {
 	return quadratureEncoderRight;
 }
 QuadratureEncoders::~QuadratureEncoders() {
 	// TODO Auto-generated destructor stub
 }
 
-
+void QuadratureEncoders::reset() {
+	this->left()->reset();
+}

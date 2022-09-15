@@ -16,7 +16,7 @@ public:
 	QuadratureEncoder(int pinChannelA,int pinChannelB);
 	virtual ~QuadratureEncoder();
 
-	signed int getCount();
+	signed int count();
 
 	void setupChannels();
 
@@ -34,6 +34,7 @@ public:
 	uint16_t getCountInterval() {
 		return countInterval;
 	}
+	void reset();
 
 private:
 

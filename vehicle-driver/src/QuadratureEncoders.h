@@ -15,8 +15,9 @@ public:
 	QuadratureEncoders(int channel1A,int channel1B,int channel2A,int channel2B);
 	void setupEncoders();
 	virtual ~QuadratureEncoders();
-	QuadratureEncoder * getQuadratureEncoderLeft();
-	QuadratureEncoder * getQuadratureEncoderRight();
+	QuadratureEncoder * left();
+	QuadratureEncoder * right();
+	void reset();
 private:
 	QuadratureEncoder * quadratureEncoderLeft;
 	QuadratureEncoder * quadratureEncoderRight;

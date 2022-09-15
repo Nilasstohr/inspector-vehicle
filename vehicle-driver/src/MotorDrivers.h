@@ -15,9 +15,19 @@ class MotorDrivers {
 public:
 	MotorDrivers(MotorDriverPins *motorDriverPinsLeft,MotorDriverPins *motorDriverPinsRight);
 	virtual ~MotorDrivers();
+    void forward(uint16_t pwm);
+    void stop();
+
 private:
 	MotorDriver *motorDriverLeft;
 	MotorDriver *motorDriverRight;
+    MotorDriver* left() const {
+		return motorDriverLeft;
+	}
+	MotorDriver* right() const {
+		return motorDriverRight;
+	}
+	void setForward();
 };
 
 #endif /* SRC_MOTORDRIVERS_H_ */

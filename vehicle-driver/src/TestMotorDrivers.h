@@ -15,8 +15,10 @@ class TestMotorDrivers: private VehicleTestBase {
 public:
 	TestMotorDrivers();
 	// tests
-	void canSetupMotorDriver();
 	void canSetMotorDriverPins();
+	void canSetupMotorDriver();
+	void canSetupMotorDrivers();
+	void canDriveForward();
 	//
 	virtual ~TestMotorDrivers();
 private:
