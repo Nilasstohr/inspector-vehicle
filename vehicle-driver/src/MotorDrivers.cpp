@@ -28,7 +28,18 @@ void MotorDrivers::stop() {
 	this->right()->stop();
 }
 
+void MotorDrivers::reverse(uint16_t pwm) {
+	setReverse();
+	this->left()->setMotorPwm(pwm);
+	this->right()->setMotorPwm(pwm);
+}
+
 void MotorDrivers::setForward() {
 	this->left()->setForward();
 	this->right()->setForward();
+}
+
+void MotorDrivers::setReverse() {
+	this->left()->setReverse();
+	this->right()->setReverse();
 }

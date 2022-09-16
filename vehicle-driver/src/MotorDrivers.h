@@ -16,6 +16,7 @@ public:
 	MotorDrivers(MotorDriverPins *motorDriverPinsLeft,MotorDriverPins *motorDriverPinsRight);
 	virtual ~MotorDrivers();
     void forward(uint16_t pwm);
+    void reverse(uint16_t pwm);
     void stop();
 
 private:
@@ -28,6 +29,7 @@ private:
 		return motorDriverRight;
 	}
 	void setForward();
+	void setReverse();
 };
 
 #endif /* SRC_MOTORDRIVERS_H_ */

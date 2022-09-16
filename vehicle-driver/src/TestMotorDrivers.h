@@ -19,6 +19,7 @@ public:
 	void canSetupMotorDriver();
 	void canSetupMotorDrivers();
 	void canDriveForward();
+	void canDriveReverse();
 	//
 	virtual ~TestMotorDrivers();
 private:

@@ -15,22 +15,27 @@ MotorDriver::MotorDriver(MotorDriverPins *motorDriverPins) {
 }
 
 void MotorDriver::setup() {
-	//Logger::verbose(__FUNCTION__, "setting Motor D2 pwm frequency");
-	analogWriteFrequency(getPwmPin(),this->getPwmFrequency());
+	char buffer[100];
 
-	//Logger::verbose(__FUNCTION__, "setting Motor IN1 to output and high");
+	sprintf(buffer,"Setting pwm pin=%d with frequency=%lu",getPwmPin(),this->motorDriverPins->getPwmFrequency());
+	Logger::verbose(__FUNCTION__,buffer);
+	analogWriteFrequency(getPwmPin(),this->motorDriverPins->getPwmFrequency());
+
+	sprintf(buffer,"Setting in1 pin=%d as output and high",this->motorDriverPins->getIn1());
+	Logger::verbose(__FUNCTION__,buffer);
 	pinMode(this->motorDriverPins->getIn1(), OUTPUT);
 
-	//Logger::verbose(__FUNCTION__, "setting Motor IN2 to output and low");
+	sprintf(buffer,"Setting in2 pin=%d as output and Low",this->motorDriverPins->getIn2());
+    Logger::verbose(__FUNCTION__,buffer);
 	pinMode(this->motorDriverPins->getIn2(), OUTPUT);
-
 	setForward();
-
 	stop();
 }
 
 void MotorDriver::setMotorPwm(uint16_t pwm) {
-	//Logger::verbose(__FUNCTION__, "setting M1 inv D2 output to 50% duty");
+	char buffer[100];
+	sprintf(buffer,"Setting pwm pin=%d with pwm value=%d",getPwmPin(),pwm);
+		Logger::verbose(__FUNCTION__,buffer);
 	analogWrite(getPwmPin(),pwm);
 }
 
@@ -39,6 +44,11 @@ uint8_t MotorDriver::getPwmPin() {
 }
 
 void MotorDriver::setForward() {
+	setIn1(LOW);
+	setIn2(HIGH);
+}
+
+void MotorDriver::setReverse() {
 	setIn1(HIGH);
 	setIn2(LOW);
 }
@@ -47,13 +57,14 @@ void MotorDriver::setIn1(uint8_t state) {
 	digitalWrite(this->motorDriverPins->getIn1(), state);
 }
 
+void MotorDriver::setIn2(uint8_t state) {
+	digitalWrite(this->motorDriverPins->getIn2(), state);
+}
+
 void MotorDriver::stop() {
 	setMotorPwm(0);
 }
 
-void MotorDriver::setIn2(uint8_t state) {
-	digitalWrite(this->motorDriverPins->getIn2(), state);
-}
 
 MotorDriver::~MotorDriver() {
 	// TODO Auto-generated destructor stub

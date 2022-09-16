@@ -35,6 +35,8 @@ public:
 		return pwmFrequency;
 	}
 
+	void printPins();
+
 private:
 	uint8_t pwmD2;
 	uint8_t in1;
