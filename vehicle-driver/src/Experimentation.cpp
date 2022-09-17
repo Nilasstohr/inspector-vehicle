@@ -66,11 +66,11 @@ Experimentation::Experimentation()
 
 	Logger::verbose(__FUNCTION__, "setting M1 IN1 to output and high");
 	pinMode(M1_IN1, OUTPUT);
-	digitalWrite(M1_IN1, LOW);
+	digitalWrite(M1_IN1, HIGH);
 
 	Logger::verbose(__FUNCTION__, "setting M1 IN2 to output and low");
 	pinMode(M1_IN2, OUTPUT);
-	digitalWrite(M1_IN2, HIGH);
+	digitalWrite(M1_IN2, LOW);
 
 	Logger::verbose(__FUNCTION__, "setting M1 inv D2 output to 50% duty");
 	analogWrite(M1_INV_D2,pwm);
@@ -82,21 +82,21 @@ Experimentation::Experimentation()
 
 	Logger::verbose(__FUNCTION__, "setting M2 IN1 to output and high");
 	pinMode(M2_IN1, OUTPUT);
-	digitalWrite(M2_IN1, LOW);
+	digitalWrite(M2_IN1, HIGH);
 
 	Logger::verbose(__FUNCTION__, "setting M2 IN2 to output and low");
 	pinMode(M2_IN2, OUTPUT);
-	digitalWrite(M2_IN2, HIGH);
+	digitalWrite(M2_IN2, LOW);
 
 	Logger::verbose(__FUNCTION__, "setting M2 inv D2 output to 50% duty");
 	analogWrite(M2_INV_D2,pwm);
 
     digitalWrite(LED, HIGH);
 	while(true){
-		Serial.print("m1x: ");
-		Serial.print(this->quadratureEncoders->left()->getCountInterval());
-		Serial.print(" m2x: ");
-		Serial.println(this->quadratureEncoders->right()->getCountInterval());
+		Serial.print("left: ");
+		Serial.print(this->quadratureEncoders->left()->count());
+		Serial.print("    right: ");
+		Serial.println(this->quadratureEncoders->right()->count());
 		delay(1);
     }
 

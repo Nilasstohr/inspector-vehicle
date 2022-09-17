@@ -11,8 +11,8 @@ VehicleTestRunner::VehicleTestRunner() {
 	Logger::setLogLevel(Logger::VERBOSE);
 	Logger::verbose(__FUNCTION__, "Starting Vehicle Tests");
 	//new TestQuadratureEncorder();
-	new TestMotorDrivers();
-	//new TestVehicleSystem();
+	//new TestMotorDrivers();
+	new TestVehicleSystem();
 }
 
 VehicleTestRunner::~VehicleTestRunner() {

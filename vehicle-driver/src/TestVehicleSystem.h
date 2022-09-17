@@ -15,7 +15,7 @@ public:
 	TestVehicleSystem();
 	virtual ~TestVehicleSystem();
 	void testIncreasedEncoderCounts();
-
+	void testDecreasedEncoderCounts();
 private:
 	MotorDrivers * motorDrivers;
 	QuadratureEncoders * quadratureEncoders;

@@ -16,7 +16,6 @@ MotorDriver::MotorDriver(MotorDriverPins *motorDriverPins) {
 
 void MotorDriver::setup() {
 	char buffer[100];
-
 	sprintf(buffer,"Setting pwm pin=%d with frequency=%lu",getPwmPin(),this->motorDriverPins->getPwmFrequency());
 	Logger::verbose(__FUNCTION__,buffer);
 	analogWriteFrequency(getPwmPin(),this->motorDriverPins->getPwmFrequency());

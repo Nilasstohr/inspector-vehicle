@@ -13,6 +13,7 @@
 
 class QuadratureEncoder {
 public:
+
 	QuadratureEncoder(int pinChannelA,int pinChannelB);
 	virtual ~QuadratureEncoder();
 

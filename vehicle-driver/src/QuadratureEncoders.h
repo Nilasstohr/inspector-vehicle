@@ -12,12 +12,19 @@
 
 class QuadratureEncoders {
 public:
+	enum QuadratureEncoderSide
+	{
+	    quadrature_encoder_left,
+		quadrature_encoder_right
+	};
+
 	QuadratureEncoders(int channel1A,int channel1B,int channel2A,int channel2B);
 	void setupEncoders();
 	virtual ~QuadratureEncoders();
 	QuadratureEncoder * left();
 	QuadratureEncoder * right();
 	void reset();
+	signed int count(QuadratureEncoderSide side);
 private:
 	QuadratureEncoder * quadratureEncoderLeft;
 	QuadratureEncoder * quadratureEncoderRight;

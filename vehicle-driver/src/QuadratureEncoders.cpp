@@ -7,11 +7,11 @@
 
 #include "QuadratureEncoders.h"
 
-
 static CSyncEvent channelA1Event;
 static CSyncEvent channelB1Event;
 static CSyncEvent channelA2Event;
 static CSyncEvent channelB2Event;
+
 
 static void channel_a_isr_1(void){
 	channelA1Event();
@@ -62,10 +62,19 @@ QuadratureEncoder* QuadratureEncoders::left() {
 QuadratureEncoder* QuadratureEncoders::right() {
 	return quadratureEncoderRight;
 }
-QuadratureEncoders::~QuadratureEncoders() {
-	// TODO Auto-generated destructor stub
-}
 
 void QuadratureEncoders::reset() {
 	this->left()->reset();
+}
+
+QuadratureEncoders::~QuadratureEncoders() {
+}
+
+signed int QuadratureEncoders::count(QuadratureEncoderSide side) {
+	switch(side) {
+	  case QuadratureEncoderSide::quadrature_encoder_right:
+		return this->right()->count();
+	  default:
+		return this->left()->count();
+	}
 }
