@@ -14,6 +14,7 @@ class TestVehicleSystem: private VehicleTestBase{
 public:
 	TestVehicleSystem();
 	virtual ~TestVehicleSystem();
+	// tests
 	void testIncreasedEncoderCounts();
 	void testDecreasedEncoderCounts();
 private:
@@ -25,6 +26,8 @@ private:
 	QuadratureEncoders* encoders() const {
 		return quadratureEncoders;
 	}
+	// helpers
+	String *count(signed int &count,int side);
 };
 
 #endif /* SRC_TESTVEHICLESYSTEM_H_ */

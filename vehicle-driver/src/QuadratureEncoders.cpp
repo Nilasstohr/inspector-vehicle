@@ -65,6 +65,7 @@ QuadratureEncoder* QuadratureEncoders::right() {
 
 void QuadratureEncoders::reset() {
 	this->left()->reset();
+	this->right()->reset();
 }
 
 QuadratureEncoders::~QuadratureEncoders() {
@@ -77,4 +78,19 @@ signed int QuadratureEncoders::count(QuadratureEncoderSide side) {
 	  default:
 		return this->left()->count();
 	}
+}
+
+String* QuadratureEncoders::count(signed int &count,
+		QuadratureEncoderSide side) {
+	count = this->count(side);
+	String * str = new String();
+	switch(side) {
+	  case QuadratureEncoderSide::quadrature_encoder_right:
+		str->append("right");
+		break;
+	  default:
+		str->append("left");
+	}
+	str->append(" encoder count was ").append(count);
+	return str;
 }

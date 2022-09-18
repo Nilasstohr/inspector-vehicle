@@ -13,6 +13,7 @@
 class VehicleTestBase: protected VehicleTestToolBox{
 public:
 	VehicleTestBase();
+	String * getString();
 	virtual ~VehicleTestBase();
 };
 

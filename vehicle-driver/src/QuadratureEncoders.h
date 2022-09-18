@@ -25,6 +25,7 @@ public:
 	QuadratureEncoder * right();
 	void reset();
 	signed int count(QuadratureEncoderSide side);
+	String * count(signed int & count,QuadratureEncoderSide side);
 private:
 	QuadratureEncoder * quadratureEncoderLeft;
 	QuadratureEncoder * quadratureEncoderRight;
