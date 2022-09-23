@@ -6,6 +6,7 @@
  */
 
 #include "Experimentation.h"
+#include "VehicleParameters.h"
 
 #define M2_INV_D2 2
 #define M2_IN1 3
@@ -23,6 +24,8 @@
 
 
 #define LED 13
+
+
 
 Experimentation::Experimentation()
 {
@@ -44,7 +47,9 @@ Experimentation::Experimentation()
 			ENCODER_CH_A_M1,
 			ENCODER_CH_B_M1,
 			ENCODER_CH_A_M2,
-			ENCODER_CH_B_M2);
+			ENCODER_CH_B_M2,
+			VEHICLE_WHEEL_RADIUS_CM,
+			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	this->quadratureEncoders->setupEncoders();
 

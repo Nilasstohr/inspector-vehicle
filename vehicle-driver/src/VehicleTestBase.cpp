@@ -14,7 +14,3 @@ VehicleTestBase::VehicleTestBase() {
 VehicleTestBase::~VehicleTestBase() {
 	// TODO Auto-generated destructor stub
 }
-
-String* VehicleTestBase::getString() {
-	return new String();
-}

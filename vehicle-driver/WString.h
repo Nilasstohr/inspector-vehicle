@@ -71,6 +71,7 @@ public:
 	String(double num, unsigned char digits=2) : String((float)num, digits) {}
 	~String(void);
 
+
 	// memory management
 	unsigned char reserve(unsigned int size);
 	inline unsigned int length(void) const {return len;}
@@ -194,6 +195,7 @@ public:
 	String & toLowerCase(void);
 	String & toUpperCase(void);
 	String & trim(void);
+	String & newLine();
 
 	// parsing/conversion
 	long toInt(void) const;

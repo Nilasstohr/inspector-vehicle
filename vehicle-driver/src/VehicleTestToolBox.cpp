@@ -17,11 +17,9 @@ QuadratureEncoders* VehicleTestToolBox::createQuadratureEncoders() {
 			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
 			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
 			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_A,
-			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_B);
-}
-
-VehicleTestToolBox::~VehicleTestToolBox() {
-	// TODO Auto-generated destructor stub
+			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_B,
+			VEHICLE_WHEEL_RADIUS_CM,
+			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 }
 
 MotorDrivers* VehicleTestToolBox::createMotorDrivers()
@@ -40,4 +38,8 @@ MotorDrivers* VehicleTestToolBox::createMotorDrivers()
 				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
     );
     return this->motorDrivers;
+}
+
+VehicleTestToolBox::~VehicleTestToolBox() {
+	// TODO Auto-generated destructor stub
 }

@@ -263,6 +263,14 @@ String & String::append(const char *cstr)
 	return *this;
 }
 
+String & String::newLine()
+{
+	const char *c = "\n";
+	if (c) append(c, strlen(c));
+	return *this;
+}
+
+
 String & String::append(char c)
 {
 	char buf[2];

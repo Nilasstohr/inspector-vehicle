@@ -10,10 +10,13 @@
 
 #include "VehicleTestBase.h"
 #include "QuadratureEncoder.h"
+#include "QuadratureEncorderParameters.h"
 
 class TestQuadratureEncorder: private VehicleTestBase{
 public:
 	TestQuadratureEncorder();
+
+	void canSetEncoderParams();
 
 	void canSetupQuadureEncoder();
 
@@ -28,6 +31,8 @@ public:
 private:
 	QuadratureEncoder * quadratureEncoder;
 	QuadratureEncoders * quadratureEncoders;
+
+    void printEncoderParmas(QuadratureEncorderParameters *params);
 };
 
 #endif /* SRC_TESTQUADRATUREENCORDER_H_ */

@@ -13,6 +13,7 @@
 #include "VehicleParameters.h"
 #include "QuadratureEncoders.h"
 #include "MotorDrivers.h"
+
 class VehicleTestToolBox {
 public:
 	VehicleTestToolBox();

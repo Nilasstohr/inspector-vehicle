@@ -9,11 +9,11 @@
 #define SRC_VEHICLETESTBASE_H_
 
 #include "VehicleTestToolBox.h"
+#include "StringUtilities.h"
 
 class VehicleTestBase: protected VehicleTestToolBox{
 public:
 	VehicleTestBase();
-	String * getString();
 	virtual ~VehicleTestBase();
 };
 

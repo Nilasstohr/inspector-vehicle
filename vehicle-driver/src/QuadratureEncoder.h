@@ -10,55 +10,61 @@
 
 #include <Arduino.h>
 #include "SyncEvent.h"
+#include "QuadratureEncoderInterval.h"
+#include "math.h"
+#include "QuadratureEncorderParameters.h"
 
 class QuadratureEncoder {
 public:
 
-	QuadratureEncoder(int pinChannelA,int pinChannelB);
+	QuadratureEncoder(QuadratureEncorderParameters *parameters);
 	virtual ~QuadratureEncoder();
 
 	signed int count();
+	float velocity();
+
+	uint16_t timeInterval();
+	uint16_t countInterval();
 
 	void setupChannels();
-
-	int getPinChannelA() const {
-		return pinChannelA;
-	}
-
-	int getPinChannelB() const {
-		return pinChannelB;
-	}
 
 	void channelAEventHandler();
     void channelBEventHandler();
 
-	uint16_t getCountInterval() {
-		return countInterval;
-	}
 	void reset();
+
+    QuadratureEncorderParameters* getParameters() const {
+		return parameters;
+	}
+
+    double getPosition() {
+    	return this->position;
+    }
+
 
 private:
 
-	int pinChannelA;
-	int pinChannelB;
+	QuadratureEncoderInterval *_timeInterval;
+	QuadratureEncoderInterval *_countInterval;
+	QuadratureEncorderParameters *parameters;
+	double position;
 
-	signed int counts =0;
-	uint64_t lastTimeStampMicros =0;
-	uint16_t countInterval=0;
-
-	uint64_t getLastTimeStampMicros() {
-			return lastTimeStampMicros;
+	QuadratureEncoderInterval * getPositionInterval() {
+		return _countInterval;
 	}
 
-	void setLastTimeStampMicros(uint64_t timeStampMicros) {
-		this->lastTimeStampMicros = timeStampMicros;
+    QuadratureEncoderInterval * getTimeInterval() {
+		return _timeInterval;
 	}
 
-	void setCountInterval(uint16_t countInterval) {
-			this->countInterval = countInterval;
+    void setPosition(double position) {
+		this->position = position;
 	}
 
-	void updateCountInterval(uint64_t micros);
+
+    signed int counts =0;
+
+	void refresh();
 };
 
 #endif /* SRC_QUADRATUREENCODER_H_ */

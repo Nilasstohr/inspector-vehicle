@@ -29,10 +29,18 @@ static void channel_b_isr_2(void){
 	channelB2Event();
 }
 
-QuadratureEncoders::QuadratureEncoders(int channel1A,int channel1B,int channel2A,int channel2B)
+QuadratureEncoders::QuadratureEncoders(
+		int channel1A,
+		int channel1B,
+		int channel2A,
+		int channel2B,
+		uint8_t wheelDiameterCm,
+		uint16_t countPrRevolution)
 {
-	this->quadratureEncoderLeft = new QuadratureEncoder(channel1A,channel1B);
-	this->quadratureEncoderRight = new QuadratureEncoder(channel2A,channel2B);
+	this->quadratureEncoderLeft = new QuadratureEncoder(
+			new QuadratureEncorderParameters(channel1A,channel1B,wheelDiameterCm,countPrRevolution));
+	this->quadratureEncoderRight = new QuadratureEncoder(
+			new QuadratureEncorderParameters(channel2A,channel2B,wheelDiameterCm,countPrRevolution));
 }
 
 void QuadratureEncoders::setupEncoders() {
@@ -40,18 +48,18 @@ void QuadratureEncoders::setupEncoders() {
 	// encoder 1
 
 	channelA1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelAEventHandler);
-	attachInterrupt(this->quadratureEncoderLeft->getPinChannelA(),channel_a_isr_1, CHANGE);
+	attachInterrupt(this->quadratureEncoderLeft->getParameters()->getPinChannelA(),channel_a_isr_1, CHANGE);
 
 	channelB1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelBEventHandler);
-	attachInterrupt(this->quadratureEncoderLeft->getPinChannelB(),channel_b_isr_1, CHANGE);
+	attachInterrupt(this->quadratureEncoderLeft->getParameters()->getPinChannelB(),channel_b_isr_1, CHANGE);
 
 	// encoder 2
 
 	channelA2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelAEventHandler);
-	attachInterrupt(this->quadratureEncoderRight->getPinChannelA(),channel_a_isr_2, CHANGE);
+	attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelA(),channel_a_isr_2, CHANGE);
 
 	channelB2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelBEventHandler);
-	attachInterrupt(this->quadratureEncoderRight->getPinChannelB(),channel_b_isr_2, CHANGE);
+	attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelB(),channel_b_isr_2, CHANGE);
 
 }
 
@@ -68,17 +76,18 @@ void QuadratureEncoders::reset() {
 	this->right()->reset();
 }
 
-QuadratureEncoders::~QuadratureEncoders() {
+signed int QuadratureEncoders::count(QuadratureEncoderSide side) {
+	return this->encoder(side)->count();
 }
 
-signed int QuadratureEncoders::count(QuadratureEncoderSide side) {
-	switch(side) {
-	  case QuadratureEncoderSide::quadrature_encoder_right:
-		return this->right()->count();
-	  default:
-		return this->left()->count();
-	}
+float QuadratureEncoders::velocity(QuadratureEncoderSide side) {
+	return NULL;
 }
+
+double QuadratureEncoders::position(QuadratureEncoderSide side) {
+	return this->encoder(side)->getPosition();
+}
+
 
 String* QuadratureEncoders::count(signed int &count,
 		QuadratureEncoderSide side) {
@@ -93,4 +102,16 @@ String* QuadratureEncoders::count(signed int &count,
 	}
 	str->append(" encoder count was ").append(count);
 	return str;
+}
+
+QuadratureEncoder* QuadratureEncoders::encoder(QuadratureEncoderSide side) {
+	switch(side) {
+	  case QuadratureEncoderSide::quadrature_encoder_right:
+		return this->right();
+	  default:
+		return this->left();
+	}
+}
+
+QuadratureEncoders::~QuadratureEncoders() {
 }
