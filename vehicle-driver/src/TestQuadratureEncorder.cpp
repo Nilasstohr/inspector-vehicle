@@ -44,15 +44,15 @@ void TestQuadratureEncorder::canSetEncoderParams() {
 	Logger::verbose(s->c_str());
 
 
-	double distance = (double)(count*constantCountsToCm);
+    double distance = (double)(count*constantCountsToCm);
 
-	if(params->countToCm(count)!=distance)
+	if(params->calculateCmFromCount(count)!=distance)
 	{
 		Serial.print("expected distance to be ");
 		Serial.print(distance,6);
 		Serial.println(" cm");
 		Serial.print("but got ");
-		Serial.println(params->countToCm(count),6);
+		Serial.println(params->calculateCmFromCount(count),6);
 		Logger::error("");
 	}
 }

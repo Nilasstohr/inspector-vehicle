@@ -11,12 +11,13 @@ QuadratureEncoderInterval::QuadratureEncoderInterval() {
 	this->interval = 0;
 }
 
-uint16_t QuadratureEncoderInterval::get() {
+uint32_t QuadratureEncoderInterval::get() {
 	return this->interval;
 }
 
-void QuadratureEncoderInterval::update(uint64_t value) {
-	this->setInterval(value - this->getLast());
+void QuadratureEncoderInterval::update(uint32_t value) {
+	//Serial.println(value);
+	this->setInterval(value-this->getLast());
 	this->setLast(value);
 }
 

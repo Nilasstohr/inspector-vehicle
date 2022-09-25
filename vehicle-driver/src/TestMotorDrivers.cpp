@@ -54,8 +54,6 @@ void TestMotorDrivers::printMotorSettings(MotorDriverPins *motorDriverPins) {
 void TestMotorDrivers::canSetupMotorDriver() {
 	Logger::verbose(__FUNCTION__, " - TEST left");
 
-	analogWriteResolution(16);
-
 	MotorDriver  *left = new MotorDriver(
 		new MotorDriverPins(
 			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,

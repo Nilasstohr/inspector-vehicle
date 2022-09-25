@@ -18,10 +18,22 @@ QuadratureEncorderParameters::QuadratureEncorderParameters(
 
 	// calculate count to cm position conversion number
 	this->constantCountsToCm =  (double)(wheelDiameterCm*M_PI/countPrRevolution);
+	// calculate radians pr count
+	this->constantCountsToRadians = (double)(2*M_PI/countPrRevolution);
 }
 
-double QuadratureEncorderParameters::countToCm(uint64_t count) {
+double QuadratureEncorderParameters::calculateCmFromCount(signed int count){
 	return (double)(count*this->constantCountsToCm);
+}
+
+double QuadratureEncorderParameters::calculateAngularVelocity(uint32_t timeDiffMs) {
+	return (double)(
+	   this->constantCountsToRadians / this->msToSeconds(timeDiffMs)
+	);
+}
+
+double QuadratureEncorderParameters::msToSeconds(uint32_t ms) {
+	return (double)(ms/pow(10,6));
 }
 
 QuadratureEncorderParameters::~QuadratureEncorderParameters() {

@@ -17,7 +17,9 @@ TestVehicleSystem::TestVehicleSystem() {
 	// tests
 	//testIncreasedEncoderCounts();
 	//testDecreasedEncoderCounts();
-	testCanGetPosition();
+	//testCanGetPositionForward();
+	//testCanGetPositionBackWards();
+	testCanAngularVelocity();
 }
 
 // Tests
@@ -58,18 +60,18 @@ void TestVehicleSystem::testDecreasedEncoderCounts() {
 	motors()->stop();
 }
 
-void TestVehicleSystem::testCanGetPosition() {
+void TestVehicleSystem::testCanGetPositionForward() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	delay(2000);
 	encoders()->reset();
 	motors()->forward(30000);
-	delay(1000);
-	String * log = new String();
-	double position;
+	delay(1500);
+    double position;
 	for(int i=0;i<2;i++){
 		position = encoders()->encoder((QuadratureEncoders::QuadratureEncoderSide)(i))->getPosition();
-		Serial.println(position,6);
+		Serial.println(position);
 		if(position<=0){
+			 String * log = new String();
 			 log->append("encoder ")
 					 .append(i)
 					 .append(" of vehicle not moving forward, position is ")
@@ -79,6 +81,57 @@ void TestVehicleSystem::testCanGetPosition() {
 		}
 	}
 	motors()->stop();
+}
+
+void TestVehicleSystem::testCanGetPositionBackWards(){
+	Logger::verbose(__FUNCTION__, "- TEST");
+	delay(2000);
+	encoders()->reset();
+	motors()->reverse(30000);
+	delay(1500);
+	double position;
+	for(int i=0;i<2;i++){
+		position = encoders()->encoder((QuadratureEncoders::QuadratureEncoderSide)(i))->getPosition();
+		Serial.println(position);
+		if(position>=0){
+			 String * log = new String();
+			 log->append("encoder ")
+					 .append(i)
+					 .append(" of vehicle not moving forward, position is ")
+					 .append(position)
+					 .newLine();
+			 Logger::error(log->c_str());
+		}
+	}
+	motors()->stop();
+}
+
+void TestVehicleSystem::testCanAngularVelocity() {
+	Logger::verbose(__FUNCTION__, "- TEST");
+	Logger::verbose(__FUNCTION__, "- TEST");
+	delay(2000);
+	encoders()->reset();
+	double values[50000];
+	motors()->reverse(15000);
+	//delay(1000);
+	int max = 40000;
+	for(int i=0;i<max;i++){
+		uint32_t timeDiffMs= encoders()
+							->encoder(QuadratureEncoders::quadrature_encoder_left)
+							->read<uint32_t>(QuadratureEncoder::ReadType::time_interval_micros);
+		values[i] = encoders()->left()->getParameters()->calculateAngularVelocity(timeDiffMs);
+		Serial.print(values[i]);
+		Serial.print(" ");
+		Serial.println(timeDiffMs);
+		delayMicroseconds(10);
+	}
+
+	motors()->stop();
+	/*
+	for(int i=0;i<max;i++){
+		Serial.println(values[i]);
+	}
+	*/
 }
 
 // helpers

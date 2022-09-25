@@ -11,6 +11,7 @@ QuadratureEncoder::QuadratureEncoder(QuadratureEncorderParameters *parameters) {
 	this->parameters = parameters;
 	this->_timeInterval = new QuadratureEncoderInterval();
 	this->_countInterval = new QuadratureEncoderInterval();
+	this->timeMicros;
 	this->setupChannels();
 }
 
@@ -49,24 +50,25 @@ uint16_t QuadratureEncoder::timeInterval() {
 	return this->getTimeInterval()->get();
 }
 
-uint16_t QuadratureEncoder::countInterval() {
-	return this->getPositionInterval()->get();
-}
+
 
 float QuadratureEncoder::velocity() {
-	return (float)(this->getPositionInterval()->get()/this->getTimeInterval()->get());
+	return 1;
 }
 
 void QuadratureEncoder::refresh() {
-	uint64_t _micros = micros();
 	// update time interval
-	this->setPosition(this->getParameters()->countToCm(this->count()));
-	this->getPositionInterval()->update((uint64_t)abs(this->count()));
-	this->getTimeInterval()->update(_micros);
+	//this->timeMicros =micros();
+	this->getTimeInterval()->update(micros());
+	//this->setPosition(this->getParameters()->calculateCmFromCount(this->count()));
+/*
+	this->setAngularVelocity(
+			this->getParameters()->calculateAngularVelocity(
+					this->getTimeInterval()->get()));
+*/
 }
 
 void QuadratureEncoder::reset() {
-	this->getPositionInterval()->reset();
 	this->getTimeInterval()->reset();
 	this->counts = 0 ;
 }
@@ -74,6 +76,7 @@ void QuadratureEncoder::reset() {
 signed int QuadratureEncoder::count() {
 	return this->counts;
 }
+
 
 QuadratureEncoder::~QuadratureEncoder() {
 	// TODO Auto-generated destructor stub

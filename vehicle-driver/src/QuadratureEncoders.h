@@ -19,6 +19,7 @@ public:
 		quadrature_encoder_right
 	};
 
+
 	QuadratureEncoders(
 			int channel1A,
 			int channel1B,
@@ -35,8 +36,8 @@ public:
 	float velocity(QuadratureEncoderSide side);
 	double position(QuadratureEncoderSide side);
 	String * count(signed int & count,QuadratureEncoderSide side);
-	// hack
 	QuadratureEncoder * encoder(QuadratureEncoderSide side);
+
 private:
 	QuadratureEncoder * quadratureEncoderLeft;
 	QuadratureEncoder * quadratureEncoderRight;

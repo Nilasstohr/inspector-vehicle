@@ -7,6 +7,7 @@
 
 extern "C" int main(void)
 {
+	analogWriteResolution(16);
 	Serial.begin(115200);
 	//new Experimentation();
 	new VehicleTestRunner();

@@ -17,7 +17,9 @@ public:
 	// tests
 	void testIncreasedEncoderCounts();
 	void testDecreasedEncoderCounts();
-	void testCanGetPosition();
+	void testCanGetPositionForward();
+	void testCanGetPositionBackWards();
+	void testCanAngularVelocity();
 private:
 	MotorDrivers * motorDrivers;
 	QuadratureEncoders * quadratureEncoders;

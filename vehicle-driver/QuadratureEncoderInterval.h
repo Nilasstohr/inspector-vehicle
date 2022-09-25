@@ -15,25 +15,25 @@ public:
 
 	QuadratureEncoderInterval();
 
-	void update(uint64_t value);
+	void update(uint32_t value);
 
-	uint16_t get();
+	uint32_t get();
 
 	void reset();
 
 	virtual ~QuadratureEncoderInterval();
 
 private:
-	uint16_t interval;
-	uint64_t last =0;
+	uint32_t interval;
+	uint32_t last =0;
 
-	uint64_t getLast() const {
+	uint32_t getLast() const {
 		return last;
 	}
-	void setLast(uint64_t last) {
+	void setLast(uint32_t last) {
 		this->last = last;
 	}
-	void setInterval(uint16_t last) {
+	void setInterval(uint32_t interval) {
 		this->interval = interval;
 	}
 };
