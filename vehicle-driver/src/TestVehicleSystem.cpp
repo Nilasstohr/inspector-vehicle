@@ -7,6 +7,12 @@
 
 #include "TestVehicleSystem.h"
 
+static CSyncEvent g_SampleEventTimer;
+
+extern "C" void IrqSampleTimer(void){
+	g_SampleEventTimer();
+}
+
 TestVehicleSystem::TestVehicleSystem() {
 	Logger::setLogLevel(Logger::VERBOSE);
 	Logger::verbose(__FUNCTION__, "############# TEST CLASS ############# ");
@@ -14,12 +20,20 @@ TestVehicleSystem::TestVehicleSystem() {
 	this->motorDrivers = createMotorDrivers();
 	this->quadratureEncoders = createQuadratureEncoders();
 	this->encoders()->setupEncoders();
+
+	// set up sample timer
+	this->sampleTimer = new IntervalTimer;
+	g_SampleEventTimer.Bind(this,&TestVehicleSystem::sampleEventTimerHandler);
+	//attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelA(),channel_a_isr_2, CHANGE);
+
 	// tests
 	//testIncreasedEncoderCounts();
 	//testDecreasedEncoderCounts();
 	//testCanGetPositionForward();
 	//testCanGetPositionBackWards();
 	testCanAngularVelocity();
+	testCanDoEncoderRecord();
+	testCanSampleEncoderRecords();
 }
 
 // Tests
@@ -108,31 +122,56 @@ void TestVehicleSystem::testCanGetPositionBackWards(){
 
 void TestVehicleSystem::testCanAngularVelocity() {
 	Logger::verbose(__FUNCTION__, "- TEST");
-	Logger::verbose(__FUNCTION__, "- TEST");
-	delay(2000);
-	encoders()->reset();
-	double values[50000];
-	motors()->reverse(15000);
-	//delay(1000);
-	int max = 40000;
-	for(int i=0;i<max;i++){
-		uint32_t timeDiffMs= encoders()
-							->encoder(QuadratureEncoders::quadrature_encoder_left)
-							->read<uint32_t>(QuadratureEncoder::ReadType::time_interval_micros);
-		values[i] = encoders()->left()->getParameters()->calculateAngularVelocity(timeDiffMs);
-		Serial.print(values[i]);
-		Serial.print(" ");
-		Serial.println(timeDiffMs);
-		delayMicroseconds(10);
-	}
+	this->resetTest();
+	String * log = new String();
+	double angularVelocity;
+	uint32_t timeDiffMs;
+	uint32_t tic;
+	uint32_t toc;
+
+	timeDiffMs= encoders()->encoder(QuadratureEncoders::quadrature_encoder_left)
+							->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros);
+	tic = micros();
+	angularVelocity = encoders()->left()->getParameters()->calculateAngularVelocity(timeDiffMs);
+	toc = micros();
+
+	if(angularVelocity<=0)
+		 Logger::error("of vehicle not moving forward, velocity was");
+	Logger::verbose(log->append(angularVelocity).append(" rad/s, interval was ").append(timeDiffMs).append(" us calculation time was ").append(toc-tic).append(" us").c_str());
 
 	motors()->stop();
-	/*
-	for(int i=0;i<max;i++){
-		Serial.println(values[i]);
-	}
-	*/
+
 }
+
+void TestVehicleSystem::testCanDoEncoderRecord() {
+	Logger::verbose(__FUNCTION__, "- TEST");
+	this->resetTest();
+	uint32_t tic;
+	uint32_t toc;
+
+	tic = micros();
+	EncoderRecord * rec = new EncoderRecord(this->encoders()->right());
+	toc = micros();
+
+	String * recStr = new String();
+	rec->getRecord(recStr);
+	recStr->space().append(toc-tic);
+	Logger::verbose(recStr->c_str());
+	motors()->stop();
+
+}
+
+void TestVehicleSystem::testCanSampleEncoderRecords() {
+	Logger::verbose(__FUNCTION__, "- TEST");
+	this->record.push_back(EncoderRecord(this->encoders()->left()));
+	EncoderRecord a = this->record[0];
+	String * recStr = new String();
+	a.getRecord(recStr);;
+	Logger::verbose(__FUNCTION__,recStr->c_str());
+
+	//sampleTimer->begin(IrqSampleTimer,(unsigned int)(1666));
+}
+
 
 // helpers
 String *TestVehicleSystem::count(signed int &count,int side) {
@@ -141,6 +180,17 @@ String *TestVehicleSystem::count(signed int &count,int side) {
 	return log;
 }
 
+void TestVehicleSystem::sampleEventTimerHandler() {
+	//Logger::verbose(__FUNCTION__, "event");
+}
+
+void TestVehicleSystem::resetTest() {
+	delay(2000);
+	encoders()->reset();
+	motors()->forward(65000);
+	delay(1500);
+
+}
 TestVehicleSystem::~TestVehicleSystem() {
 }
 

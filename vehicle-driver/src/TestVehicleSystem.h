@@ -9,6 +9,7 @@
 #define SRC_TESTVEHICLESYSTEM_H_
 
 #include "VehicleTestBase.h"
+#include <vector>
 
 class TestVehicleSystem: private VehicleTestBase{
 public:
@@ -20,6 +21,8 @@ public:
 	void testCanGetPositionForward();
 	void testCanGetPositionBackWards();
 	void testCanAngularVelocity();
+	void testCanDoEncoderRecord();
+	void testCanSampleEncoderRecords();
 private:
 	MotorDrivers * motorDrivers;
 	QuadratureEncoders * quadratureEncoders;
@@ -29,8 +32,14 @@ private:
 	QuadratureEncoders* encoders() const {
 		return quadratureEncoders;
 	}
+	// sample timer
+	IntervalTimer * sampleTimer;
+	void sampleEventTimerHandler();
+
 	// helpers
 	String *count(signed int &count,int side);
+	void resetTest();
+	std::vector<EncoderRecord> record;
 };
 
 #endif /* SRC_TESTVEHICLESYSTEM_H_ */

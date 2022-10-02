@@ -13,19 +13,11 @@
 #include "QuadratureEncoderInterval.h"
 #include "math.h"
 #include "QuadratureEncorderParameters.h"
+#include "QuadratureEncoderTypes.h"
 
 class QuadratureEncoder {
 public:
 
-	enum ReadType
-	{
-		angular_velocity_radian_pr_sec,
-		angular_velocity_rev_pr_minuts,
-		position_linear,
-		encoder_counts,
-		time_ms,
-		time_interval_micros
-	};
 
 	QuadratureEncoder(QuadratureEncorderParameters *parameters);
 	virtual ~QuadratureEncoder();
@@ -56,7 +48,7 @@ public:
 	}
 
 	template<typename ReadValue>
-	ReadValue read(ReadType readType);
+	ReadValue read(QuadratureEncoderReadTypes readType);
 
 private:
 
@@ -84,21 +76,21 @@ private:
 };
 
 template<typename ReadValue>
-inline ReadValue QuadratureEncoder::read(ReadType readType) {
+inline ReadValue QuadratureEncoder::read(QuadratureEncoderReadTypes readType) {
 	switch(readType){
-		case ReadType::position_linear:{
+		case QuadratureEncoderReadTypes::position_linear:{
 			return this->getPosition();
 		}
-		case ReadType::angular_velocity_radian_pr_sec:{
+		case QuadratureEncoderReadTypes::angular_velocity_radian_pr_sec:{
 			return this->getAngularVelocity();
 		}
-		case ReadType::encoder_counts:{
+		case QuadratureEncoderReadTypes::encoder_counts:{
 			return this->count();
 		}
-		case ReadType::time_ms:{
+		case QuadratureEncoderReadTypes::time_ms:{
 			return this->timeMicros;
 		}
-		case ReadType::time_interval_micros:{
+		case QuadratureEncoderReadTypes::time_interval_micros:{
 			return this->getTimeInterval()->get();
 		}
 	}

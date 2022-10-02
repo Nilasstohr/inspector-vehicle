@@ -270,6 +270,12 @@ String & String::newLine()
 	return *this;
 }
 
+String & String::space()
+{
+	const char *c = " ";
+	if (c) append(c, strlen(c));
+	return *this;
+}
 
 String & String::append(char c)
 {

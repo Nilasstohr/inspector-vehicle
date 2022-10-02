@@ -12,7 +12,9 @@
 #include "VehiclePins.h"
 #include "VehicleParameters.h"
 #include "QuadratureEncoders.h"
+#include "QuadratureEncoderTypes.h"
 #include "MotorDrivers.h"
+#include "EncoderRecord.h"
 
 class VehicleTestToolBox {
 public:

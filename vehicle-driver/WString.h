@@ -196,6 +196,7 @@ public:
 	String & toUpperCase(void);
 	String & trim(void);
 	String & newLine();
+	String & space();
 
 	// parsing/conversion
 	long toInt(void) const;
