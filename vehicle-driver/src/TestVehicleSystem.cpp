@@ -31,8 +31,9 @@ TestVehicleSystem::TestVehicleSystem() {
 	//testDecreasedEncoderCounts();
 	//testCanGetPositionForward();
 	//testCanGetPositionBackWards();
-	testCanAngularVelocity();
-	testCanDoEncoderRecord();
+	//testCanAngularVelocity();
+	//testManualAngularVelocityCalc();
+	//testCanDoEncoderRecord();
 	testCanSampleEncoderRecords();
 }
 
@@ -143,6 +144,64 @@ void TestVehicleSystem::testCanAngularVelocity() {
 
 }
 
+void TestVehicleSystem::testManualAngularVelocityCalc() {
+	Logger::verbose(__FUNCTION__, "- TEST");
+
+	//this->resetTest();
+
+	uint32_t tic;
+	uint32_t toc;
+
+	QuadratureEncorderParameters *  params = encoders()->left()->getParameters();
+
+	double countToRadians  = params->getConstantCountsToRadians();
+	uint32_t timeDiff = 82;
+
+	Serial.print("countToRadianConstant=");
+	Serial.println(countToRadians,6);
+	Serial.print("timeDiff=");
+	Serial.println(timeDiff);
+
+	tic = micros();
+	double theta_m = (double)(countToRadians/params->msToSeconds(timeDiff));
+	toc = micros();
+	Serial.print("angular velocity 1=");
+	Serial.println(theta_m,3);
+
+	Serial.print("calculation time 1=");
+	Serial.println(toc-tic);
+
+
+	tic = micros();
+	theta_m = params->calculateAngularVelocity(timeDiff);
+	toc = micros();
+	Serial.print("angular velocity 2=");
+	Serial.println(theta_m,3);
+	Serial.print("calculation time 2=");
+	Serial.println(toc-tic);
+
+	tic = micros();
+	theta_m = 0.000654/(timeDiff/pow(10,6));
+	toc = micros();
+	Serial.print("angular velocity 3=");
+	Serial.println(theta_m,3);
+	Serial.print("calculation time 3=");
+	Serial.println(toc-tic);
+
+	tic = micros();
+	theta_m = params->calculateAngularVelocityFast(timeDiff);
+	toc = micros();
+	Serial.print("angular velocity 4=");
+	Serial.println(theta_m,3);
+	Serial.print("calculation time 4=");
+	Serial.println(toc-tic);
+
+
+
+	//motors()->stop();
+
+}
+
 void TestVehicleSystem::testCanDoEncoderRecord() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	this->resetTest();
@@ -150,7 +209,7 @@ void TestVehicleSystem::testCanDoEncoderRecord() {
 	uint32_t toc;
 
 	tic = micros();
-	EncoderRecord * rec = new EncoderRecord(this->encoders()->right());
+	EncoderRecord * rec = new EncoderRecord(this->encoders()-> left());
 	toc = micros();
 
 	String * recStr = new String();
@@ -163,13 +222,29 @@ void TestVehicleSystem::testCanDoEncoderRecord() {
 
 void TestVehicleSystem::testCanSampleEncoderRecords() {
 	Logger::verbose(__FUNCTION__, "- TEST");
-	this->record.push_back(EncoderRecord(this->encoders()->left()));
-	EncoderRecord a = this->record[0];
-	String * recStr = new String();
-	a.getRecord(recStr);;
-	Logger::verbose(__FUNCTION__,recStr->c_str());
+    this->record.clear();
+	Logger::verbose("staring timer");
+	unsigned int interval = 500;
+	if(!sampleTimer->begin(IrqSampleTimer,(unsigned int)(interval))){
+		Logger::error("invalid timer interval");
+		return;
+	}
+	motors()->forward(65000);
+	//this->resetTest();
+	delay(1000);
+	sampleTimer->end();
+	motors()->stop();
+	Logger::verbose("ending timer");
 
-	//sampleTimer->begin(IrqSampleTimer,(unsigned int)(1666));
+	Logger::verbose("result is:");
+	for(int i=0; i<record.size();i++){
+		EncoderRecord r = this->record[i];
+		//String * recStr = new String();
+		//r.getRecord(recStr);
+		Serial.println(r.getRadianPrSecond(),2);
+		//Logger::verbose(__FUNCTION__,recStr->c_str());
+	}
+	this->record.clear();
 }
 
 
@@ -181,7 +256,7 @@ String *TestVehicleSystem::count(signed int &count,int side) {
 }
 
 void TestVehicleSystem::sampleEventTimerHandler() {
-	//Logger::verbose(__FUNCTION__, "event");
+	this->record.push_back(EncoderRecord(this->encoders()->left()));
 }
 
 void TestVehicleSystem::resetTest() {

@@ -15,21 +15,28 @@ TestMotorDrivers::TestMotorDrivers() {
 	canSetupMotorDrivers();
 	canDriveForward();
 	canDriveReverse();
+	canReadCurrentSenseWhenStopped();
+	canReadCurrentSenseWhenStarted();
 }
 
 void TestMotorDrivers::canSetMotorDriverPins() {
 	Logger::verbose(__FUNCTION__, " - TEST");
 	MotorDriverPins  *motorDriverPins = new MotorDriverPins(
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
-			VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB,
+		VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
+		VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
 	);
 
-	if( motorDriverPins->getPwmD2()       != VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2 ||
-		motorDriverPins->getIn1()         != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1||
-		motorDriverPins->getIn2()         != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2||
-		motorDriverPins->getPwmFrequency()!= VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
+	if( motorDriverPins->getPwmD2()         != VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2 ||
+		motorDriverPins->getIn1()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1||
+		motorDriverPins->getIn2()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2||
+		motorDriverPins->getFb()            != VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB ||
+		motorDriverPins->getPwmFrequency()  != VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY||
+		motorDriverPins->getMilliVoltPrAmp()!= VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
+		)
 	{
 		this->printMotorSettings(motorDriverPins);
 	}
@@ -55,11 +62,14 @@ void TestMotorDrivers::canSetupMotorDriver() {
 	Logger::verbose(__FUNCTION__, " - TEST left");
 
 	MotorDriver  *left = new MotorDriver(
-		new MotorDriverPins(
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
-			VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
+			new MotorDriverPins(
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB,
+				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
+				VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
+				)
 	);
 	left->setMotorPwm(30000);
 	delay(2000);
@@ -71,7 +81,10 @@ void TestMotorDrivers::canSetupMotorDriver() {
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_D2,
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN1,
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN2,
-				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY)
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_FB,
+				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
+				VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
+				)
 		);
 	right->setMotorPwm(30000);
 	delay(2000);
@@ -101,8 +114,41 @@ void TestMotorDrivers::canDriveReverse() {
 	motorDrivers->stop();
 }
 
+void TestMotorDrivers::canReadCurrentSenseWhenStopped() {
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDrivers *motorDrivers = createMotorDrivers();
+	motorDrivers->stop();
+	delay(2000);
+	float current = getCurrent(motorDrivers,Side::left);
+	if(current > VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
+		//Serial.println(current,2);
+		Logger::error("current is drawn from motor","");
+	}
+}
+
+void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDrivers *motorDrivers = createMotorDrivers();
+	motorDrivers->stop();
+	delay(2000);
+	motorDrivers->forward(30000);
+	delay(2000);
+	float current = getCurrent(motorDrivers,Side::left);
+	if(current < VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
+		//Serial.println(current,2);
+		Logger::verbose("no current is drawn from motor","");
+	}
+	motorDrivers->stop();
+}
+
 TestMotorDrivers::~TestMotorDrivers() {
 
 }
 
-
+float TestMotorDrivers::getCurrent(MotorDrivers *motorDrivers,Side side) {
+	float current = motorDrivers->getCurrent(side);
+	String * log = new String();
+	log->append(current).append(" mA").append(" for ").append(side.toString());
+	Logger::verbose(log->c_str());
+	return current;
+}

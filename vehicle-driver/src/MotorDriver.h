@@ -10,8 +10,9 @@
 
 #include "MotorDriverPins.h"
 #include "Logger.h"
+#include "CurrentSensor.h"
 
-class MotorDriver {
+class MotorDriver: public CurrentSensor{
 public:
 	MotorDriver(MotorDriverPins * motorDriverPins);
 	virtual ~MotorDriver();

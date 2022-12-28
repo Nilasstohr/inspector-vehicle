@@ -27,9 +27,9 @@ bool EncoderRecord::isFilterSet() {
 
 void EncoderRecord::record(QuadratureEncoder *encoder) {
 	this->encoder = encoder;
-	setCount();
+	//setCount();
 	setIntervalMiros();
-	this->setRadiandPrSecond(QuadratureEncoderReadTypes::angular_velocity_radian_pr_sec);
+	//this->setRadiandPrSecond(QuadratureEncoderReadTypes::angular_velocity_radian_pr_sec);
 	/*
 	for(uint8_t i=0; i<QuadratureEncoderReadTypes::size-1;i++){
 		QuadratureEncoderReadTypes type = (QuadratureEncoderReadTypes)(i);
@@ -51,9 +51,9 @@ bool EncoderRecord::isUnFiltered(QuadratureEncoderReadTypes type) {
 }
 
 void EncoderRecord::getRecord(String *record) {
-	record->append(this->count).space();
+	//record->append(this->count).space();
 	record->append(this->timeIntervalMiros).space();
-	record->append(this->radiandPrSecond).newLine();
+	//record->append(this->radiandPrSecond).newLine();
 }
 
 void EncoderRecord::setCount() {
@@ -71,4 +71,9 @@ void EncoderRecord::setRadiandPrSecond(QuadratureEncoderReadTypes type) {
 		this->radiandPrSecond =
 				this->getEncoder()->getParameters()->calculateAngularVelocity(this->getTimeIntervalMiros());
 	}
+}
+
+double EncoderRecord::getRadianPrSecond() {
+	this->setRadiandPrSecond(QuadratureEncoderReadTypes::angular_velocity_radian_pr_sec);
+	return this->radiandPrSecond;
 }

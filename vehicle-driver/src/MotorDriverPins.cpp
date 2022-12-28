@@ -11,16 +11,22 @@ MotorDriverPins::MotorDriverPins(
 		uint8_t pwmD2,
 		uint8_t in1,
 		uint8_t in2,
-		uint32_t pwmFrequency) {
+		uint8_t fb,
+		uint32_t pwmFrequency,
+		uint16_t milliVoltPrAmp) {
 	this->pwmD2 = pwmD2;
 	this->in1=in1;
 	this->in2=in2;
+	this->fb = fb;
 	this->pwmFrequency = pwmFrequency;
-}
+	this->milliVoltPrAmp = milliVoltPrAmp;
 
+}
 MotorDriverPins::~MotorDriverPins() {
 	// TODO Auto-generated destructor stub
 }
+
+
 
 void MotorDriverPins::printPins() {
 	char buffer [50];

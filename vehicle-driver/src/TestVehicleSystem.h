@@ -21,6 +21,7 @@ public:
 	void testCanGetPositionForward();
 	void testCanGetPositionBackWards();
 	void testCanAngularVelocity();
+	void testManualAngularVelocityCalc();
 	void testCanDoEncoderRecord();
 	void testCanSampleEncoderRecords();
 private:

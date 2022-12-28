@@ -9,7 +9,11 @@
 
 
 
-MotorDriver::MotorDriver(MotorDriverPins *motorDriverPins) {
+MotorDriver::MotorDriver(MotorDriverPins *motorDriverPins)
+:CurrentSensor(
+		motorDriverPins->getFb(),
+		motorDriverPins->getMilliVoltPrAmp())
+{
 	this->motorDriverPins = motorDriverPins;
 	this->setup();
 }

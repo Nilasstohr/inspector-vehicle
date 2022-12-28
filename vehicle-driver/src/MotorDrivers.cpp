@@ -34,6 +34,15 @@ void MotorDrivers::reverse(uint16_t pwm) {
 	this->right()->setMotorPwm(pwm);
 }
 
+float MotorDrivers::getCurrent(Side side) {
+	switch(side){
+		case Side::left:
+			return this->left()->getCurrent();
+		default:
+			return this->right()->getCurrent();
+	}
+}
+
 void MotorDrivers::setForward() {
 	this->left()->setForward();
 	this->right()->setForward();

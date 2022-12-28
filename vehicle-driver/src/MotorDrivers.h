@@ -10,6 +10,7 @@
 
 #include "MotorDriverPins.h"
 #include "MotorDriver.h"
+#include "Side.h"
 
 class MotorDrivers {
 public:
@@ -18,6 +19,7 @@ public:
     void forward(uint16_t pwm);
     void reverse(uint16_t pwm);
     void stop();
+    float getCurrent(Side side);
 
 private:
 	MotorDriver *motorDriverLeft;

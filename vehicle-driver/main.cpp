@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <src/Side.h>
 //#include <TestClass.h>
 //#include <src/TestQuadratureEncorder.h>
 //#include <src/Logger.h>
@@ -7,6 +8,7 @@
 //#include <vector>
 //#include <map>
 //#include <src/QuadratureEncoderTypes.h>
+
 /*
 using std::vector;
 
@@ -37,6 +39,11 @@ public:
 extern "C" int main(void)
 {
 	analogWriteResolution(16);
+	analogReadResolution(10);
+
+	//Side a = Side::left;
+	//if(a==Side::left)
+
 	Serial.begin(115200);
 	//new Experimentation();
 	new VehicleTestRunner();

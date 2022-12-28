@@ -20,10 +20,13 @@ public:
 	void canSetupMotorDrivers();
 	void canDriveForward();
 	void canDriveReverse();
+	void canReadCurrentSenseWhenStopped();
+	void canReadCurrentSenseWhenStarted();
 	//
 	virtual ~TestMotorDrivers();
 private:
 	void printMotorSettings(MotorDriverPins * motorDriverPins);
+	float getCurrent(MotorDrivers *motorDrivers,Side side);
 };
 
 

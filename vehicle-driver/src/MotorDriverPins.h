@@ -16,7 +16,9 @@ public:
 			uint8_t pwmD2,
 			uint8_t in1,
 			uint8_t in2,
-			uint32_t pwmFrequency);
+			uint8_t fb,
+			uint32_t pwmFrequency,
+			uint16_t milliVoltPrAmp);
 	virtual ~MotorDriverPins();
 
 	uint8_t getIn1() const {
@@ -35,13 +37,23 @@ public:
 		return pwmFrequency;
 	}
 
+
+	uint8_t getFb() const {
+		return fb;
+	}
+
+	uint16_t getMilliVoltPrAmp() const {
+		return milliVoltPrAmp;
+	}
 	void printPins();
 
 private:
 	uint8_t pwmD2;
 	uint8_t in1;
 	uint8_t in2;
+	uint8_t fb;
 	uint32_t pwmFrequency;
+	uint16_t milliVoltPrAmp;
 };
 
 #endif /* SRC_MOTORDRIVERPINS_H_ */

@@ -18,6 +18,7 @@ public:
 	EncoderRecord(QuadratureEncoder * encoder);
 
 	void getRecord(String * record);
+	double getRadianPrSecond();
 
 	virtual ~EncoderRecord();
 
@@ -41,7 +42,6 @@ private:
 	 void setCount();
 	 void setIntervalMiros();
 	 void setRadiandPrSecond(QuadratureEncoderReadTypes type);
-
 	 // getter
 	 uint32_t getTimeIntervalMiros() const {
 		return timeIntervalMiros;

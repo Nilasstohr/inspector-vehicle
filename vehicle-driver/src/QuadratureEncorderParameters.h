@@ -30,6 +30,15 @@ public:
 
     double calculateCmFromCount(signed int count);
     double calculateAngularVelocity(uint32_t timeDiffMs);
+    double calculateAngularVelocityFast(uint32_t timeDiffMs);
+
+
+	double msToSeconds(uint32_t ms);
+
+	double getConstantCountsToRadians() const {
+		return constantCountsToRadians;
+	}
+
 private:
 	int pinChannelA;
 	int pinChannelB;
@@ -40,9 +49,6 @@ private:
 	double getConstantCountsToCm() const {
 		return constantCountsToCm;
 	}
-
-	double msToSeconds(uint32_t ms);
-
 };
 
 #endif /* SRC_QUADRATUREENCORDERPARAMETERS_H_ */
