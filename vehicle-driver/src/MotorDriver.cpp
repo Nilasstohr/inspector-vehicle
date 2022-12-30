@@ -36,9 +36,9 @@ void MotorDriver::setup() {
 }
 
 void MotorDriver::setMotorPwm(uint16_t pwm) {
-	char buffer[100];
-	sprintf(buffer,"Setting pwm pin=%d with pwm value=%d",getPwmPin(),pwm);
-		Logger::verbose(__FUNCTION__,buffer);
+	//char buffer[100];
+	//sprintf(buffer,"Setting pwm pin=%d with pwm value=%d",getPwmPin(),pwm);
+	//	Logger::verbose(__FUNCTION__,buffer);
 	analogWrite(getPwmPin(),pwm);
 }
 

@@ -6,10 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/EncoderRecord.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/EncoderRecord.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/QuadratureEncorderParameters.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/QuadratureEncorderParameters.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/QuadratureEncorderParameters.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/QuadratureEncorderParameters.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/TestMotorDrivers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/TestMotorDrivers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/TestMotorDrivers.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/TestMotorDrivers.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/TestVehicleSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/TestVehicleSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/TestVehicleSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/TestVehicleSystem.h" afterDir="false" />
     </list>
@@ -30,14 +28,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/robot1/PycharmProjects/test",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/robot1/PycharmProjects/test&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

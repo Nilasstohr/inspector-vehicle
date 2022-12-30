@@ -34,7 +34,7 @@ TestVehicleSystem::TestVehicleSystem() {
 	//testCanAngularVelocity();
 	//testManualAngularVelocityCalc();
 	//testCanDoEncoderRecord();
-	testCanSampleEncoderRecords();
+	//testCanSampleEncoderRecords();
 }
 
 // Tests
@@ -222,7 +222,7 @@ void TestVehicleSystem::testCanDoEncoderRecord() {
 
 void TestVehicleSystem::testCanSampleEncoderRecords() {
 	Logger::verbose(__FUNCTION__, "- TEST");
-    this->record.clear();
+    this->encoderRecords.clear();
 	Logger::verbose("staring timer");
 	unsigned int interval = 500;
 	if(!sampleTimer->begin(IrqSampleTimer,(unsigned int)(interval))){
@@ -233,20 +233,39 @@ void TestVehicleSystem::testCanSampleEncoderRecords() {
 	//this->resetTest();
 	delay(1000);
 	sampleTimer->end();
+	//delay(10000);
 	motors()->stop();
 	Logger::verbose("ending timer");
 
 	Logger::verbose("result is:");
-	for(int i=0; i<record.size();i++){
-		EncoderRecord r = this->record[i];
-		//String * recStr = new String();
-		//r.getRecord(recStr);
-		Serial.println(r.getRadianPrSecond(),2);
+	for(int i=0; i<encoderRecords.size();i++){
+		EncoderRecord encorderRecord = this->encoderRecords[i];
+		float current = this->currentRecords[i];
+		/*
+		String *log = new String();
+		log->append(encorderRecord.getRadianPrSecond())
+				.space()
+				.append(current)
+				.newLine();
+		Logger::verbose(log->c_str());
+
+		delete log;
+		*/
+		Serial.print(encorderRecord.getRadianPrSecond(),2);
+		Serial.print(" ");
+		Serial.println(current,2);
+
+
+
 		//Logger::verbose(__FUNCTION__,recStr->c_str());
 	}
-	this->record.clear();
+	this->encoderRecords.clear();
 }
 
+void TestVehicleSystem::sampleEventTimerHandler() {
+	this->encoderRecords.push_back(EncoderRecord(this->encoders()->left()));
+	this->currentRecords.push_back(motors()->getCurrent(Side::left));
+}
 
 // helpers
 String *TestVehicleSystem::count(signed int &count,int side) {
@@ -254,11 +273,6 @@ String *TestVehicleSystem::count(signed int &count,int side) {
 	Logger::verbose(__FUNCTION__,log->c_str());
 	return log;
 }
-
-void TestVehicleSystem::sampleEventTimerHandler() {
-	this->record.push_back(EncoderRecord(this->encoders()->left()));
-}
-
 void TestVehicleSystem::resetTest() {
 	delay(2000);
 	encoders()->reset();

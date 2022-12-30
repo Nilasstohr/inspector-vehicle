@@ -27,6 +27,8 @@ public:
 private:
 	void printMotorSettings(MotorDriverPins * motorDriverPins);
 	float getCurrent(MotorDrivers *motorDrivers,Side side);
+	void checkCurrentOutputByState(MotorDrivers *motorDrivers,bool state);
+	void checkCurrentOutput(float current,bool state);
 };
 
 

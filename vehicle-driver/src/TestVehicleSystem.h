@@ -40,7 +40,8 @@ private:
 	// helpers
 	String *count(signed int &count,int side);
 	void resetTest();
-	std::vector<EncoderRecord> record;
+	std::vector<EncoderRecord> encoderRecords;
+	std::vector<float> currentRecords;
 };
 
 #endif /* SRC_TESTVEHICLESYSTEM_H_ */

@@ -119,11 +119,7 @@ void TestMotorDrivers::canReadCurrentSenseWhenStopped() {
 	MotorDrivers *motorDrivers = createMotorDrivers();
 	motorDrivers->stop();
 	delay(2000);
-	float current = getCurrent(motorDrivers,Side::left);
-	if(current > VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
-		//Serial.println(current,2);
-		Logger::error("current is drawn from motor","");
-	}
+	checkCurrentOutputByState(motorDrivers,false);
 }
 
 void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
@@ -133,16 +129,15 @@ void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
 	delay(2000);
 	motorDrivers->forward(30000);
 	delay(2000);
-	float current = getCurrent(motorDrivers,Side::left);
-	if(current < VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
-		//Serial.println(current,2);
-		Logger::verbose("no current is drawn from motor","");
-	}
+	checkCurrentOutputByState(motorDrivers,true);
 	motorDrivers->stop();
 }
 
-TestMotorDrivers::~TestMotorDrivers() {
+// helper functions
 
+void TestMotorDrivers::checkCurrentOutputByState(MotorDrivers *motorDrivers,bool state){
+	checkCurrentOutput(getCurrent(motorDrivers,Side::left),state);
+	checkCurrentOutput(getCurrent(motorDrivers,Side::right),state);
 }
 
 float TestMotorDrivers::getCurrent(MotorDrivers *motorDrivers,Side side) {
@@ -152,3 +147,19 @@ float TestMotorDrivers::getCurrent(MotorDrivers *motorDrivers,Side side) {
 	Logger::verbose(log->c_str());
 	return current;
 }
+void TestMotorDrivers::checkCurrentOutput(float current,bool state){
+	if(state){
+		if(current > VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
+			Logger::error("current is drawn from motor","");
+		}
+	}else{
+		if(current < VEHICLE_MIMIMUM_CURRENT_DRAW_MILLI_AMP){
+			Logger::verbose("no current is drawn from motor","");
+		}
+	}
+}
+TestMotorDrivers::~TestMotorDrivers() {
+
+}
+
+
