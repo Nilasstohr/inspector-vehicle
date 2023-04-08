@@ -23,6 +23,13 @@ void MotorDrivers::forward(uint16_t pwm) {
 	this->right()->setMotorPwm(pwm);
 }
 
+void MotorDrivers::forward(uint16_t pwmLeft,uint16_t pwmRight) {
+	setForward();
+	this->left()->setMotorPwm(pwmLeft);
+	this->right()->setMotorPwm(pwmRight);
+}
+
+
 void MotorDrivers::stop() {
 	this->left()->stop();
 	this->right()->stop();

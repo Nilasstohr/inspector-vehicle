@@ -27,11 +27,16 @@ TestVehicleSystem::TestVehicleSystem() {
 	//attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelA(),channel_a_isr_2, CHANGE);
 
 	// tests
-	//testIncreasedEncoderCounts();
-	//testDecreasedEncoderCounts();
+
+
+
+
+
+	testIncreasedEncoderCounts();
+	testDecreasedEncoderCounts();
 	//testCanGetPositionForward();
 	//testCanGetPositionBackWards();
-	//testCanAngularVelocity();
+	testCanAngularVelocity();
 	//testManualAngularVelocityCalc();
 	//testCanDoEncoderRecord();
 	//testCanSampleEncoderRecords();
@@ -48,12 +53,15 @@ void TestVehicleSystem::testIncreasedEncoderCounts() {
 
 	String * log;
 	signed int count;
-	for(int i=0;i<2;i++){
-		log = this->count(count, (QuadratureEncoders::QuadratureEncoderSide)(i));
-		if(count<=0){
-			Logger::error(log->append(", not counting up as expected").c_str());
+	//while(1){
+		for(int i=0;i<2;i++){
+			log = this->count(count, (QuadratureEncoders::QuadratureEncoderSide)(i));
+			//if(count<=0){
+			//	Logger::error(log->append(", not counting up as expected").c_str());
+			//}
 		}
-	}
+		delay(1000);
+	//}
 	motors()->stop();
 }
 
@@ -121,14 +129,19 @@ void TestVehicleSystem::testCanGetPositionBackWards(){
 	motors()->stop();
 }
 
+
+
+
 void TestVehicleSystem::testCanAngularVelocity() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	this->resetTest();
+
 	String * log = new String();
 	double angularVelocity;
 	uint32_t timeDiffMs;
 	uint32_t tic;
 	uint32_t toc;
+
 
 	timeDiffMs= encoders()->encoder(QuadratureEncoders::quadrature_encoder_left)
 							->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros);

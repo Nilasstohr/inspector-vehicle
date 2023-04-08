@@ -17,11 +17,19 @@ TestVehiclePIControl::TestVehiclePIControl() {
 	Logger::setLogLevel(Logger::VERBOSE);
 	Logger::verbose(__FUNCTION__, "############# TEST CLASS ############# ");
 
+	this->timerIntervalUs = 1000;
+	this->timerIntervalSeconnds = (double)( this->timerIntervalUs/(pow(10,6)) );
+	this->timerIntervalMillis = (double)( this->timerIntervalUs/(pow(10,3)) );
+	this->averageSize = 5;
+
 	this->motorDrivers = createMotorDrivers();
 	this->quadratureEncoders = createQuadratureEncoders();
 	this->encoders()->setupEncoders();
 
 	this->sampleTimer = new IntervalTimer;
+	this->averageCalcLeft = new AverageCalc(getAverageSize());
+	this->averageCalcRight = new AverageCalc(getAverageSize());
+	this->timeSeconds = 0;
 	g_SampleEventTimerControl.Bind(this,&TestVehiclePIControl::sampleEventTimerHandler);
 
 	canInitializePiController();
@@ -30,7 +38,11 @@ TestVehiclePIControl::TestVehiclePIControl() {
 
 void TestVehiclePIControl::canInitializePiController(){
 	Logger::verbose(__FUNCTION__, "- TEST");
-	this->piController =  new PiController(
+	this->piControllerLeft =  new PiController(
+			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
+	this->piControllerRight = new PiController(
 			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
 			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
 			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
@@ -38,71 +50,207 @@ void TestVehiclePIControl::canInitializePiController(){
 
 void TestVehiclePIControl::canPerformPiControl() {
 	Logger::verbose(__FUNCTION__, "- TEST");
-	Logger::verbose("staring timer");
 
-	unsigned int interval = 1000;
-	if(!sampleTimer->begin(IrqSampleTimerControl,(unsigned int)(interval))){
+
+	uint8_t  timeRunSeconds = 10;
+
+	uint32_t bufferSize = (uint32_t)(
+			timeRunSeconds*pow(10,6) / (getTimerIntervalUs()*getAverageSize())
+	);
+
+	Serial.println("Timer Parameters");
+	Serial.println("---------------------");
+	Serial.print("Run time s:");
+	Serial.println(timeRunSeconds);
+	Serial.print("Interval in us:");
+	Serial.println(getTimerIntervalUs());
+	Serial.print("Interval in ms:");
+	Serial.println(getTimerIntervalMillis(),1);
+	Serial.print("Interval in s:");
+	Serial.println(getTimeIntervalSeconds(),4);
+	Serial.print("buffer size:");
+	Serial.println(bufferSize);
+
+
+	double dataLeft[bufferSize];
+	double dataRight[bufferSize];
+
+
+	if(!sampleTimer->begin(IrqSampleTimerControl,(unsigned int)(getTimerIntervalUs()))){
 		Logger::error("invalid timer interval");
 		return;
 	}
 
+	Logger::verbose("timer started");
+
 	motors()->forward(65000);
+	delay(1000);
 
-	double output = 0;
+	double omegaLeft = 0;
+	double omegaRight = 0;
+	//double feedForward = 0;
+	//double feedBack = 0;
 
-	double omega = 0;
-	double feedForward = 0;
-	double feedBack = 0;
-	uint16_t ticksMax = 100;
-	uint32_t omegas[ticksMax];
+	uint32_t actualTicks = 0;
 
+	uint32_t tic;
+	uint32_t toc;
+	tic = micros();
+	while(actualTicks <= bufferSize){
+		if(ready)
+		{
+			actualTicks++;
 
-	for(uint16_t i=0; i<ticksMax; i++){
-		//if(ready){
+			omegaLeft  = getAngularVelocity(this->intervalLeft);
+			omegaRight = getAngularVelocity(this->intervalRight);
+
+			dataLeft[actualTicks] = omegaLeft;
+			dataRight[actualTicks]= omegaRight;
+
+			motors()->forward(
+					(uint16_t)this->piControllerLeft->update(omegaLeft,7),
+					(uint16_t)this->piControllerRight->update(omegaRight,7)
+			);
+			//Serial.print(this->intervalLeft);
+			//Serial.print(",");
+			//Serial.println(this->intervalRight);
+
+			//Serial.print(omegaLeft);
+			//Serial.print(",");
+			//Serial.println(omegaRight);
+
 			ready = false;
-			omegas[i] = this->omega;
-			output = this->piController->update(omegas[i],5);
-			//motors()->forward((uint16_t)output);
-			//Serial.print("w=");
-			//Serial.print(omega);
-			//Serial.println(i);
-			/*
-			if(omega > 8)
-				omega = 8;
-			Serial.print("w=");
-			Serial.print(omega);
-			feedForward = this->piController->feedForward;
-			feedBack    = this->piController->feedBack;
+		}
+
+		//time = getTimeInSeconds();
+		//Serial.print("time seconds:");
+		//Serial.println(time);
+		/*
+		if(time < 7 ){
 			output = this->piController->update(omega,5);
-			Serial.print(" e=");
-			Serial.print(this->piController->error);
-			Serial.print(" ff=");
-			Serial.print(feedForward);
-			Serial.print(" fb=");
-			Serial.print(feedBack);
-			Serial.print(" o=");
-			Serial.println(output);
-			motors()->forward((uint16_t)output);
+		}
+		else if(time >7 && time < 15){
+			motors()->forward(45000);
+			output = this->piController->update(omega,6);
+		}
+		else if(time >15){
+			motors()->forward(25000);
+			output = this->piController->update(omega,7);
+		}
+		*/
+		//motors()->forward((uint16_t)output);
+		//Serial.print("interval:");
+		//Serial.println(this->interval);
+		/*
+		Serial.print("w=");
 
-			*/
-			delayMicroseconds(1);
+		feedForward = this->piController->feedForward;
+		feedBack    = this->piController->feedBack;
+		output = this->piController->update(omega,5);
+		Serial.print(" e=");
+		Serial.print(this->piController->error);
+		Serial.print(" ff=");
+		Serial.print(feedForward);
+		Serial.print(" fb=");
+		Serial.print(feedBack);
+		Serial.print(" o=");
+		Serial.println(output);
+		motors()->forward((uint16_t)output);
+		*/
+		delayMicroseconds(1);
+		 //}
     }
-
+	toc = micros();
 	sampleTimer->end();
 	motors()->forward(0);
-	for(uint16_t i=0; i<ticksMax; i++){
-		Serial.println(omegas[i]);
+
+	Serial.print("tic/toc in seconds was:");
+	double actualRunTime = (double)( (toc-tic)/pow(10,6) );
+	Serial.println(actualRunTime);
+	Serial.print("timer sum in seconds was:");
+	Serial.println(getTimeInSeconds());
+
+
+	Serial.println("---------done printing data--------");
+	for(uint16_t i=0; i<actualTicks; i++){
+		Serial.print(dataLeft[i],3);
+		Serial.print(" ");
+		Serial.println(dataRight[i],3);
 	}
 
 }
+double TestVehiclePIControl::getAngularVelocity(uint32_t interval) {
+	if(interval==0){
+		return 0;
+	}
+	//Serial.println("non zero velocity");
+	return encoders()->left()->getParameters()->calculateAngularVelocity(interval);
+
+}
+
+uint32_t TestVehiclePIControl::getTimeInterval(QuadratureEncoders::QuadratureEncoderSide side) {
+	uint32_t interval =  encoders()->encoder(side)
+			 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros);
+	if(interval==0){
+		return interval;
+	}
+	if(interval < 85){
+		interval =  85;
+	}
+	return interval;
+}
+
 
 void TestVehiclePIControl::sampleEventTimerHandler() {
-	this->omega = encoders()->encoder(QuadratureEncoders::quadrature_encoder_left)
-					 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros);
+	getAverageCalcLeft()->add(getTimeInterval(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left));
+	if(getAverageCalcRight()->add(getTimeInterval(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_right))){
+		this->intervalLeft  = getAverageCalcLeft()->average();
+		this->intervalRight = getAverageCalcRight()->average();
+		//Serial.print(this->intervalLeft);
+		//Serial.print(" ");
+		//Serial.println(this->intervalRight);
+		ready=true;
+	}
+	this->timeSeconds+=getTimeIntervalSeconds();
+	this->timeMillis +=getTimerIntervalMillis();
 }
 
 
 TestVehiclePIControl::~TestVehiclePIControl() {
 	// TODO Auto-generated destructor stub
+}
+
+AverageCalc* TestVehiclePIControl::getAverageCalcLeft() {
+	return this->averageCalcLeft;
+}
+
+
+AverageCalc* TestVehiclePIControl::getAverageCalcRight() {
+	return this->averageCalcRight;
+}
+
+
+unsigned int TestVehiclePIControl::getTimerIntervalUs() {
+	return this->timerIntervalUs;
+}
+
+uint8_t TestVehiclePIControl::getAverageSize() {
+	return this->averageSize;
+}
+
+double TestVehiclePIControl::getTimeIntervalSeconds() {
+	return this->timerIntervalSeconnds;
+}
+
+double TestVehiclePIControl::getTimerIntervalMillis() {
+	return this->timerIntervalMillis;
+}
+
+double TestVehiclePIControl::getTimeInMillis() {
+	return this->timeMillis;
+}
+
+double TestVehiclePIControl::getTimeInSeconds() {
+	return this->timeSeconds;
 }
 
