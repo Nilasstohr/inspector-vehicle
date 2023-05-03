@@ -17,6 +17,7 @@ TestMotorDrivers::TestMotorDrivers() {
 	canDriveReverse();
 	canReadCurrentSenseWhenStopped();
 	canReadCurrentSenseWhenStarted();
+	//canDetermineLowestPWM();
 }
 
 void TestMotorDrivers::canSetMotorDriverPins() {
@@ -128,6 +129,18 @@ void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
 	motorDrivers->stop();
 	delay(2000);
 	motorDrivers->forward(30000);
+	delay(2000);
+	checkCurrentOutputByState(motorDrivers,true);
+	motorDrivers->stop();
+}
+
+
+void TestMotorDrivers::canDetermineLowestPWM() {
+	Logger::verbose(__FUNCTION__, " - TEST");
+	MotorDrivers *motorDrivers = createMotorDrivers();
+	motorDrivers->stop();
+	delay(2000);
+	motorDrivers->forward(65000);
 	delay(2000);
 	checkCurrentOutputByState(motorDrivers,true);
 	motorDrivers->stop();

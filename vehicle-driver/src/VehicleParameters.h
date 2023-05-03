@@ -15,7 +15,8 @@
 
 
 // Quadrature Encoder parameters
-#define VEHICLE_MOTOR_ENCODER_COUNT_PR_REV 9600
+//#define VEHICLE_MOTOR_ENCODER_COUNT_PR_REV 9600
+#define VEHICLE_MOTOR_ENCODER_COUNT_PR_REV 3200
 
 
 // general

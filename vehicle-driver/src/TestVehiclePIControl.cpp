@@ -52,7 +52,7 @@ void TestVehiclePIControl::canPerformPiControl() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 
 
-	uint8_t  timeRunSeconds = 10;
+	uint8_t  timeRunSeconds = 5;
 
 	uint32_t bufferSize = (uint32_t)(
 			timeRunSeconds*pow(10,6) / (getTimerIntervalUs()*getAverageSize())
@@ -72,6 +72,7 @@ void TestVehiclePIControl::canPerformPiControl() {
 	Serial.println(bufferSize);
 
 
+
 	double dataLeft[bufferSize];
 	double dataRight[bufferSize];
 
@@ -83,8 +84,11 @@ void TestVehiclePIControl::canPerformPiControl() {
 
 	Logger::verbose("timer started");
 
-	motors()->forward(65000);
-	delay(1000);
+	motors()->forward(20000);
+
+
+	//delay(1000);
+
 
 	double omegaLeft = 0;
 	double omegaRight = 0;
@@ -96,10 +100,12 @@ void TestVehiclePIControl::canPerformPiControl() {
 	uint32_t tic;
 	uint32_t toc;
 	tic = micros();
-	while(actualTicks <= bufferSize){
+	while(actualTicks < bufferSize){
 		if(ready)
 		{
 			actualTicks++;
+			//Serial.println(actualTicks);
+
 
 			omegaLeft  = getAngularVelocity(this->intervalLeft);
 			omegaRight = getAngularVelocity(this->intervalRight);
@@ -107,10 +113,13 @@ void TestVehiclePIControl::canPerformPiControl() {
 			dataLeft[actualTicks] = omegaLeft;
 			dataRight[actualTicks]= omegaRight;
 
-			motors()->forward(
-					(uint16_t)this->piControllerLeft->update(omegaLeft,7),
-					(uint16_t)this->piControllerRight->update(omegaRight,7)
-			);
+			///*
+			//motors()->forward(
+			//	(uint16_t)this->piControllerLeft->update(omegaLeft,15),
+			// 	(uint16_t)this->piControllerRight->update(omegaRight,15)
+			//);
+			//*/
+
 			//Serial.print(this->intervalLeft);
 			//Serial.print(",");
 			//Serial.println(this->intervalRight);

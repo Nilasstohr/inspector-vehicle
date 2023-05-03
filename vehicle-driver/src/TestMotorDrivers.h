@@ -22,6 +22,7 @@ public:
 	void canDriveReverse();
 	void canReadCurrentSenseWhenStopped();
 	void canReadCurrentSenseWhenStarted();
+	void canDetermineLowestPWM();
 	//
 	virtual ~TestMotorDrivers();
 private:
