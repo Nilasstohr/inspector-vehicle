@@ -1,19 +1,22 @@
 #include <Arduino.h>
 #include "src/MotorDrivers.h"
 #include "src/VehicleTestToolBox.h"
-//#include <src/VehicleTestRunner.h>
+#include <src/VehicleTestRunner.h>
 //new VehicleTestRunner();
 
 void ISR_A();
 void ISR_B();
 void ISR_SAMPLE();
 void init();
+void runProgram1();
 void start();
+double radPrSekFromDeltaT(uint32_t deltaT);
 
 unsigned int INTERVAL_MICROS = 100;
 #define LEFT_A  22
 #define LEFT_B  23
 #define MAX_COUNTS 15000
+#define COUNTS_PR_REV 3200
 
 MotorDrivers *motors;
 IntervalTimer *timer;
@@ -27,11 +30,16 @@ volatile bool finish = false;
 volatile uint32_t deltaTBuffer[MAX_COUNTS];
 volatile uint32_t deltaTBufferCount =0;
 char message[100];
-double radian_count =  (double)(2*M_PI/countPrRevolution);
+double radian_pr_count =  (double)(2*M_PI/COUNTS_PR_REV);
 
 extern "C" int main(void)
 {
 	init();
+	runProgram1();
+}
+
+void runProgram1(){
+
 	while(1){
 		//Serial.println("waiting for input");
 		if(Serial.available()){
@@ -42,14 +50,17 @@ extern "C" int main(void)
 			}
 			String s = message;
 			if(s.equals("start")){
+			  Serial.flush();
+			  //Serial.print("running test...");
 			  digitalWrite(LED_BUILTIN, HIGH);
 			  start();
 			  delay(200);
 			  digitalWrite(LED_BUILTIN, LOW);
+			}else{
+				Serial.print("invalid input, did you send a new line?");
 			}
 		}
-
-		//delay(500);
+		delayMicroseconds(1);
 	}
 }
 
@@ -60,25 +71,65 @@ void start(){
 	lastT    = 0;
 	finish = false;
 	timer->begin(ISR_SAMPLE,INTERVAL_MICROS);
-	motors->forward(15000);
+	motors->forward(65000);
+	//delay(1000);
 	while(1){
 		if(finish){
 			motors->forward(0);
-
 			break;
 		}
 		delayMicroseconds(500);
 	}
-	for(int i=0; i<MAX_COUNTS; i++){
-		Serial.print(deltaTBuffer[i]);
-		if(i==MAX_COUNTS-1){
-		  break;
-		}
-		Serial.print(",");
-	}
-	Serial.print(";");
 
+	uint32_t sumDeltaT = 0;
+	double sumOmega =0;
+	for(int i=0; i<MAX_COUNTS; i++){
+		sumDeltaT = sumDeltaT + deltaTBuffer[i];
+		sumOmega =   sumOmega +   radPrSekFromDeltaT(deltaTBuffer[i]);
+		if(i==MAX_COUNTS-1){
+
+			double meanDeltaT = sumDeltaT/MAX_COUNTS;
+			double meanOmega =  sumOmega/MAX_COUNTS;
+			double varDeltaT = 0;
+			double varOmega = 0;
+			for(int n = 0; n < MAX_COUNTS; n++ )
+			{
+			  //Serial.print(n);
+			  Serial.print(deltaTBuffer[n]);
+
+			  Serial.print(" ");
+			  Serial.print(radPrSekFromDeltaT(deltaTBuffer[n]));
+
+			  Serial.print(" ");
+			  Serial.println(radPrSekFromDeltaT(deltaTBuffer[n])/(2*M_PI)*60);
+
+			  //Serial.print("  mean deltaT=");
+			  //Serial.print(meanDeltaT);
+
+			  //Serial.print("  mean omega=");
+			  //Serial.println(meanOmega);
+			  varDeltaT += pow( deltaTBuffer[n] - meanDeltaT, 2);
+			  varOmega += pow( radPrSekFromDeltaT(deltaTBuffer[n]) - meanOmega, 2);
+			}
+			double varianceDeltaT = varDeltaT /= MAX_COUNTS;
+			Serial.print(" mean delta T=");
+			Serial.println(meanDeltaT);
+			Serial.print(" sd delta T=");
+			Serial.println(sqrt(varianceDeltaT));
+			double varianceOmega= varOmega /= MAX_COUNTS;
+			Serial.print(" mean omega=");
+			Serial.println(meanOmega);
+			Serial.print(" sd omega=");
+			Serial.println(sqrt(varianceOmega));
+			Serial.print(" mean RPM=");
+			Serial.println(meanOmega/(2*M_PI)*60);
+			Serial.print(" sd RPM=");
+			Serial.println(sqrt(varianceOmega)/(2*M_PI)*60);
+			return;
+		}
+	}
 }
+
 void ISR_SAMPLE() {
 	if(deltaTBufferCount<MAX_COUNTS){
 		deltaTBuffer[deltaTBufferCount]=deltaT;
@@ -114,6 +165,12 @@ void ISR_B(){
 		counts++;
 	else
 		counts--;
+}
+
+double radPrSekFromDeltaT(uint32_t deltaT) {
+	double s;
+	s =  (double)(deltaT/pow(10,6));
+	return (double)(radian_pr_count/s);
 }
 void init(){
 	analogWriteResolution(16);

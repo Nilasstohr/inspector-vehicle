@@ -52,7 +52,7 @@ void TestVehiclePIControl::canPerformPiControl() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 
 
-	uint8_t  timeRunSeconds = 5;
+	uint8_t  timeRunSeconds = 3;
 
 	uint32_t bufferSize = (uint32_t)(
 			timeRunSeconds*pow(10,6) / (getTimerIntervalUs()*getAverageSize())
@@ -84,8 +84,7 @@ void TestVehiclePIControl::canPerformPiControl() {
 
 	Logger::verbose("timer started");
 
-	motors()->forward(20000);
-
+	motors()->forward(16000);
 
 	//delay(1000);
 
