@@ -33,6 +33,7 @@ def fft(data, Ts):
 if __name__ == '__main__':
     y = loadtxt("data1.txt")
     w = y[:, 1]
+    w_filtered = y[:, 2]
     n = len(w)
     Ts = 100 / pow(10, 6)
     x = np.arange(n) * Ts
@@ -47,6 +48,7 @@ if __name__ == '__main__':
     axs[0].plot(x, w, color='blue')
     axs[0].plot(x, w_savgolf, color='red')
     axs[0].plot(x, w_lowass, color='green')
+    axs[0].plot(x, w_filtered, color='yellow')
     axs[0].set(xlabel='t[s]', ylabel='\u03C9 [radians/second]')
     axs[0].grid()
     axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(w) + 2)
@@ -83,4 +85,3 @@ if __name__ == '__main__':
     axs[1].grid()
     axs[1].set(xlabel='\u03C9 [radians/second]', ylabel='dB')
     plt.show()
-data1.txt

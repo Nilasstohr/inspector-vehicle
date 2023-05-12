@@ -23,17 +23,28 @@ IntervalTimer *timer;
 
 volatile signed int counts =0;
 volatile uint32_t deltaT=0;
+volatile uint32_t deltaT_Temp=0;
 volatile uint32_t lastT=0;
 volatile uint32_t currentT=0;
 volatile bool finish = false;
 
 volatile uint32_t deltaTBuffer[MAX_COUNTS];
+volatile uint32_t deltaTBufferFiltered[MAX_COUNTS];
+
 volatile uint32_t deltaTBufferCount =0;
 char message[100];
 double radian_pr_count =  (double)(2*M_PI/COUNTS_PR_REV);
 
+float b0 = 0.0591907;
+float b1 = 0.0591907;
+float a1 = -0.88161859;
+double feedForward=0;
+double feedBack=0;
+double output=0;
+
 extern "C" int main(void)
 {
+
 	init();
 	runProgram1();
 }
@@ -60,6 +71,7 @@ void runProgram1(){
 				Serial.print("invalid input, did you send a new line?");
 			}
 		}
+
 		delayMicroseconds(1);
 	}
 }
@@ -101,6 +113,9 @@ void start(){
 			  Serial.print(radPrSekFromDeltaT(deltaTBuffer[n]));
 
 			  Serial.print(" ");
+			  Serial.print(radPrSekFromDeltaT(deltaTBufferFiltered[n]));
+
+			  Serial.print(" ");
 			  Serial.println(radPrSekFromDeltaT(deltaTBuffer[n])/(2*M_PI)*60);
 
 			  //Serial.print("  mean deltaT=");
@@ -129,10 +144,16 @@ void start(){
 		}
 	}
 }
-
 void ISR_SAMPLE() {
 	if(deltaTBufferCount<MAX_COUNTS){
+		deltaT_Temp = deltaT;
+		output  = b0*deltaT + feedForward - feedBack;
+		//output  = deltaT;
+		deltaTBufferFiltered[deltaTBufferCount]=output;
 		deltaTBuffer[deltaTBufferCount]=deltaT;
+
+		feedForward = b1*output;
+		feedBack    = a1*output;
 		deltaTBufferCount++;
 		//Serial.println(deltaTBuffer[deltaTBufferCount]);
 		//Serial.print(deltaTBuffer[deltaTBufferCount]);
@@ -166,7 +187,6 @@ void ISR_B(){
 	else
 		counts--;
 }
-
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;
 	s =  (double)(deltaT/pow(10,6));

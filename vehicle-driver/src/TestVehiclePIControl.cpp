@@ -38,11 +38,11 @@ TestVehiclePIControl::TestVehiclePIControl() {
 
 void TestVehiclePIControl::canInitializePiController(){
 	Logger::verbose(__FUNCTION__, "- TEST");
-	this->piControllerLeft =  new PiController(
+	this->piControllerLeft =  new FirstOrderFilter(
 			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
 			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
 			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
-	this->piControllerRight = new PiController(
+	this->piControllerRight = new FirstOrderFilter(
 			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
 			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
 			VEHICLE_PI_CONTROL_COEFFICIENT_A1);

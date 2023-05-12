@@ -5,14 +5,14 @@
  *      Author: robot1
  */
 
-#ifndef SRC_PICONTROLLER_H_
-#define SRC_PICONTROLLER_H_
+#ifndef SRC_FIRSTORDERFILTER_H_
+#define SRC_FIRSTORDERFILTER_H_
 
-class PiController {
+class FirstOrderFilter {
 public:
-	PiController(float b0,float b1,float a1);
+	FirstOrderFilter(float b0,float b1,float a1);
 	double update(double input,double ref);
-	virtual ~PiController();
+	virtual ~FirstOrderFilter();
 	float b0;
 	float b1;
 	float a1;
@@ -22,4 +22,4 @@ public:
 	double output;
 };
 
-#endif /* SRC_PICONTROLLER_H_ */
+#endif /* SRC_FIRSTORDERFILTER_H_ */

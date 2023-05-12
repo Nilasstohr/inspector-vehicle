@@ -9,8 +9,8 @@
 #define SRC_TESTVEHICLEPICONTROL_H_
 
 #include "VehicleTestBase.h"
-#include "PiController.h"
 #include "AverageCalc.h"
+#include "FirstOrderFilter.h"
 
 class TestVehiclePIControl: private VehicleTestBase{
 public:
@@ -21,8 +21,8 @@ public:
 private:
 	MotorDrivers * motorDrivers;
 	QuadratureEncoders * quadratureEncoders;
-	PiController * piControllerLeft;
-	PiController * piControllerRight;
+	FirstOrderFilter * piControllerLeft;
+	FirstOrderFilter * piControllerRight;
 	MotorDrivers* motors() const {
 			return motorDrivers;
 		}
