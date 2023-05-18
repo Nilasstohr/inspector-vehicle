@@ -1,24 +1,9 @@
-#include <Arduino.h>
-#include "src/MotorDrivers.h"
-#include "src/VehicleTestToolBox.h"
-#include <src/VehicleTestRunner.h>
-//new VehicleTestRunner();
-
-void ISR_A();
-void ISR_B();
-void ISR_SAMPLE();
-void init();
-void runProgram1();
-void start();
-double radPrSekFromDeltaT(uint32_t deltaT);
-
 unsigned int INTERVAL_MICROS = 100;
-#define LEFT_A  22
-#define LEFT_B  23
+#define LEFT_A  31
+#define LEFT_B  32
 #define MAX_COUNTS 15000
 #define COUNTS_PR_REV 3200
 
-MotorDrivers *motors;
 IntervalTimer *timer;
 
 volatile signed int counts =0;
@@ -47,6 +32,7 @@ float b1_control = -0.79;
 float a1_control = -1;
 double feedForward_control=0;
 double feedBack_control=0;
+double feedThroug_control=0;
 double output_control=0;
 double error_control;
 
@@ -65,16 +51,33 @@ bool sampleReady=false;
 
 #define PWM_FREQ 18310.55
 
+#define _INA1 26 // a1
+#define _INB1 27  // b1
+#define _PWM1 28  // pwm1
+#define _EN1DIAG1 12 // en1
+#define _CS1 24 // cs1
 
-extern "C" int main(void)
-{
+#define _INA2 34 // a2
+#define _INB2 35 // b2
+#define _PWM2 33 // pwm2
+#define _EN2DIAG2 39 // en2
+#define _CS2 38 // cs2
 
-	init();
+#define PWM_FREQ 18310.55
+#define MAX_SPEED_PWM (int)pow(2,13)
+
+#define MIN_SPEED_PWM 500
+
+void setup() {
+  init();
+}
+
+void loop() { 
 	runProgram1();
 }
 
-void runProgram1(){
 
+void runProgram1(){
 	while(1){
 		//Serial.println("waiting for input");
 		if(Serial.available()){
@@ -85,6 +88,7 @@ void runProgram1(){
 			}
 			String s = message;
 			if(s.equals("start")){
+        Serial.println("stating run");
 			  Serial.flush();
 			  //Serial.print("running test...");
 			  digitalWrite(LED_BUILTIN, HIGH);
@@ -99,20 +103,20 @@ void runProgram1(){
 		delayMicroseconds(1);
 	}
 }
-
 void start(){
 	counts =0;
 	deltaTBufferCount =0;
 	deltaT   = 0;
 	lastT    = 0;
 	finish = false;
+  Serial.println("stating timer");
+  //forwardM2(8000);
+	//delay(1000);
 	timer->begin(ISR_SAMPLE,INTERVAL_MICROS);
 	double w=0;
-	//motors->forward(65000);
-	//delay(1000);
 	while(1){
 		if(finish){
-			motors->forward(0);
+      forwardM2(0);
 			break;
 		}
 		else if(sampleReady){
@@ -120,25 +124,42 @@ void start(){
 			if(isinf(w)){
 				w = 0;
 			}
-			error_control = 13-w;
-			output_control  = b0_control*error_control + feedForward_control - feedBack_control;
+
+      //  b0 = 0.92, b1 = -0.79; a1 = -1;
+			error_control = 5-w;
+      feedThroug_control = b0_control*error_control;
+			output_control  = feedThroug_control + feedForward_control - feedBack_control;
+      forwardM2(output_control);
+
+      if(output_control < MIN_SPEED_PWM)
+        output_control =MIN_SPEED_PWM;
+      else if(output_control>MAX_SPEED_PWM){
+        output_control = MAX_SPEED_PWM;
+      }
 			/*
 			Serial.print("w= ");
 			Serial.print(w);
 			Serial.print(" e= ");
 			Serial.print(error_control);
-			Serial.print(" f= ");
+      Serial.print(" ft= ");
+      Serial.print(feedThroug_control);
+			Serial.print(" ff= ");
 			Serial.print(feedForward_control);
-			Serial.print(" b= ");
+			Serial.print(" fb= ");
 			Serial.print(feedBack_control);
 			Serial.print(" o= ");
-			*/
-			output_control = 3*output_control;
-			//Serial.println(output_control);
-			motors->forward(output_control+15000);
-			feedForward_control = b1_control*output_control;
+			Serial.print(output_control);
+      */
+			feedForward_control = b1_control*error_control;
 			feedBack_control    = a1_control*output_control;
 			sampleReady = false;
+      /*
+      Serial.print(" ff(next)= ");
+      Serial.print(feedForward_control);
+      Serial.print(" fb(next)= ");
+      Serial.println(feedBack_control);
+      */
+      
 		}
 		delayMicroseconds(1);
 	}
@@ -206,6 +227,7 @@ void ISR_SAMPLE() {
 		deltaTBufferCount++;
 		//Serial.println(deltaTBuffer[deltaTBufferCount]);
 		//Serial.print(deltaTBuffer[deltaTBufferCount]);
+    //Serial.println(deltaTBufferCount);
 	}else{
 		timer->end();
 		finish = true;
@@ -241,9 +263,12 @@ double radPrSekFromDeltaT(uint32_t deltaT) {
 	s =  (double)(deltaT/pow(10,6));
 	return (double)(radian_pr_count/s);
 }
+void forwardM2(int speed){
+  analogWrite(_PWM2,speed); 
+}
 void init(){
-	analogWriteResolution(16);
-	analogReadResolution(10);
+	analogWriteResolution(13);
+	//analogReadResolution(10);
 	Serial.begin(115200);
 
 	// motors
@@ -257,8 +282,8 @@ void init(){
 	pinMode(_PWM2,OUTPUT);
 	pinMode(_EN2DIAG2,INPUT);
 	pinMode(_CS2,INPUT);
-	analogWriteFrequency(_PWM1,PWM_FREQ);
-	analogWriteFrequency(_PWM2,PWM_FREQ);
+	//analogWriteFrequency(_PWM1,PWM_FREQ);
+	//analogWriteFrequency(_PWM2,PWM_FREQ);
 	digitalWrite(_INA2,HIGH);
 	digitalWrite(_INB2,LOW);
 

@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt, ticker as mticker
 import numpy.fft
 from numpy import loadtxt
+from scipy import signal
 from scipy.signal import savgol_filter, lfilter, butter
 
 
@@ -43,12 +44,31 @@ if __name__ == '__main__':
     w_savgolf = savgol_filter(w, 51, 3)
     w_lowass = butter_lowpass_filter(w, 110, 1/Ts, order=1)
 
+    wlast = w_savgolf[n - 1]
+    tau = np.interp(wlast * 0.63, w, x)
+    fcut = 1 / tau
+    OmegaCut = fcut / np.pi
+    print(tau, " s")
+    print(OmegaCut, " rad/sec")
+    print(fcut, " Hz")
+
+    b = 349
+    a = 15.87
+    num = [0, 0, b]
+    den = [0, 1, a]
+    T = signal.lti(num, den)
+    t, w_sim = signal.step(T)
+    # axs[0].plot(t, yt*12.44, color='green')
+    # axs[0].set(xlabel='t[s]', ylabel='Amplitude')
+    # axs[2].title('Step response for 1. Order Lowpass')
+
     fig, axs = plt.subplots(2)
     fig.suptitle('Transient Time Response')
     axs[0].plot(x, w, color='blue')
-    axs[0].plot(x, w_savgolf, color='red')
-    axs[0].plot(x, w_lowass, color='green')
-    axs[0].plot(x, w_filtered, color='yellow')
+    #axs[0].plot(x, w_savgolf, color='red')
+    #axs[0].plot(x, w_lowass, color='green')
+    axs[0].plot(x, w_filtered, color='green')
+    axs[0].plot(t, w_sim, color='red')
     axs[0].set(xlabel='t[s]', ylabel='\u03C9 [radians/second]')
     axs[0].grid()
     axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(w) + 2)
@@ -59,14 +79,7 @@ if __name__ == '__main__':
     # x = np.arange(N)
     # y = np.sin(2 * np.pi * f * x / Fs)
 
-    wlast = w_savgolf[n - 1]
 
-    tau = np.interp(wlast * 0.63, w, x)
-    fcut = 1 / tau
-    OmegaCut = fcut / np.pi
-    print(tau, " s")
-    print(OmegaCut, " rad/sec")
-    print(fcut, " Hz")
 
     W, omega = fft(w, Ts)
     Wsavgol, omega = fft(w_savgolf, Ts)
