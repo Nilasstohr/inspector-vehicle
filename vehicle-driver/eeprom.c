@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -30,507 +30,133 @@
 
 // To configure the EEPROM size, edit E2END in avr/eeprom.h.
 //
-// Do *NOT* edit EEPROM_SIZE in this file.  It will automatically
-// change based on your changes to E2END in avr/eeprom.h.
-//
 // Generally you should avoid editing this code, unless you really
 // know what you're doing.
 
-#include "kinetis.h"
+#include "imxrt.h"
 #include <avr/eeprom.h>
-//#include "HardwareSerial.h"
-#if F_CPU > 120000000 && defined(__MK66FX1M0__)
-#include "core_pins.h"	// delayMicroseconds()
+#include <string.h>
+#include "debug/printf.h"
+
+#if defined(ARDUINO_TEENSY40)
+#define FLASH_BASEADDR 0x601F0000
+#define FLASH_SECTORS  15
+#elif defined(ARDUINO_TEENSY41)
+#define FLASH_BASEADDR 0x607C0000
+#define FLASH_SECTORS  63
+#elif defined(ARDUINO_TEENSY_MICROMOD)
+#define FLASH_BASEADDR 0x60FC0000
+#define FLASH_SECTORS  63
 #endif
 
 
-#if defined(__MK20DX128__) || defined(__MK20DX256__)
-#define EEPROM_MAX  2048
-#define EEPARTITION 0x03  // all 32K dataflash for EEPROM, none for Data
-#define EEESPLIT    0x30  // must be 0x30 on these chips
-#elif defined(__MK64FX512__)
-#define EEPROM_MAX  4096
-#define EEPARTITION 0x05  // all 128K dataflash for EEPROM
-#define EEESPLIT    0x10  // best endurance: 0x00 = first 12%, 0x10 = first 25%, 0x30 = all equal
-#elif defined(__MK66FX1M0__)
-#define EEPROM_MAX  4096
-#define EEPARTITION 0x05  // 128K dataflash for EEPROM, 128K for Data
-#define EEESPLIT    0x10  // best endurance: 0x00 = first 12%, 0x10 = first 25%, 0x30 = all equal
-#elif defined(__MKL26Z64__)
-#define EEPROM_MAX  255
-#endif
-
-#if E2END > (EEPROM_MAX-1)
+#if E2END > (255*FLASH_SECTORS-1)
 #error "E2END is set larger than the maximum possible EEPROM size"
 #endif
 
-#if defined(KINETISK)
+// Conversation about how this code works & what the upper limits are
+// https://forum.pjrc.com/threads/57377?p=214566&viewfull=1#post214566
 
-// The EEPROM is really RAM with a hardware-based backup system to
-// flash memory.  Selecting a smaller size EEPROM allows more wear
-// leveling, for higher write endurance.  If you edit this file,
-// set this to the smallest size your application can use.  Also,
-// due to Freescale's implementation, writing 16 or 32 bit words
-// (aligned to 2 or 4 byte boundaries) has twice the endurance
-// compared to writing 8 bit bytes.
-//
+// To be called from LittleFS_Program, any other use at your own risk!
+void eepromemu_flash_write(void *addr, const void *data, uint32_t len);
+void eepromemu_flash_erase_sector(void *addr);
+void eepromemu_flash_erase_32K_block(void *addr);
+void eepromemu_flash_erase_64K_block(void *addr);
 
-#if E2END < 32
-  #define EEPROM_SIZE 32
-  #define EEESIZE 0x09
-#elif E2END < 64
-  #define EEPROM_SIZE 64
-  #define EEESIZE 0x08
-#elif E2END < 128
-  #define EEPROM_SIZE 128
-  #define EEESIZE 0x07
-#elif E2END < 256
-  #define EEPROM_SIZE 256
-  #define EEESIZE 0x06
-#elif E2END < 512
-  #define EEPROM_SIZE 512
-  #define EEESIZE 0x05
-#elif E2END < 1024
-  #define EEPROM_SIZE 1024
-  #define EEESIZE 0x04
-#elif E2END < 2048
-  #define EEPROM_SIZE 2048
-  #define EEESIZE 0x03
-#elif E2END < 4096
-  #define EEPROM_SIZE 4096
-  #define EEESIZE 0x02
-#endif
-
-// Writing unaligned 16 or 32 bit data is handled automatically when
-// this is defined, but at a cost of extra code size.  Without this,
-// any unaligned write will cause a hard fault exception!  If you're
-// absolutely sure all 16 and 32 bit writes will be aligned, you can
-// remove the extra unnecessary code.
-//
-#define HANDLE_UNALIGNED_WRITES
-
+static uint8_t initialized=0;
+static uint16_t sector_index[FLASH_SECTORS];
 
 void eeprom_initialize(void)
 {
-	uint32_t count=0;
-	uint16_t do_flash_cmd[] = {
-		0xf06f, 0x037f, 0x7003, 0x7803,
-		0xf013, 0x0f80, 0xd0fb, 0x4770};
-	uint8_t status;
-
-	if (FTFL_FCNFG & FTFL_FCNFG_RAMRDY) {
-		uint8_t stat = FTFL_FSTAT & 0x70;
-		if (stat) FTFL_FSTAT = stat;
-		// FlexRAM is configured as traditional RAM
-		// We need to reconfigure for EEPROM usage
-		kinetis_hsrun_disable();
-		FTFL_FCCOB0 = 0x80; // PGMPART = Program Partition Command
-		FTFL_FCCOB3 = 0;
-		FTFL_FCCOB4 = EEESPLIT | EEESIZE;
-		FTFL_FCCOB5 = EEPARTITION;
-		__disable_irq();
-		// do_flash_cmd() must execute from RAM.  Luckily the C syntax is simple...
-		(*((void (*)(volatile uint8_t *))((uint32_t)do_flash_cmd | 1)))(&FTFL_FSTAT);
-		__enable_irq();
-		kinetis_hsrun_enable();
-		status = FTFL_FSTAT;
-		if (status & 0x70) {
-			FTFL_FSTAT = (status & 0x70);
-			return; // error
-		}
+	uint32_t sector;
+	//printf("eeprom init\n");
+	for (sector=0; sector < FLASH_SECTORS; sector++) {
+		const uint16_t *p = (uint16_t *)(FLASH_BASEADDR + sector * 4096);
+		const uint16_t *end = (uint16_t *)(FLASH_BASEADDR + (sector + 1) * 4096);
+		uint16_t index = 0;
+		do {
+			if (*p++ == 0xFFFF) break;
+			index++;
+		} while (p < end);
+		sector_index[sector] = index;
 	}
-	// wait for eeprom to become ready (is this really necessary?)
-	while (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) {
-		if (++count > 200000) break;
-	}
+	initialized = 1;
 }
 
-#define FlexRAM ((volatile uint8_t *)0x14000000)
-
-uint8_t eeprom_read_byte(const uint8_t *addr)
+uint8_t eeprom_read_byte(const uint8_t *addr_ptr)
 {
-	uint32_t offset = (uint32_t)addr;
-	if (offset >= EEPROM_SIZE) return 0;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	return FlexRAM[offset];
-}
-
-uint16_t eeprom_read_word(const uint16_t *addr)
-{
-	uint32_t offset = (uint32_t)addr;
-	if (offset >= EEPROM_SIZE-1) return 0;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	return *(uint16_t *)(&FlexRAM[offset]);
-}
-
-uint32_t eeprom_read_dword(const uint32_t *addr)
-{
-	uint32_t offset = (uint32_t)addr;
-	if (offset >= EEPROM_SIZE-3) return 0;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	return *(uint32_t *)(&FlexRAM[offset]);
-}
-
-void eeprom_read_block(void *buf, const void *addr, uint32_t len)
-{
-	uint32_t offset = (uint32_t)addr;
-	uint8_t *dest = (uint8_t *)buf;
-	uint32_t end = offset + len;
-	
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	if (end > EEPROM_SIZE) end = EEPROM_SIZE;
-	while (offset < end) {
-		*dest++ = FlexRAM[offset++];
-	}
-}
-
-int eeprom_is_ready(void)
-{
-	return (FTFL_FCNFG & FTFL_FCNFG_EEERDY) ? 1 : 0;
-}
-
-static void flexram_wait(void)
-{
-	while (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) {
-		// TODO: timeout
-	}
-}
-
-void eeprom_write_byte(uint8_t *addr, uint8_t value)
-{
-	uint32_t offset = (uint32_t)addr;
-
-	if (offset >= EEPROM_SIZE) return;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	if (FlexRAM[offset] != value) {
-		kinetis_hsrun_disable();
-		uint8_t stat = FTFL_FSTAT & 0x70;
-		if (stat) FTFL_FSTAT = stat;
-		FlexRAM[offset] = value;
-		flexram_wait();
-		kinetis_hsrun_enable();
-	}
-}
-
-void eeprom_write_word(uint16_t *addr, uint16_t value)
-{
-	uint32_t offset = (uint32_t)addr;
-
-	if (offset >= EEPROM_SIZE-1) return;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-#ifdef HANDLE_UNALIGNED_WRITES
-	if ((offset & 1) == 0) {
-#endif
-		if (*(uint16_t *)(&FlexRAM[offset]) != value) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			*(uint16_t *)(&FlexRAM[offset]) = value;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-#ifdef HANDLE_UNALIGNED_WRITES
-	} else {
-		if (FlexRAM[offset] != value) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			FlexRAM[offset] = value;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		if (FlexRAM[offset + 1] != (value >> 8)) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			FlexRAM[offset + 1] = value >> 8;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-	}
-#endif
-}
-
-void eeprom_write_dword(uint32_t *addr, uint32_t value)
-{
-	uint32_t offset = (uint32_t)addr;
-
-	if (offset >= EEPROM_SIZE-3) return;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-#ifdef HANDLE_UNALIGNED_WRITES
-	switch (offset & 3) {
-	case 0:
-#endif
-		if (*(uint32_t *)(&FlexRAM[offset]) != value) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			*(uint32_t *)(&FlexRAM[offset]) = value;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		return;
-#ifdef HANDLE_UNALIGNED_WRITES
-	case 2:
-		if (*(uint16_t *)(&FlexRAM[offset]) != value) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			*(uint16_t *)(&FlexRAM[offset]) = value;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		if (*(uint16_t *)(&FlexRAM[offset + 2]) != (value >> 16)) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			*(uint16_t *)(&FlexRAM[offset + 2]) = value >> 16;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		return;
-	default:
-		if (FlexRAM[offset] != value) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			FlexRAM[offset] = value;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		if (*(uint16_t *)(&FlexRAM[offset + 1]) != (value >> 8)) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			*(uint16_t *)(&FlexRAM[offset + 1]) = value >> 8;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-		if (FlexRAM[offset + 3] != (value >> 24)) {
-			kinetis_hsrun_disable();
-			uint8_t stat = FTFL_FSTAT & 0x70;
-			if (stat) FTFL_FSTAT = stat;
-			FlexRAM[offset + 3] = value >> 24;
-			flexram_wait();
-			kinetis_hsrun_enable();
-		}
-	}
-#endif
-}
-
-void eeprom_write_block(const void *buf, void *addr, uint32_t len)
-{
-	uint32_t offset = (uint32_t)addr;
-	const uint8_t *src = (const uint8_t *)buf;
-
-	if (offset >= EEPROM_SIZE) return;
-	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
-	if (len >= EEPROM_SIZE) len = EEPROM_SIZE;
-	if (offset + len >= EEPROM_SIZE) len = EEPROM_SIZE - offset;
-	while (len > 0) {
-		uint32_t lsb = offset & 3;
-		if (lsb == 0 && len >= 4) {
-			// write aligned 32 bits
-			uint32_t val32;
-			val32 = *src++;
-			val32 |= (*src++ << 8);
-			val32 |= (*src++ << 16);
-			val32 |= (*src++ << 24);
-			if (*(uint32_t *)(&FlexRAM[offset]) != val32) {
-				kinetis_hsrun_disable();
-				uint8_t stat = FTFL_FSTAT & 0x70;
-				if (stat) FTFL_FSTAT = stat;
-				*(uint32_t *)(&FlexRAM[offset]) = val32;
-				flexram_wait();
-				kinetis_hsrun_enable();
-			}
-			offset += 4;
-			len -= 4;
-		} else if ((lsb == 0 || lsb == 2) && len >= 2) {
-			// write aligned 16 bits
-			uint16_t val16;
-			val16 = *src++;
-			val16 |= (*src++ << 8);
-			if (*(uint16_t *)(&FlexRAM[offset]) != val16) {
-				kinetis_hsrun_disable();
-				uint8_t stat = FTFL_FSTAT & 0x70;
-				if (stat) FTFL_FSTAT = stat;
-				*(uint16_t *)(&FlexRAM[offset]) = val16;
-				flexram_wait();
-				kinetis_hsrun_enable();
-			}
-			offset += 2;
-			len -= 2;
-		} else {
-			// write 8 bits
-			uint8_t val8 = *src++;
-			if (FlexRAM[offset] != val8) {
-				kinetis_hsrun_disable();
-				uint8_t stat = FTFL_FSTAT & 0x70;
-				if (stat) FTFL_FSTAT = stat;
-				FlexRAM[offset] = val8;
-				flexram_wait();
-				kinetis_hsrun_enable();
-			}
-			offset++;
-			len--;
-		}
-	}
-}
-
-/*
-void do_flash_cmd(volatile uint8_t *fstat)
-{
-	*fstat = 0x80;
-	while ((*fstat & 0x80) == 0) ; // wait
-}
-00000000 <do_flash_cmd>:
-   0:	f06f 037f 	mvn.w	r3, #127	; 0x7f
-   4:	7003      	strb	r3, [r0, #0]
-   6:	7803      	ldrb	r3, [r0, #0]
-   8:	f013 0f80 	tst.w	r3, #128	; 0x80
-   c:	d0fb      	beq.n	6 <do_flash_cmd+0x6>
-   e:	4770      	bx	lr
-*/
-
-#elif defined(KINETISL)
-
-#define EEPROM_SIZE (E2END+1)
-
-#define FLASH_BEGIN (uint16_t *)63488
-#define FLASH_END   (uint16_t *)65536
-static uint16_t flashend = 0;
-
-void eeprom_initialize(void)
-{
-	const uint16_t *p = FLASH_BEGIN;
-
-	do {
-		if (*p++ == 0xFFFF) {
-			flashend = (uint32_t)(p - 2);
-			return;
-		}
-	} while (p < FLASH_END);
-	flashend = (uint32_t)(FLASH_END - 1);
-}
-
-uint8_t eeprom_read_byte(const uint8_t *addr)
-{
-	uint32_t offset = (uint32_t)addr;
-	const uint16_t *p = FLASH_BEGIN;
-	const uint16_t *end = (const uint16_t *)((uint32_t)flashend);
-	uint16_t val;
+	uint32_t addr = (uint32_t)addr_ptr;
+	uint32_t sector, offset;
+	const uint16_t *p, *end;
 	uint8_t data=0xFF;
 
-	if (!end) {
-		eeprom_initialize();
-		end = (const uint16_t *)((uint32_t)flashend);
-	}
-	if (offset < EEPROM_SIZE) {
-		while (p <= end) {
-			val = *p++;
-			if ((val & 255) == offset) data = val >> 8;
-		}
+	if (addr > E2END) return 0xFF;
+	if (!initialized) eeprom_initialize();
+	sector = (addr >> 2) % FLASH_SECTORS;
+	offset = (addr & 3) | (((addr >> 2) / FLASH_SECTORS) << 2);
+	//printf("ee_rd, addr=%u, sector=%u, offset=%u, len=%u\n",
+		//addr, sector, offset, sector_index[sector]);
+	p = (uint16_t *)(FLASH_BASEADDR + sector * 4096);
+	end = p + sector_index[sector];
+	while (p < end) {
+		uint32_t val = *p++;
+		if ((val & 255) == offset) data = val >> 8;
 	}
 	return data;
 }
 
-static void flash_write(const uint16_t *code, uint32_t addr, uint32_t data)
+void eeprom_write_byte(uint8_t *addr_ptr, uint8_t data)
 {
-	// with great power comes great responsibility....
-	uint32_t stat;
-	*(uint32_t *)&FTFL_FCCOB3 = 0x06000000 | (addr & 0x00FFFFFC);
-	*(uint32_t *)&FTFL_FCCOB7 = data;
-	__disable_irq();
-	(*((void (*)(volatile uint8_t *))((uint32_t)code | 1)))(&FTFL_FSTAT);
-	__enable_irq();
-	stat = FTFL_FSTAT & 0x70;
-	if (stat) {
-		FTFL_FSTAT = stat;
-	}
-	MCM_PLACR |= MCM_PLACR_CFCC;
-}
+	uint32_t addr = (uint32_t)addr_ptr;
+	uint32_t sector, offset, index, i;
+	uint16_t *p, *end;
+	uint8_t olddata=0xFF;
+	uint8_t buf[256];
 
-void eeprom_write_byte(uint8_t *addr, uint8_t data)
-{
-	uint32_t offset = (uint32_t)addr;
-	const uint16_t *p, *end = (const uint16_t *)((uint32_t)flashend);
-	uint32_t i, val, flashaddr;
-	uint16_t do_flash_cmd[] = {
-		0x2380, 0x7003, 0x7803, 0xb25b, 0x2b00, 0xdafb, 0x4770};
-	uint8_t buf[EEPROM_SIZE];
+	if (addr > E2END) return;
+	if (!initialized) eeprom_initialize();
 
-	if (offset >= EEPROM_SIZE) return;
-	if (!end) {
-		eeprom_initialize();
-		end = (const uint16_t *)((uint32_t)flashend);
+	sector = (addr >> 2) % FLASH_SECTORS; 
+	offset = (addr & 3) | (((addr >> 2) / FLASH_SECTORS) << 2);
+	//printf("ee_wr, addr=%u, sector=%u, offset=%u, len=%u\n",
+		//addr, sector, offset, sector_index[sector]);
+	p = (uint16_t *)(FLASH_BASEADDR + sector * 4096);
+	end = p + sector_index[sector];
+	while (p < end) {
+		uint16_t val = *p++;
+		if ((val & 255) == offset) olddata = val >> 8;
 	}
-	if (++end < FLASH_END) {
-		val = (data << 8) | offset;
-		flashaddr = (uint32_t)end;
-		flashend = flashaddr;
-		if ((flashaddr & 2) == 0) {
-			val |= 0xFFFF0000;
-		} else {
-			val <<= 16;
-			val |= 0x0000FFFF;
-		}
-		flash_write(do_flash_cmd, flashaddr, val);
+	if (data == olddata) return;
+	if (sector_index[sector] < 2048) {
+		//printf("ee_wr, writing\n");
+		uint16_t newdata = offset | (data << 8);
+		eepromemu_flash_write(end, &newdata, 2);
+		sector_index[sector] = sector_index[sector] + 1;
 	} else {
-		for (i=0; i < EEPROM_SIZE; i++) {
-			buf[i] = 0xFF;
-		}
-		for (p = FLASH_BEGIN; p < FLASH_END; p++) {
-			val = *p;
-			if ((val & 255) < EEPROM_SIZE) {
-				buf[val & 255] = val >> 8;
-			}
+		//printf("ee_wr, erase then write\n");
+		memset(buf, 0xFF, sizeof(buf));
+		p = (uint16_t *)(FLASH_BASEADDR + sector * 4096);
+		end = p + 2048;
+		while (p < end) {
+			uint16_t val = *p++;
+			buf[val & 255] = val >> 8;
 		}
 		buf[offset] = data;
-		for (flashaddr=(uint32_t)FLASH_BEGIN; flashaddr < (uint32_t)FLASH_END; flashaddr += 1024) {
-			*(uint32_t *)&FTFL_FCCOB3 = 0x09000000 | flashaddr;
-			__disable_irq();
-			(*((void (*)(volatile uint8_t *))((uint32_t)do_flash_cmd | 1)))(&FTFL_FSTAT);
-			__enable_irq();
-			val = FTFL_FSTAT & 0x70;
-			if (val) FTFL_FSTAT = val;
-			MCM_PLACR |= MCM_PLACR_CFCC;
-		}
-		flashaddr=(uint32_t)FLASH_BEGIN;
-		for (i=0; i < EEPROM_SIZE; i++) {
-			if (buf[i] == 0xFF) continue;
-			if ((flashaddr & 2) == 0) {
-				val = (buf[i] << 8) | i;
-			} else {
-				val = val | (buf[i] << 24) | (i << 16);
-				flash_write(do_flash_cmd, flashaddr, val);
+		p = (uint16_t *)(FLASH_BASEADDR + sector * 4096);
+		eepromemu_flash_erase_sector(p);
+		index = 0;
+		for (i=0; i < 256; i++) {
+			if (buf[i] != 0xFF) {
+				// TODO: combining these to larger write
+				// would (probably) be more efficient
+				uint16_t newval = i | (buf[i] << 8);
+				eepromemu_flash_write(p + index, &newval, 2);
+				index = index + 1;
 			}
-			flashaddr += 2;
 		}
-		flashend = flashaddr - 2;
-		if ((flashaddr & 2)) {
-			val |= 0xFFFF0000;
-			flash_write(do_flash_cmd, flashaddr, val);
-		}
+		sector_index[sector] = index;
 	}
 }
-
-/*
-void do_flash_cmd(volatile uint8_t *fstat)
-{
-        *fstat = 0x80;
-        while ((*fstat & 0x80) == 0) ; // wait
-}
-00000000 <do_flash_cmd>:
-   0:	2380      	movs	r3, #128	; 0x80
-   2:	7003      	strb	r3, [r0, #0]
-   4:	7803      	ldrb	r3, [r0, #0]
-   6:	b25b      	sxtb	r3, r3
-   8:	2b00      	cmp	r3, #0
-   a:	dafb      	bge.n	4 <do_flash_cmd+0x4>
-   c:	4770      	bx	lr
-*/
-
 
 uint16_t eeprom_read_word(const uint16_t *addr)
 {
@@ -585,4 +211,147 @@ void eeprom_write_block(const void *buf, void *addr, uint32_t len)
 }
 
 
-#endif // KINETISL
+
+
+
+#define LUT0(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)))
+#define LUT1(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)) << 16)
+#define CMD_SDR         FLEXSPI_LUT_OPCODE_CMD_SDR
+#define ADDR_SDR        FLEXSPI_LUT_OPCODE_RADDR_SDR
+#define READ_SDR        FLEXSPI_LUT_OPCODE_READ_SDR
+#define WRITE_SDR       FLEXSPI_LUT_OPCODE_WRITE_SDR
+#define PINS1           FLEXSPI_LUT_NUM_PADS_1
+#define PINS4           FLEXSPI_LUT_NUM_PADS_4
+
+static void flash_wait()
+{
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x05) | LUT1(READ_SDR, PINS1, 1); // 05 = read status
+	FLEXSPI_LUT61 = 0;
+	uint8_t status;
+	do {
+		FLEXSPI_IPRXFCR = FLEXSPI_IPRXFCR_CLRIPRXF; // clear rx fifo
+		FLEXSPI_IPCR0 = 0;
+		FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15) | FLEXSPI_IPCR1_IDATSZ(1);
+		FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+		while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) {;}
+		FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+		asm("":::"memory");
+		status = *(uint8_t *)&FLEXSPI_RFDR0;
+	} while (status & 1);
+	FLEXSPI_MCR0 |= FLEXSPI_MCR0_SWRESET; // purge stale data from FlexSPI's AHB FIFO
+	while (FLEXSPI_MCR0 & FLEXSPI_MCR0_SWRESET) ; // wait
+	__enable_irq();
+}
+
+// write bytes into flash memory (which is already erased to 0xFF)
+void eepromemu_flash_write(void *addr, const void *data, uint32_t len)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete(addr, len); // purge old data from ARM's cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x32) | LUT1(ADDR_SDR, PINS1, 24); // 32 = quad write
+	FLEXSPI_LUT61 = LUT0(WRITE_SDR, PINS4, 1);
+	FLEXSPI_IPTXFCR = FLEXSPI_IPTXFCR_CLRIPTXF; // clear tx fifo
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x00FFFFFF;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15) | FLEXSPI_IPCR1_IDATSZ(len);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	const uint8_t *src = (const uint8_t *)data;
+	uint32_t n;
+	while (!((n = FLEXSPI_INTR) & FLEXSPI_INTR_IPCMDDONE)) {
+		if (n & FLEXSPI_INTR_IPTXWE) {
+			uint32_t wrlen = len;
+			if (wrlen > 8) wrlen = 8;
+			if (wrlen > 0) {
+				memcpy((void *)&FLEXSPI_TFDR0, src, wrlen);
+				src += wrlen;
+				len -= wrlen;
+			}
+			FLEXSPI_INTR = FLEXSPI_INTR_IPTXWE;
+		}
+	}
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE | FLEXSPI_INTR_IPTXWE;
+	flash_wait();
+}
+
+// erase a 4K sector
+void eepromemu_flash_erase_sector(void *addr)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete((void *)((uint32_t)addr & 0xFFFFF000), 4096); // purge data from cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x20) | LUT1(ADDR_SDR, PINS1, 24); // 20 = sector erase
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x00FFF000;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	flash_wait();
+}
+
+void eepromemu_flash_erase_32K_block(void *addr)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete((void *)((uint32_t)addr & 0xFFFF8000), 32768); // purge data from cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x52) | LUT1(ADDR_SDR, PINS1, 24); // 20 = sector erase
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x00FF8000;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	flash_wait();
+}
+
+void eepromemu_flash_erase_64K_block(void *addr)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete((void *)((uint32_t)addr & 0xFFFF0000), 65536); // purge data from cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0xD8) | LUT1(ADDR_SDR, PINS1, 24); // 20 = sector erase
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x00FF0000;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	flash_wait();
+}

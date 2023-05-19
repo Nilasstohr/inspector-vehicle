@@ -28,8 +28,7 @@
  * SOFTWARE.
  */
 
-#ifndef USB_MTP_h_
-#define USB_MTP_h_
+#pragma once
 
 #include "usb_desc.h"
 
@@ -37,37 +36,41 @@
 
 #include <inttypes.h>
 
-
 // C language implementation
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_mtp_configure(void);
+int usb_mtp_recv(void *buffer, uint32_t timeout);
+int usb_mtp_available(void);
+int usb_mtp_send(const void *buffer, uint32_t len, uint32_t timeout);
+int usb_mtp_rxSize(void);
+int usb_mtp_txSize(void);
 
-void usb_mtp_update(void);
+extern uint32_t mtp_txEventCount;
+extern volatile uint8_t usb_mtp_status;
 
 #ifdef __cplusplus
 }
 #endif
 
+
 // C++ interface
 #ifdef __cplusplus
-class usb_mpt_class
+class usb_mtp_class
 {
-        public:
-        void begin(void) { }
-        void end(void) { }
-        void update() __attribute__((always_inline)) {
-		usb_mtp_update();
-	}
-	private:
+public:
+	int available(void) {return usb_mtp_available(); }
+	int recv(void *buffer, uint32_t timeout) { return usb_mtp_recv(buffer, timeout); }
+	int send(const void *buffer, uint32_t len, uint32_t timeout) { return usb_mtp_send(buffer, len, timeout); }
+    int rxSize(void) {return usb_mtp_rxSize(); }
+    int txSize(void) {return usb_mtp_txSize(); }
+
+    uint32_t txEventCount() { return mtp_txEventCount; }
 };
 
-extern usb_mpt_class MTPDisk;
-
+extern usb_mtp_class mtp;
 
 #endif // __cplusplus
 
 #endif // MTP_INTERFACE
-
-#endif // USB_MTP_h_
-

@@ -31,14 +31,12 @@
 
 #include "avr_functions.h"
 
-#if defined(__MK20DX128__) || defined(__MK20DX256__)
-  #define E2END 0x7FF
-#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
-  #define E2END 0xFFF
-#elif defined(__MKL26Z64__)
-  #define E2END 0x7F
-#else
-  #define E2END 0
+#if defined(ARDUINO_TEENSY40)
+#define E2END 0x437
+#elif defined(ARDUINO_TEENSY41)
+#define E2END 0x10BB
+#elif defined(ARDUINO_TEENSY_MICROMOD)
+#define E2END 0x10BB
 #endif
 
 #endif

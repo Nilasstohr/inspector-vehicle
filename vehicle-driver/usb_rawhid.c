@@ -30,61 +30,125 @@
 
 #include "usb_dev.h"
 #include "usb_rawhid.h"
+#include "avr/pgmspace.h" // for PROGMEM, DMAMEM, FASTRUN
 #include "core_pins.h" // for yield(), millis()
 #include <string.h>    // for memcpy()
 //#include "HardwareSerial.h"
 
+#include "debug/printf.h"
+
 #ifdef RAWHID_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
+
+#define TX_NUM   4
+static transfer_t tx_transfer[TX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t txbuffer[RAWHID_TX_SIZE * TX_NUM];
+static uint8_t tx_head=0;
+
+#define RX_NUM  4
+static transfer_t rx_transfer[RX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t rx_buffer[RAWHID_RX_SIZE * RX_NUM] __attribute__ ((aligned(32)));
+static volatile uint8_t rx_head;
+static volatile uint8_t rx_tail;
+static uint8_t rx_list[RX_NUM + 1];
+static volatile uint32_t rx_available;
+static void rx_queue_transfer(int i);
+static void rx_event(transfer_t *t);
+extern volatile uint8_t usb_configuration;
+
+
+void usb_rawhid_configure(void)
+{
+	printf("usb_rawhid_configure\n");
+	memset(tx_transfer, 0, sizeof(tx_transfer));
+	memset(rx_transfer, 0, sizeof(rx_transfer));
+	tx_head = 0;
+	rx_head = 0;
+	rx_tail = 0;
+	usb_config_tx(RAWHID_TX_ENDPOINT, RAWHID_TX_SIZE, 0, NULL);
+	usb_config_rx(RAWHID_RX_ENDPOINT, RAWHID_RX_SIZE, 0, rx_event);
+	int i;
+	for (i=0; i < RX_NUM; i++) rx_queue_transfer(i);
+}
+
+/*************************************************************************/
+/**                               Receive                               **/
+/*************************************************************************/
+
+static void rx_queue_transfer(int i)
+{
+	void *buffer = rx_buffer + i * RAWHID_RX_SIZE;
+	arm_dcache_delete(buffer, RAWHID_RX_SIZE);
+	//memset(buffer, )
+	NVIC_DISABLE_IRQ(IRQ_USB1);
+	usb_prepare_transfer(rx_transfer + i, buffer, RAWHID_RX_SIZE, i);
+	usb_receive(RAWHID_RX_ENDPOINT, rx_transfer + i);
+	NVIC_ENABLE_IRQ(IRQ_USB1);
+}
+
+static void rx_event(transfer_t *t)
+{
+	int i = t->callback_param;
+	//printf("rx event i=%d\n", i);
+	// received a packet with data
+	uint32_t head = rx_head;
+	if (++head > RX_NUM) head = 0;
+	rx_list[head] = i;
+	rx_head = head;
+}
+
 
 int usb_rawhid_recv(void *buffer, uint32_t timeout)
 {
-	usb_packet_t *rx_packet;
-	uint32_t begin = millis();
-
+	uint32_t wait_begin_at = systick_millis_count;
+	uint32_t tail = rx_tail;
 	while (1) {
-		if (!usb_configuration) return -1;
-		rx_packet = usb_rx(RAWHID_RX_ENDPOINT);
-		if (rx_packet) break;
-		if (millis() - begin > timeout || !timeout) return 0;
+		if (!usb_configuration) return -1; // usb not enumerated by host
+		if (tail != rx_head) break;
+		if ((systick_millis_count - wait_begin_at > timeout) || !timeout) {
+			return 0;
+		}
 		yield();
 	}
-	memcpy(buffer, rx_packet->buf, RAWHID_RX_SIZE);
-	usb_free(rx_packet);
+//	digitalWriteFast(0, LOW);
+	if (++tail > RX_NUM) tail = 0;
+	uint32_t i = rx_list[tail];
+	rx_tail = tail;
+
+	memcpy(buffer,  rx_buffer + i * RAWHID_RX_SIZE, RAWHID_RX_SIZE);
+	rx_queue_transfer(i);
+	//memset(rx_transfer, 0, sizeof(rx_transfer));
+	//usb_prepare_transfer(rx_transfer + 0, rx_buffer, RAWHID_RX_SIZE, 0);
+	//usb_receive(RAWHID_RX_ENDPOINT, rx_transfer + 0);
 	return RAWHID_RX_SIZE;
+}
+
+int usb_rawhid_send(const void *buffer, uint32_t timeout)
+{
+	transfer_t *xfer = tx_transfer + tx_head;
+	uint32_t wait_begin_at = systick_millis_count;
+
+	while (1) {
+		if (!usb_configuration) return -1; // usb not enumerated by host
+		uint32_t status = usb_transfer_status(xfer);
+		if (!(status & 0x80)) break; // transfer descriptor ready
+		if (systick_millis_count - wait_begin_at > timeout) return 0;
+		yield();
+	}
+	uint8_t *txdata = txbuffer + (tx_head * RAWHID_TX_SIZE);
+	memcpy(txdata, buffer, RAWHID_TX_SIZE);
+	arm_dcache_flush_delete(txdata, RAWHID_TX_SIZE );
+	usb_prepare_transfer(xfer, txdata, RAWHID_TX_SIZE, 0);
+	usb_transmit(RAWHID_TX_ENDPOINT, xfer);
+	if (++tx_head >= TX_NUM) tx_head = 0;
+	return RAWHID_TX_SIZE;
 }
 
 int usb_rawhid_available(void)
 {
-	uint32_t count;
-
 	if (!usb_configuration) return 0;
-	count = usb_rx_byte_count(RAWHID_RX_ENDPOINT);
-	return count;
+	if (rx_head != rx_tail) return RAWHID_RX_SIZE;
+	//if (!(usb_transfer_status(rx_transfer) & 0x80)) return RAWHID_RX_SIZE;
+	return 0;
 }
 
-// Maximum number of transmit packets to queue so we don't starve other endpoints for memory
-#define TX_PACKET_LIMIT 4
-
-int usb_rawhid_send(const void *buffer, uint32_t timeout)
-{
-	usb_packet_t *tx_packet;
-	uint32_t begin = millis();
-
-	while (1) {
-		if (!usb_configuration) return -1;
-		if (usb_tx_packet_count(RAWHID_TX_ENDPOINT) < TX_PACKET_LIMIT) {
-			tx_packet = usb_malloc();
-			if (tx_packet) break;
-		}
-		if (millis() - begin > timeout) return 0;
-		yield();
-	}
-	memcpy(tx_packet->buf, buffer, RAWHID_TX_SIZE);
-	tx_packet->len = RAWHID_TX_SIZE;
-	usb_tx(RAWHID_TX_ENDPOINT, tx_packet);
-	return RAWHID_TX_SIZE;
-}
-
-#endif // F_CPU
 #endif // RAWHID_INTERFACE

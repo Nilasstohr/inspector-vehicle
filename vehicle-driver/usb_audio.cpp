@@ -30,14 +30,10 @@
 
 #include <Arduino.h>
 #include "usb_dev.h"
+#include "usb_audio.h"
+#include "debug/printf.h"
 
-#ifdef AUDIO_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
-
-// Uncomment this to work around a limitation in Macintosh adaptive rates
-// This is not a perfect solution.  Details here:
-// https://forum.pjrc.com/threads/34855-Distorted-audio-when-using-USB-input-on-Teensy-3-1
-//#define MACOSX_ADAPTIVE_LIMIT
+#ifdef AUDIO_INTERFACE
 
 bool AudioInputUSB::update_responsibility;
 audio_block_t * AudioInputUSB::incoming_left;
@@ -49,12 +45,73 @@ uint8_t AudioInputUSB::receive_flag;
 
 struct usb_audio_features_struct AudioInputUSB::features = {0,0,FEATURE_MAX_VOLUME/2};
 
-#define DMABUFATTR __attribute__ ((section(".dmabuffers"), aligned (4)))
-uint16_t usb_audio_receive_buffer[AUDIO_RX_SIZE/2] DMABUFATTR;
-uint32_t usb_audio_sync_feedback DMABUFATTR;
-uint8_t usb_audio_receive_setting=0;
+extern volatile uint8_t usb_high_speed;
+static void rx_event(transfer_t *t);
+static void tx_event(transfer_t *t);
 
-static uint32_t feedback_accumulator = 185042824;
+/*static*/ transfer_t rx_transfer __attribute__ ((used, aligned(32)));
+/*static*/ transfer_t sync_transfer __attribute__ ((used, aligned(32)));
+/*static*/ transfer_t tx_transfer __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t rx_buffer[AUDIO_RX_SIZE] __attribute__ ((aligned(32)));
+DMAMEM static uint8_t tx_buffer[AUDIO_RX_SIZE] __attribute__ ((aligned(32)));
+DMAMEM uint32_t usb_audio_sync_feedback __attribute__ ((aligned(32)));
+
+uint8_t usb_audio_receive_setting=0;
+uint8_t usb_audio_transmit_setting=0;
+uint8_t usb_audio_sync_nbytes;
+uint8_t usb_audio_sync_rshift;
+
+uint32_t feedback_accumulator;
+
+volatile uint32_t usb_audio_underrun_count;
+volatile uint32_t usb_audio_overrun_count;
+
+
+static void rx_event(transfer_t *t)
+{
+	if (t) {
+		int len = AUDIO_RX_SIZE - ((rx_transfer.status >> 16) & 0x7FFF);
+		printf("rx %u\n", len);
+		usb_audio_receive_callback(len);
+	}
+	usb_prepare_transfer(&rx_transfer, rx_buffer, AUDIO_RX_SIZE, 0);
+	arm_dcache_delete(&rx_buffer, AUDIO_RX_SIZE);
+	usb_receive(AUDIO_RX_ENDPOINT, &rx_transfer);
+}
+
+static void sync_event(transfer_t *t)
+{
+	// USB 2.0 Specification, 5.12.4.2 Feedback, pages 73-75
+	//printf("sync %x\n", sync_transfer.status); // too slow, can't print this much
+	usb_audio_sync_feedback = feedback_accumulator >> usb_audio_sync_rshift;
+	usb_prepare_transfer(&sync_transfer, &usb_audio_sync_feedback, usb_audio_sync_nbytes, 0);
+	arm_dcache_flush(&usb_audio_sync_feedback, usb_audio_sync_nbytes);
+	usb_transmit(AUDIO_SYNC_ENDPOINT, &sync_transfer);
+}
+
+void usb_audio_configure(void)
+{
+	printf("usb_audio_configure\n");
+	usb_audio_underrun_count = 0;
+	usb_audio_overrun_count = 0;
+	feedback_accumulator = 739875226; // 44.1 * 2^24
+	if (usb_high_speed) {
+		usb_audio_sync_nbytes = 4;
+		usb_audio_sync_rshift = 8;
+	} else {
+		usb_audio_sync_nbytes = 3;
+		usb_audio_sync_rshift = 10;
+	}
+	memset(&rx_transfer, 0, sizeof(rx_transfer));
+	usb_config_rx_iso(AUDIO_RX_ENDPOINT, AUDIO_RX_SIZE, 1, rx_event);
+	rx_event(NULL);
+	memset(&sync_transfer, 0, sizeof(sync_transfer));
+	usb_config_tx_iso(AUDIO_SYNC_ENDPOINT, usb_audio_sync_nbytes, 1, sync_event);
+	sync_event(NULL);
+	memset(&tx_transfer, 0, sizeof(tx_transfer));
+	usb_config_tx_iso(AUDIO_TX_ENDPOINT, AUDIO_TX_SIZE, 1, tx_event);
+	tx_event(NULL);
+}
 
 void AudioInputUSB::begin(void)
 {
@@ -68,9 +125,8 @@ void AudioInputUSB::begin(void)
 	// TODO: update responsibility is tough, partly because the USB
 	// interrupts aren't sychronous to the audio library block size,
 	// but also because the PC may stop transmitting data, which
-	// means we no longer get receive callbacks from usb_dev.
+	// means we no longer get receive callbacks from usb.c
 	update_responsibility = false;
-	usb_audio_sync_feedback = feedback_accumulator >> 8;
 }
 
 static void copy_to_buffers(const uint32_t *src, int16_t *left, int16_t *right, unsigned int len)
@@ -101,6 +157,7 @@ static void copy_to_buffers(const uint32_t *src, int16_t *left, int16_t *right, 
 // Called from the USB interrupt when an isochronous packet arrives
 // we must completely remove it from the receive buffer before returning
 //
+#if 1
 void usb_audio_receive_callback(unsigned int len)
 {
 	unsigned int count, avail;
@@ -109,7 +166,7 @@ void usb_audio_receive_callback(unsigned int len)
 
 	AudioInputUSB::receive_flag = 1;
 	len >>= 2; // 1 sample = 4 bytes: 2 left, 2 right
-	data = (const uint32_t *)usb_audio_receive_buffer;
+	data = (const uint32_t *)rx_buffer;
 
 	count = AudioInputUSB::incoming_count;
 	left = AudioInputUSB::incoming_left;
@@ -137,10 +194,11 @@ void usb_audio_receive_callback(unsigned int len)
 			if (AudioInputUSB::ready_left || AudioInputUSB::ready_right) {
 				// buffer overrun, PC sending too fast
 				AudioInputUSB::incoming_count = count + avail;
-				//if (len > 0) {
-					//serial_print("!");
+				if (len > 0) {
+					usb_audio_overrun_count++;
+					printf("!");
 					//serial_phex(len);
-				//}
+				}
 				return;
 			}
 			send:
@@ -172,6 +230,7 @@ void usb_audio_receive_callback(unsigned int len)
 	}
 	AudioInputUSB::incoming_count = count;
 }
+#endif
 
 void AudioInputUSB::update(void)
 {
@@ -188,23 +247,18 @@ void AudioInputUSB::update(void)
 	__enable_irq();
 	if (f) {
 		int diff = AUDIO_BLOCK_SAMPLES/2 - (int)c;
-		feedback_accumulator += diff / 3;
-		uint32_t feedback = (feedback_accumulator >> 8) + diff * 100;
-#ifdef MACOSX_ADAPTIVE_LIMIT
-		if (feedback > 722698) feedback = 722698;
-#endif
-		usb_audio_sync_feedback = feedback;
-		//if (diff > 0) {
-			//serial_print(".");
-		//} else if (diff < 0) {
-			//serial_print("^");
-		//}
+		feedback_accumulator += diff * 1;
+		//uint32_t feedback = (feedback_accumulator >> 8) + diff * 100;
+		//usb_audio_sync_feedback = feedback;
+
+		//printf(diff >= 0 ? "." : "^");
 	}
 	//serial_phex(c);
 	//serial_print(".");
 	if (!left || !right) {
-		//serial_print("#"); // buffer underrun - PC sending too slow
-		//if (f) feedback_accumulator += 10 << 8;
+		usb_audio_underrun_count++;
+		//printf("#"); // buffer underrun - PC sending too slow
+		if (f) feedback_accumulator += 3500;
 	}
 	if (left) {
 		transmit(left, 0);
@@ -222,6 +276,17 @@ void AudioInputUSB::update(void)
 
 
 
+
+
+
+
+
+
+
+
+
+
+#if 1
 bool AudioOutputUSB::update_responsibility;
 audio_block_t * AudioOutputUSB::left_1st;
 audio_block_t * AudioOutputUSB::left_2nd;
@@ -229,9 +294,18 @@ audio_block_t * AudioOutputUSB::right_1st;
 audio_block_t * AudioOutputUSB::right_2nd;
 uint16_t AudioOutputUSB::offset_1st;
 
+/*DMAMEM*/ uint16_t usb_audio_transmit_buffer[AUDIO_TX_SIZE/2] __attribute__ ((used, aligned(32)));
 
-uint16_t usb_audio_transmit_buffer[AUDIO_TX_SIZE/2] DMABUFATTR;
-uint8_t usb_audio_transmit_setting=0;
+
+static void tx_event(transfer_t *t)
+{
+	int len = usb_audio_transmit_callback();
+	usb_audio_sync_feedback = feedback_accumulator >> usb_audio_sync_rshift;
+	usb_prepare_transfer(&tx_transfer, usb_audio_transmit_buffer, len, 0);
+	arm_dcache_flush_delete(usb_audio_transmit_buffer, len);
+	usb_transmit(AUDIO_TX_ENDPOINT, &tx_transfer);
+}
+
 
 void AudioOutputUSB::begin(void)
 {
@@ -319,7 +393,7 @@ unsigned int usb_audio_transmit_callback(void)
 	uint32_t avail, num, target, offset, len=0;
 	audio_block_t *left, *right;
 
-	if (++count < 9) {   // TODO: dynamic adjust to match USB rate
+	if (++count < 10) {   // TODO: dynamic adjust to match USB rate
 		target = 44;
 	} else {
 		count = 0;
@@ -358,6 +432,9 @@ unsigned int usb_audio_transmit_callback(void)
 	}
 	return target * 4;
 }
+#endif
+
+
 
 
 struct setup_struct {
@@ -444,5 +521,4 @@ int usb_audio_set_feature(void *stp, uint8_t *buf)
 }
 
 
-#endif // F_CPU
 #endif // AUDIO_INTERFACE

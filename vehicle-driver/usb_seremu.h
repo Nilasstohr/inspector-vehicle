@@ -28,21 +28,20 @@
  * SOFTWARE.
  */
 
-#ifndef USBseremu_h_
-#define USBseremu_h_
+#pragma once
 
 #include "usb_desc.h"
 
-#if defined(SEREMU_INTERFACE)
+#if defined(SEREMU_INTERFACE) && !defined(CDC_STATUS_INTERFACE) && !defined(CDC_DATA_INTERFACE)
 
-#include <inttypes.h>
-
-#if F_CPU >= 20000000
+#include <stdint.h>
 
 // C language implementation
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_seremu_reset(void);
+void usb_seremu_configure(void);
 int usb_seremu_getchar(void);
 int usb_seremu_peekchar(void);
 int usb_seremu_available(void);
@@ -51,8 +50,6 @@ int usb_seremu_putchar(uint8_t c);
 int usb_seremu_write(const void *buffer, uint32_t size);
 int usb_seremu_write_buffer_free(void);
 void usb_seremu_flush_output(void);
-void usb_seremu_flush_callback(void);
-extern volatile uint8_t usb_seremu_transmit_flush_timer;
 extern volatile uint8_t usb_configuration;
 extern volatile uint8_t usb_seremu_online;
 #ifdef __cplusplus
@@ -78,6 +75,7 @@ public:
 				// USB host has begun the USB enumeration process.
 				if (elapsed > 750) break;
 			}
+			yield();
 		}
 	}
         void end() { /* TODO: flush output and shut down USB port */ };
@@ -100,16 +98,14 @@ public:
         uint8_t numbits(void) { return 8; }
         uint8_t dtr(void) { return 1; }
         uint8_t rts(void) { return 1; }
-        operator bool() { return usb_configuration && usb_seremu_online; }
+        operator bool() { yield(); return usb_configuration && usb_seremu_online; }
 };
 extern usb_seremu_class Serial;
 extern void serialEvent(void);
 #endif // __cplusplus
 
 
-
-#else  // F_CPU < 20 MHz
-
+#if 0
 // Allow Arduino programs using Serial to compile, but Serial will do nothing.
 #ifdef __cplusplus
 #include "Stream.h"
@@ -144,9 +140,7 @@ public:
 extern usb_seremu_class Serial;
 extern void serialEvent(void);
 #endif // __cplusplus
+#endif
 
-#endif // F_CPU
 
 #endif // SEREMU_INTERFACE
-
-#endif // USBseremu_h_

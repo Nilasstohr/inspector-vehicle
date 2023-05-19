@@ -41,8 +41,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_joystick_configure(void);
 int usb_joystick_send(void);
 extern uint32_t usb_joystick_data[(JOYSTICK_SIZE+3)/4];
+extern volatile uint8_t usb_configuration;
 #ifdef __cplusplus
 }
 #endif

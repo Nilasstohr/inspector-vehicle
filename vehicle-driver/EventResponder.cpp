@@ -86,7 +86,7 @@ void EventResponder::triggerEventNotImmediate()
 	enableInterrupts(irq);
 }
 
-void pendablesrvreq_isr(void)
+extern "C" void pendablesrvreq_isr(void)
 {
 	EventResponder::runFromInterrupt();
 }
@@ -338,18 +338,27 @@ void MillisTimer::runFromTimer()
 // code will run at lower interrupt priority for better compatibility
 // with libraries using mid-to-high priority interrupts.
 
+// TODO: this doesn't work for IMXRT - no longer using predefined names
 extern "C" volatile uint32_t systick_millis_count;
-
-void systick_isr(void)
+extern "C" volatile uint32_t systick_cycle_count;
+extern "C" uint32_t systick_safe_read; // micros() synchronization
+extern "C" void systick_isr(void)
 {
+	systick_cycle_count = ARM_DWT_CYCCNT;
 	systick_millis_count++;
 }
+
+// Entry to any ARM exception clears the LDREX exclusive access flag.
+// So we do not need to do anything with "systick_safe_read" here, as
+// this code depends on this Cortex-M7 hardware feature to cause any
+// STREX instruction to return 1 (fail status) after returning to
+// main program or lower priority interrupts.
+//  https://developer.arm.com/documentation/dui0646/c/the-cortex-m7-processor/memory-model/synchronization-primitives
 
 extern "C" void systick_isr_with_timer_events(void)
 {
+	systick_cycle_count = ARM_DWT_CYCCNT;
 	systick_millis_count++;
 	MillisTimer::runFromTimer();
 }
-
-
 

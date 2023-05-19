@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -31,15 +31,46 @@
 #include <Arduino.h>
 #include "HardwareSerial.h"
 
-#ifdef HAS_KINETISK_UART4
+#ifndef SERIAL5_TX_BUFFER_SIZE
+#define SERIAL5_TX_BUFFER_SIZE     40 // number of outgoing bytes to buffer
+#endif
+#ifndef SERIAL5_RX_BUFFER_SIZE
+#define SERIAL5_RX_BUFFER_SIZE     64 // number of incoming bytes to buffer
+#endif
+#define IRQ_PRIORITY  64  // 0 = highest priority, 255 = lowest
 
-HardwareSerial5 Serial5(&serialEvent5);
 
+void IRQHandler_Serial5()
+{
+	Serial5.IRQHandler();
+}
+// Serial5
+static BUFTYPE tx_buffer5[SERIAL5_TX_BUFFER_SIZE];
+static BUFTYPE rx_buffer5[SERIAL5_RX_BUFFER_SIZE];
 uint8_t _serialEvent5_default __attribute__((weak)) PROGMEM = 0 ;
 
-void HardwareSerial5::begin(uint32_t baud) { 
-	serial5_begin(BAUD2DIV3(baud));
-	if (!_serialEvent5_default) addToSerialEventsList();
-}
-
-#endif
+static HardwareSerial::hardware_t UART8_Hardware = {
+	4, IRQ_LPUART8, &IRQHandler_Serial5, 
+	&serialEvent5, &_serialEvent5_default,
+	CCM_CCGR6, CCM_CCGR6_LPUART8(CCM_CCGR_ON),
+	#if defined(ARDUINO_TEENSY41)
+	{{21,2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 1}, {46, 2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 0}},
+	{{20,2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 1}, {47, 2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 0}},
+	43, //  CTS pin
+	2, //  CTS
+	#elif defined(ARDUINO_TEENSY40)
+	{{21,2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 1}, {38, 2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 0}},
+	{{20,2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 1}, {39, 2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 0}},
+	35, //  CTS pin
+	2, //  CTS
+	#else // ARDUINO_TEENSY_MICROMOD
+	{{21,2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 1}, {39, 2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 0}},
+	{{20,2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 1}, {38, 2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 0}},
+	35, //  CTS pin
+	2, //  CTS
+	#endif
+	IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
+	XBARA1_OUT_LPUART8_TRG_INPUT
+};
+HardwareSerial Serial5(&IMXRT_LPUART8, &UART8_Hardware, tx_buffer5, SERIAL5_TX_BUFFER_SIZE,
+	rx_buffer5,  SERIAL5_RX_BUFFER_SIZE);

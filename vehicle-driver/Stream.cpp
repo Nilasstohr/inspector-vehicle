@@ -75,7 +75,7 @@ void Stream::setTimeout(unsigned long timeout)  // sets the maximum number of mi
 
  // find returns true if the target string is found
 bool  Stream::find(const char *target)
-{
+{  
   return findUntil(target, NULL);
 }
 
@@ -102,10 +102,11 @@ bool Stream::findUntil(const char *target, size_t targetLen, const char *termina
   size_t index = 0;  // maximum target string length is 64k bytes!
   size_t termIndex = 0;
   int c;
+
   if( target == nullptr) return true;
   if( *target == 0) return true;   // return true if target is a null string
   if (terminator == nullptr) termLen = 0;
-
+	
   while( (c = timedRead()) > 0){
     if( c == target[index]){
     //////Serial.print("found "); Serial.write(c); Serial.print("index now"); Serial.println(index+1);
@@ -196,7 +197,7 @@ float Stream::parseFloat(char skipChar){
     else if(c >= '0' && c <= '9')  {      // is c a digit?
       value = value * 10 + c - '0';
       if(isFraction)
-         fraction *= 0.1;
+         fraction *= 0.1f;
     }
     read();  // consume the character we got with peek
     c = timedPeek();

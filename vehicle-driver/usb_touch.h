@@ -41,9 +41,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_touchscreen_configure(void);
 void usb_touchscreen_press(uint8_t finger, uint32_t x, uint32_t y, uint32_t pressure);
 void usb_touchscreen_release(uint8_t finger);
 void usb_touchscreen_update_callback(void);
+extern volatile uint8_t usb_configuration;
 #ifdef __cplusplus
 }
 #endif

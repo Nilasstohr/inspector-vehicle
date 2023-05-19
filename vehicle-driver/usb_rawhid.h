@@ -28,8 +28,7 @@
  * SOFTWARE.
  */
 
-#ifndef USBrawhid_h_
-#define USBrawhid_h_
+#pragma once
 
 #include "usb_desc.h"
 
@@ -41,6 +40,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_rawhid_configure(void);
 int usb_rawhid_recv(void *buffer, uint32_t timeout);
 int usb_rawhid_available(void);
 int usb_rawhid_send(const void *buffer, uint32_t timeout);
@@ -64,5 +64,3 @@ extern usb_rawhid_class RawHID;
 #endif // __cplusplus
 
 #endif // RAWHID_INTERFACE
-
-#endif // USBrawhid_h_

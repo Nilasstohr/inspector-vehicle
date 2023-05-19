@@ -32,11 +32,12 @@
 #include "usb_keyboard.h"
 #include "core_pins.h" // for yield()
 #include "keylayouts.h"
-//#include "HardwareSerial.h"
 #include <string.h> // for memcpy()
+#include "avr/pgmspace.h" // for PROGMEM, DMAMEM, FASTRUN
+#include "debug/printf.h"
+#include "core_pins.h"
 
 #ifdef KEYBOARD_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
 
 // which modifier keys are currently pressed
 // 1=left ctrl,	   2=left shift,   4=left alt,	  8=left gui
@@ -85,6 +86,29 @@ static void usb_keymedia_release_system_key(uint8_t key);
 static int usb_keymedia_send(void);
 #endif
 
+
+#define TX_NUM     12
+#define TX_BUFSIZE 32
+static transfer_t tx_transfer[TX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t txbuffer[TX_NUM * TX_BUFSIZE] __attribute__ ((aligned(32)));
+static uint8_t tx_head=0;
+#if KEYBOARD_SIZE > TX_BUFSIZE
+#error "Internal error, transmit buffer size is too small for keyboard endpoint"
+#endif
+#if defined(KEYMEDIA_INTERFACE) && KEYMEDIA_SIZE > TX_BUFSIZE
+#error "Internal error, transmit buffer size is too small for media keys endpoint"
+#endif
+
+
+void usb_keyboard_configure(void)
+{
+	memset(tx_transfer, 0, sizeof(tx_transfer));
+	tx_head = 0;
+	usb_config_tx(KEYBOARD_ENDPOINT, KEYBOARD_SIZE, 0, NULL);  // normal keys use 8 byte packet
+#ifdef KEYMEDIA_INTERFACE
+	usb_config_tx(KEYMEDIA_ENDPOINT, KEYMEDIA_SIZE, 0, NULL);  // media keys use 8 byte packet
+#endif
+}
 
 
 // Step #1, decode UTF8 to Unicode code points
@@ -489,81 +513,63 @@ int usb_keyboard_press(uint8_t key, uint8_t modifier)
 }
 
 
-// Maximum number of transmit packets to queue so we don't starve other endpoints for memory
-#define TX_PACKET_LIMIT 4
-
 static uint8_t transmit_previous_timeout=0;
 
 // When the PC isn't listening, how long do we wait before discarding data?
 #define TX_TIMEOUT_MSEC 50
-#if F_CPU == 256000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1706)
-#elif F_CPU == 240000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1600)
-#elif F_CPU == 216000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1440)
-#elif F_CPU == 192000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1280)
-#elif F_CPU == 180000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1200)
-#elif F_CPU == 168000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1100)
-#elif F_CPU == 144000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 932)
-#elif F_CPU == 120000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 764)
-#elif F_CPU == 96000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 596)
-#elif F_CPU == 72000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 512)
-#elif F_CPU == 48000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 428)
-#elif F_CPU == 24000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 262)
-#endif
+
+static int usb_keyboard_transmit(int endpoint, const uint8_t *data, uint32_t len)
+{
+	if (!usb_configuration) return -1;
+	uint32_t head = tx_head;
+	transfer_t *xfer = tx_transfer + head;
+	uint32_t wait_begin_at = systick_millis_count;
+	while (1) {
+		uint32_t status = usb_transfer_status(xfer);
+		if (!(status & 0x80)) {
+			if (status & 0x68) {
+				// TODO: what if status has errors???
+				printf("ERROR status = %x, i=%d, ms=%u\n",
+					status, tx_head, systick_millis_count);
+			}
+			transmit_previous_timeout = 0;
+			break;
+		}
+		if (transmit_previous_timeout) return -1;
+		if (systick_millis_count - wait_begin_at > TX_TIMEOUT_MSEC) {
+			// waited too long, assume the USB host isn't listening
+			transmit_previous_timeout = 1;
+			return -1;
+		}
+		if (!usb_configuration) return -1;
+		yield();
+	}
+	delayNanoseconds(30); // min req'd 11 ns, TODO: why is status ready too soon?
+	uint8_t *buffer = txbuffer + head * TX_BUFSIZE;
+	memcpy(buffer, data, len);
+	usb_prepare_transfer(xfer, buffer, len, 0);
+	arm_dcache_flush_delete(buffer, TX_BUFSIZE);
+	usb_transmit(endpoint, xfer);
+	if (++head >= TX_NUM) head = 0;
+	tx_head = head;
+	return 0;
+}
 
 
 // send the contents of keyboard_keys and keyboard_modifier_keys
 int usb_keyboard_send(void)
 {
-#if 0
-	serial_print("Send:");
-	serial_phex(keyboard_modifier_keys);
-	serial_phex(keyboard_keys[0]);
-	serial_phex(keyboard_keys[1]);
-	serial_phex(keyboard_keys[2]);
-	serial_phex(keyboard_keys[3]);
-	serial_phex(keyboard_keys[4]);
-	serial_phex(keyboard_keys[5]);
-	serial_print("\n");
-#endif
-#if 1
-	uint32_t wait_count=0;
-	usb_packet_t *tx_packet;
-
-	while (1) {
-		if (!usb_configuration) {
-			return -1;
-		}
-		if (usb_tx_packet_count(KEYBOARD_ENDPOINT) < TX_PACKET_LIMIT) {
-			tx_packet = usb_malloc();
-			if (tx_packet) break;
-		}
-		if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
-			transmit_previous_timeout = 1;
-			return -1;
-		}
-		yield();
-	}
-	*(tx_packet->buf) = keyboard_modifier_keys;
-	*(tx_packet->buf + 1) = 0;
-	memcpy(tx_packet->buf + 2, keyboard_keys, 6);
-	tx_packet->len = 8;
-	usb_tx(KEYBOARD_ENDPOINT, tx_packet);
-#endif
-	return 0;
+	uint8_t buffer[KEYBOARD_SIZE];
+	buffer[0] = keyboard_modifier_keys;
+	buffer[1] = 0;
+	buffer[2] = keyboard_keys[0];
+	buffer[3] = keyboard_keys[1];
+	buffer[4] = keyboard_keys[2];
+	buffer[5] = keyboard_keys[3];
+	buffer[6] = keyboard_keys[4];
+	buffer[7] = keyboard_keys[5];
+	return usb_keyboard_transmit(KEYBOARD_ENDPOINT, buffer, KEYBOARD_SIZE);
 }
-
 
 
 #ifdef KEYMEDIA_INTERFACE
@@ -649,42 +655,21 @@ void usb_keymedia_release_all(void)
 // send the contents of keyboard_keys and keyboard_modifier_keys
 static int usb_keymedia_send(void)
 {
-	uint32_t wait_count=0;
-	usb_packet_t *tx_packet;
-	const uint16_t *consumer;
-
-	while (1) {
-		if (!usb_configuration) {
-			return -1;
-		}
-		if (usb_tx_packet_count(KEYMEDIA_ENDPOINT) < TX_PACKET_LIMIT) {
-			tx_packet = usb_malloc();
-			if (tx_packet) break;
-		}
-		if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
-			transmit_previous_timeout = 1;
-			return -1;
-		}
-		yield();
-	}
+	uint8_t buffer[8];
+	const uint16_t *consumer = keymedia_consumer_keys;
 	// 44444444 44333333 33332222 22222211 11111111
 	// 98765432 10987654 32109876 54321098 76543210
-	consumer = keymedia_consumer_keys;
-	*(tx_packet->buf + 0) = consumer[0];
-	*(tx_packet->buf + 1) = (consumer[1] << 2) | ((consumer[0] >> 8) & 0x03);
-	*(tx_packet->buf + 2) = (consumer[2] << 4) | ((consumer[1] >> 6) & 0x0F);
-	*(tx_packet->buf + 3) = (consumer[3] << 6) | ((consumer[2] >> 4) & 0x3F);
-	*(tx_packet->buf + 4) = consumer[3] >> 2;
-	*(tx_packet->buf + 5) = keymedia_system_keys[0];
-	*(tx_packet->buf + 6) = keymedia_system_keys[1];
-	*(tx_packet->buf + 7) = keymedia_system_keys[2];
-	tx_packet->len = 8;
-	usb_tx(KEYMEDIA_ENDPOINT, tx_packet);
-	return 0;
+	buffer[0] = consumer[0];
+	buffer[1] = (consumer[1] << 2) | ((consumer[0] >> 8) & 0x03);
+	buffer[2] = (consumer[2] << 4) | ((consumer[1] >> 6) & 0x0F);
+	buffer[3] = (consumer[3] << 6) | ((consumer[2] >> 4) & 0x3F);
+	buffer[4] = consumer[3] >> 2;
+	buffer[5] = keymedia_system_keys[0];
+	buffer[6] = keymedia_system_keys[1];
+	buffer[7] = keymedia_system_keys[2];
+	return usb_keyboard_transmit(KEYMEDIA_ENDPOINT, buffer, KEYMEDIA_SIZE);
 }
 
 #endif // KEYMEDIA_INTERFACE
 
-
-#endif // F_CPU
 #endif // KEYBOARD_INTERFACE

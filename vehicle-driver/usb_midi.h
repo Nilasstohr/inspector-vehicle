@@ -38,16 +38,13 @@
 #include <inttypes.h>
 
 // maximum sysex length we can receive
-#if defined(__MKL26Z64__) || defined(__MK20DX128__)
-#define USB_MIDI_SYSEX_MAX  60
-#else
 #define USB_MIDI_SYSEX_MAX 290
-#endif
 
 // C language implementation
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_midi_configure(void);
 void usb_midi_write_packed(uint32_t n);
 void usb_midi_send_sysex_buffer_has_term(const uint8_t *data, uint32_t length, uint8_t cable);
 void usb_midi_send_sysex_add_term_bytes(const uint8_t *data, uint32_t length, uint8_t cable);
@@ -62,6 +59,7 @@ extern uint8_t usb_midi_msg_data1;
 extern uint8_t usb_midi_msg_data2;
 extern uint8_t usb_midi_msg_sysex[USB_MIDI_SYSEX_MAX];
 extern uint16_t usb_midi_msg_sysex_len;
+extern volatile uint8_t usb_configuration;
 extern void (*usb_midi_handleNoteOff)(uint8_t ch, uint8_t note, uint8_t vel);
 extern void (*usb_midi_handleNoteOn)(uint8_t ch, uint8_t note, uint8_t vel);
 extern void (*usb_midi_handleVelocityChange)(uint8_t ch, uint8_t note, uint8_t vel);

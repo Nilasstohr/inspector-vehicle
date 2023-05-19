@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -31,15 +31,51 @@
 #include <Arduino.h>
 #include "HardwareSerial.h"
 
-#ifdef HAS_KINETISK_UART3
+#ifndef SERIAL4_TX_BUFFER_SIZE
+#define SERIAL4_TX_BUFFER_SIZE     40 // number of outgoing bytes to buffer
+#endif
+#ifndef SERIAL4_RX_BUFFER_SIZE
+#define SERIAL4_RX_BUFFER_SIZE     64 // number of incoming bytes to buffer
+#endif
+#define IRQ_PRIORITY  64  // 0 = highest priority, 255 = lowest
 
-HardwareSerial4 Serial4(&serialEvent4);
 
-uint8_t _serialEvent4_default __attribute__((weak)) PROGMEM = 0 ;
-
-void HardwareSerial4::begin(uint32_t baud) { 
-	serial4_begin(BAUD2DIV3(baud));
-	if (!_serialEvent4_default) addToSerialEventsList();
+void IRQHandler_Serial4()
+{
+	Serial4.IRQHandler();
 }
 
+// Serial4
+static BUFTYPE tx_buffer4[SERIAL4_TX_BUFFER_SIZE];
+static BUFTYPE rx_buffer4[SERIAL4_RX_BUFFER_SIZE];
+uint8_t _serialEvent4_default __attribute__((weak)) PROGMEM = 0 ;
+
+#ifndef ARDUINO_TEENSY_MICROMOD
+static HardwareSerial::hardware_t UART3_Hardware = {
+	3, IRQ_LPUART3, &IRQHandler_Serial4, 
+	&serialEvent4, &_serialEvent4_default,
+	CCM_CCGR0, CCM_CCGR0_LPUART3(CCM_CCGR_ON),
+	{{16,2, &IOMUXC_LPUART3_RX_SELECT_INPUT, 0}, {0xff, 0xff, nullptr, 0}},
+	{{17,2, &IOMUXC_LPUART3_TX_SELECT_INPUT, 0}, {0xff, 0xff, nullptr, 0}},
+	0xff, // No CTS pin
+	0, // No CTS
+	IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
+	XBARA1_OUT_LPUART3_TRG_INPUT
+};
+HardwareSerial Serial4(&IMXRT_LPUART3, &UART3_Hardware, tx_buffer4, SERIAL4_TX_BUFFER_SIZE,
+	rx_buffer4,  SERIAL4_RX_BUFFER_SIZE);
+#else
+static HardwareSerial::hardware_t UART4_Hardware = {
+    1, IRQ_LPUART4, &IRQHandler_Serial4, 
+    &serialEvent4, &_serialEvent4_default,
+    CCM_CCGR1, CCM_CCGR1_LPUART4(CCM_CCGR_ON),
+    {{7,2, &IOMUXC_LPUART4_RX_SELECT_INPUT, 2}, {0xff, 0xff, nullptr, 0}},
+    {{8,2, &IOMUXC_LPUART4_TX_SELECT_INPUT, 2}, {0xff, 0xff, nullptr, 0}},
+    0xff, // No CTS pin
+    0, // No CTS
+    IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
+    XBARA1_OUT_LPUART4_TRG_INPUT
+};
+HardwareSerial Serial4(&IMXRT_LPUART4, &UART4_Hardware, tx_buffer4, SERIAL4_TX_BUFFER_SIZE, 
+    rx_buffer4,  SERIAL4_RX_BUFFER_SIZE);
 #endif

@@ -28,8 +28,7 @@
  * SOFTWARE.
  */
 
-#ifndef USBkeyboard_h_
-#define USBkeyboard_h_
+#pragma once
 
 #include "usb_desc.h"
 
@@ -43,6 +42,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void usb_keyboard_configure(void);
 void usb_keyboard_write(uint8_t c);
 void usb_keyboard_write_unicode(uint16_t cpoint);
 void usb_keyboard_press_keycode(uint16_t n);
@@ -59,6 +59,7 @@ extern uint8_t keyboard_protocol;
 extern uint8_t keyboard_idle_config;
 extern uint8_t keyboard_idle_count;
 extern volatile uint8_t keyboard_leds;
+extern volatile uint8_t usb_configuration;
 #ifdef __cplusplus
 }
 #endif
@@ -108,4 +109,3 @@ extern usb_keyboard_class Keyboard;
 
 #endif // KEYBOARD_INTERFACE
 
-#endif // USBkeyboard_h_

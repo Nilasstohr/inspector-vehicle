@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -36,31 +36,23 @@
 // changed to allow multiple simultaneous tones.
 
 static uint32_t tone_toggle_count;
-static volatile uint8_t *tone_reg;
-static uint8_t tone_pin=255;
+static volatile uint32_t *tone_reg;
+static uint32_t tone_mask;
 static float tone_usec=0.0;
 static uint32_t tone_new_count=0;
-IntervalTimer tone_timer;
+static IntervalTimer tone_timer;
+static uint8_t tone_pin=255;
 
 void tone_interrupt(void);
 
-#if defined(KINETISK)
-#define TONE_CLEAR_PIN   tone_reg[0] = 1
-#define TONE_TOGGLE_PIN  tone_reg[128] = 1
-#define TONE_OUTPUT_PIN  tone_reg[384] = 1
-
-#elif defined(KINETISL)
-static uint8_t tone_mask;
-#define TONE_CLEAR_PIN   tone_reg[0] = tone_mask
-#define TONE_TOGGLE_PIN  tone_reg[4] = tone_mask
-#define TONE_OUTPUT_PIN  __disable_irq(); tone_reg[12] |= tone_mask; __enable_irq()
-
-#endif
+#define TONE_CLEAR_PIN   (tone_reg[34] = tone_mask)
+#define TONE_TOGGLE_PIN  (tone_reg[35] = tone_mask)
+#define TONE_OUTPUT_PIN  (tone_reg[1] |= tone_mask)
 
 void tone(uint8_t pin, uint16_t frequency, uint32_t duration)
 {
 	uint32_t count;
-	volatile uint32_t *config;
+	volatile uint32_t *muxreg;
 	float usec;
 
 	if (pin >= CORE_NUM_DIGITAL) return;
@@ -72,7 +64,7 @@ void tone(uint8_t pin, uint16_t frequency, uint32_t duration)
 	}
 	if (frequency < 1) frequency = 1; // minimum is 1 Hz
 	usec = (float)500000.0 / (float)frequency;
-	config = portConfigRegister(pin);
+	muxreg = portConfigRegister(pin);
 
 	// TODO: IntervalTimer really needs an API to disable and enable
 	// the interrupt on a single timer.
@@ -98,13 +90,12 @@ void tone(uint8_t pin, uint16_t frequency, uint32_t duration)
 		}
 		// configure the new tone to play
 		tone_pin = pin;
-		tone_reg = portClearRegister(pin);
-		#if defined(KINETISL)
+		tone_reg = portOutputRegister(pin);
 		tone_mask = digitalPinToBitMask(pin);
-		#endif
 		TONE_CLEAR_PIN; // clear pin
 		TONE_OUTPUT_PIN; // output mode;
-		*config = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
+		*muxreg = 5;
+		// TODO: configure pad register
 		tone_toggle_count = count;
 		tone_usec = usec;
 		tone_timer.begin(tone_interrupt, usec);

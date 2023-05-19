@@ -31,10 +31,12 @@
 #include "usb_dev.h"
 #include "usb_midi.h"
 #include "core_pins.h" // for yield()
-#include "HardwareSerial.h"
+#include <string.h> // for memcpy()
+#include "avr/pgmspace.h" // for PROGMEM, DMAMEM, FASTRUN
+#include "debug/printf.h"
+#include "core_pins.h"
 
 #ifdef MIDI_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
 
 uint8_t usb_midi_msg_cable;
 uint8_t usb_midi_msg_channel;
@@ -66,41 +68,66 @@ void (*usb_midi_handleSystemReset)(void) = NULL;
 void (*usb_midi_handleRealTimeSystem)(uint8_t rtb) = NULL;
 
 
-// Maximum number of transmit packets to queue so we don't starve other endpoints for memory
-#define TX_PACKET_LIMIT 6
-static usb_packet_t *rx_packet=NULL;
-static usb_packet_t *tx_packet=NULL;
+//static usb_packet_t *rx_packet=NULL;
+//static usb_packet_t *tx_packet=NULL;
 static uint8_t transmit_previous_timeout=0;
 static uint8_t tx_noautoflush=0;
+extern volatile uint8_t usb_high_speed;
+
+
+#define TX_NUM   4
+#define TX_SIZE  512 /* should be a multiple of MIDI_TX_SIZE_480 */
+static transfer_t tx_transfer[TX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t txbuffer[TX_SIZE * TX_NUM] __attribute__ ((aligned(32)));
+static uint8_t tx_head=0;
+static uint16_t tx_available=0;
+static uint16_t tx_packet_size=0;
+
+#define RX_NUM  6
+static transfer_t rx_transfer[RX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t rx_buffer[RX_NUM * MIDI_RX_SIZE_480] __attribute__ ((aligned(32)));
+static uint16_t rx_count[RX_NUM];
+static uint16_t rx_index[RX_NUM];
+static uint16_t rx_packet_size=0;
+static volatile uint8_t rx_head;
+static volatile uint8_t rx_tail;
+static uint8_t rx_list[RX_NUM + 1];
+static volatile uint32_t rx_available;
+static void rx_queue_transfer(int i);
+static void rx_event(transfer_t *t);
+
+
+void usb_midi_configure(void)
+{
+	printf("usb_midi_configure\n");
+	if (usb_high_speed) {
+		tx_packet_size = MIDI_TX_SIZE_480;
+		rx_packet_size = MIDI_RX_SIZE_480;
+	} else {
+		tx_packet_size = MIDI_TX_SIZE_12;
+		rx_packet_size = MIDI_RX_SIZE_12;
+	}
+	memset(tx_transfer, 0, sizeof(tx_transfer));
+	tx_head = 0;
+	tx_available = 0;
+	memset(rx_transfer, 0, sizeof(rx_transfer));
+	memset(rx_count, 0, sizeof(rx_count));
+	memset(rx_index, 0, sizeof(rx_index));
+	rx_head = 0;
+	rx_tail = 0;
+	rx_available = 0;
+	usb_config_rx(MIDI_RX_ENDPOINT, rx_packet_size, 0, rx_event);
+	usb_config_tx(MIDI_TX_ENDPOINT, tx_packet_size, 0, NULL); // TODO: is ZLP needed?
+	int i;
+	for (i=0; i < RX_NUM; i++) rx_queue_transfer(i);
+	transmit_previous_timeout = 0;
+	tx_noautoflush = 0;
+}
+
 
 
 // When the PC isn't listening, how long do we wait before discarding data?
 #define TX_TIMEOUT_MSEC 40
-#if F_CPU == 256000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1706)
-#elif F_CPU == 240000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1600)
-#elif F_CPU == 216000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1440)
-#elif F_CPU == 192000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1280)
-#elif F_CPU == 180000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1200)
-#elif F_CPU == 168000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1100)
-#elif F_CPU == 144000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 932)
-#elif F_CPU == 120000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 764)
-#elif F_CPU == 96000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 596)
-#elif F_CPU == 72000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 512)
-#elif F_CPU == 48000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 428)
-#elif F_CPU == 24000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 262)
-#endif
 
 
 // This 32 bit input format is documented in the "Universal Serial Bus Device Class
@@ -112,38 +139,63 @@ static uint8_t tx_noautoflush=0;
 // of this 32 bit input.
 void usb_midi_write_packed(uint32_t n)
 {
-	uint32_t index, wait_count=0;
-
+	printf("usb_midi_write_packed\n");
+	if (!usb_configuration) return;
 	tx_noautoflush = 1;
-	if (!tx_packet) {
-        	while (1) {
-                	if (!usb_configuration) {
-				//serial_print("error1\n");
-                        	return;
-                	}
-                	if (usb_tx_packet_count(MIDI_TX_ENDPOINT) < TX_PACKET_LIMIT) {
-                        	tx_packet = usb_malloc();
-                        	if (tx_packet) break;
-                	}
-                	if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
-                        	transmit_previous_timeout = 1;
-				//serial_print("error2\n");
-                        	return;
-                	}
-                	yield();
-        	}
+	uint32_t head = tx_head;
+	transfer_t *xfer = tx_transfer + head;
+	uint32_t wait_begin_at = systick_millis_count;
+	while (!tx_available) {
+		uint32_t status = usb_transfer_status(xfer);
+		if (!(status & 0x80)) {
+			if (status & 0x68) {
+				// TODO: what if status has errors???
+			}
+			tx_available = tx_packet_size;
+			transmit_previous_timeout = 0;
+			break;
+		}
+		if (systick_millis_count - wait_begin_at > TX_TIMEOUT_MSEC) {
+			transmit_previous_timeout = 1;
+		}
+		if (transmit_previous_timeout) return;
+		if (!usb_configuration) return;
+		yield();
 	}
-	transmit_previous_timeout = 0;
-	index = tx_packet->index;
-	((uint32_t *)(tx_packet->buf))[index++] = n;
-	if (index < MIDI_TX_SIZE/4) {
-		tx_packet->index = index;
+	uint32_t *txdata = (uint32_t *)(txbuffer + (tx_head * TX_SIZE) + (TX_SIZE - tx_available));
+	*txdata = n;
+	tx_available -= 4;
+	if (tx_available == 0) {
+		uint8_t *txbuf = txbuffer + (tx_head * TX_SIZE);
+		usb_prepare_transfer(xfer, txbuf, tx_packet_size, 0);
+		arm_dcache_flush_delete(txbuf, TX_SIZE);
+		usb_transmit(MIDI_TX_ENDPOINT, xfer);
+		if (++head >= TX_NUM) head = 0;
+		tx_head = head;
+		usb_stop_sof_interrupts(MIDI_INTERFACE);
 	} else {
-		tx_packet->len = MIDI_TX_SIZE;
-		usb_tx(MIDI_TX_ENDPOINT, tx_packet);
-		tx_packet = NULL;
+		usb_start_sof_interrupts(MIDI_INTERFACE);
 	}
 	tx_noautoflush = 0;
+}
+
+void usb_midi_flush_output(void)
+{
+	//printf("usb_midi_flush_output\n");
+	if (tx_noautoflush == 0 && tx_available > 0) {
+		printf(" tx, %d %d\n", tx_packet_size, tx_available);
+		uint32_t head = tx_head;
+		transfer_t *xfer = tx_transfer + head;
+		uint8_t *txbuf = txbuffer + (head * TX_SIZE);
+		uint32_t len = tx_packet_size - tx_available;
+		usb_prepare_transfer(xfer, txbuf, len, 0);
+		arm_dcache_flush_delete(txbuf, TX_SIZE);
+		usb_transmit(MIDI_TX_ENDPOINT, xfer);
+		if (++head >= TX_NUM) head = 0;
+		tx_head = head;
+		tx_available = 0;
+		usb_stop_sof_interrupts(MIDI_INTERFACE);
+	}
 }
 
 void usb_midi_send_sysex_buffer_has_term(const uint8_t *data, uint32_t length, uint8_t cable)
@@ -192,19 +244,6 @@ void usb_midi_send_sysex_add_term_bytes(const uint8_t *data, uint32_t length, ui
 	}
 }
 
-void usb_midi_flush_output(void)
-{
-	if (tx_noautoflush == 0) {
-		tx_noautoflush = 1;
-		if (tx_packet && tx_packet->index > 0) {
-			tx_packet->len = tx_packet->index * 4;
-			usb_tx(MIDI_TX_ENDPOINT, tx_packet);
-			tx_packet = NULL;
-		}
-		tx_noautoflush = 0;
-	}
-}
-
 void static sysex_byte(uint8_t b)
 {
 	if (usb_midi_handleSysExPartial && usb_midi_msg_sysex_len >= USB_MIDI_SYSEX_MAX) {
@@ -217,76 +256,78 @@ void static sysex_byte(uint8_t b)
 	}
 }
 
+
+
+
+
+
+static void rx_queue_transfer(int i)
+{
+	NVIC_DISABLE_IRQ(IRQ_USB1);
+	void *buffer = rx_buffer + i * MIDI_RX_SIZE_480;
+	usb_prepare_transfer(rx_transfer + i, buffer, rx_packet_size, i);
+	arm_dcache_delete(buffer, rx_packet_size);
+	usb_receive(MIDI_RX_ENDPOINT, rx_transfer + i);
+	NVIC_ENABLE_IRQ(IRQ_USB1);
+}
+
+
+
+// called by USB interrupt when any packet is received
+static void rx_event(transfer_t *t)
+{
+	int len = rx_packet_size - ((t->status >> 16) & 0x7FFF);
+	len &= 0xFFFC; // MIDI packets must be multiple of 4 bytes
+	int i = t->callback_param;
+	printf("rx event, len=%d, i=%d\n", len, i);
+	if (len > 0) {
+		uint32_t head = rx_head;
+		rx_count[i] = len;
+		rx_index[i] = 0;
+		if (++head > RX_NUM) head = 0;
+		rx_list[head] = i;
+		rx_head = head;
+		rx_available += len;
+	} else {
+		// received a zero length packet
+		rx_queue_transfer(i);
+	}
+}
+
+
 uint32_t usb_midi_available(void)
 {
-	uint32_t index;
-
-	if (!rx_packet) {
-		if (!usb_configuration) return 0;
-		rx_packet = usb_rx(MIDI_RX_ENDPOINT);
-		if (!rx_packet) return 0;
-		if (rx_packet->len == 0) {
-			usb_free(rx_packet);
-			rx_packet = NULL;
-			return 0;
-		}
-	}
-	index = rx_packet->index;
-	return rx_packet->len - index;
+	return rx_available / 4;
 }
 
 uint32_t usb_midi_read_message(void)
 {
-	uint32_t n, index;
-
-	if (!rx_packet) {
-		if (!usb_configuration) return 0;
-		rx_packet = usb_rx(MIDI_RX_ENDPOINT);
-		if (!rx_packet) return 0;
-		if (rx_packet->len == 0) {
-			usb_free(rx_packet);
-			rx_packet = NULL;
-			return 0;
+	uint32_t n = 0;
+	NVIC_DISABLE_IRQ(IRQ_USB1);
+	uint32_t tail = rx_tail;
+	if (tail != rx_head) {
+		if (++tail > RX_NUM) tail = 0;
+		uint32_t i = rx_list[tail];
+		//uint32_t avail = (rx_count[i] - rx_index[i]) / 4;
+		void *p = rx_buffer + i * MIDI_RX_SIZE_480 + rx_index[i];
+		n = *(uint32_t *)p;
+		rx_available -= 4;
+		rx_index[i] += 4;
+		if (rx_index[i] >= rx_count[i]) {
+			rx_tail = tail;
+			rx_queue_transfer(i);
 		}
 	}
-	index = rx_packet->index;
-	n = ((uint32_t *)rx_packet->buf)[index/4];
-	index += 4;
-	if (index < rx_packet->len) {
-		rx_packet->index = index;
-	} else {
-		usb_free(rx_packet);
-		rx_packet = usb_rx(MIDI_RX_ENDPOINT);
-	}
+	NVIC_ENABLE_IRQ(IRQ_USB1);
 	return n;
 }
 
 int usb_midi_read(uint32_t channel)
 {
-	uint32_t n, index, ch, type1, type2, b1;
-
-	if (!rx_packet) {
-		if (!usb_configuration) return 0;
-		rx_packet = usb_rx(MIDI_RX_ENDPOINT);
-		if (!rx_packet) return 0;
-		if (rx_packet->len == 0) {
-			usb_free(rx_packet);
-			rx_packet = NULL;
-			return 0;
-		}
-	}
-	index = rx_packet->index;
-	n = ((uint32_t *)rx_packet->buf)[index/4];
-	//serial_print("midi rx, n=");
-	//serial_phex32(n);
-	//serial_print("\n");
-	index += 4;
-	if (index < rx_packet->len) {
-		rx_packet->index = index;
-	} else {
-		usb_free(rx_packet);
-		rx_packet = usb_rx(MIDI_RX_ENDPOINT);
-	}
+	uint32_t n, ch, type1, type2, b1;
+	
+	n = usb_midi_read_message();
+	if (n == 0) return 0;
 	type1 = n & 15;
 	type2 = (n >> 12) & 15;
 	b1 = (n >> 8) & 0xFF;
@@ -461,5 +502,4 @@ int usb_midi_read(uint32_t channel)
 }
 
 
-#endif // F_CPU
 #endif // MIDI_INTERFACE

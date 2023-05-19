@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2018 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -31,10 +31,13 @@
 #include "usb_dev.h"
 #include "usb_touch.h"
 #include "core_pins.h" // for millis()
-#include "HardwareSerial.h"
+#include <string.h> // for memcpy()
+#include "avr/pgmspace.h" // for PROGMEM, DMAMEM, FASTRUN
+#include "debug/printf.h"
+#include "core_pins.h"
+
 
 #ifdef MULTITOUCH_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
 
 static uint8_t  prev_id=0;
 static uint8_t  scan_index=0;
@@ -44,6 +47,22 @@ static uint8_t  pressure[MULTITOUCH_FINGERS];
 static uint16_t xpos[MULTITOUCH_FINGERS];
 static uint16_t ypos[MULTITOUCH_FINGERS];
 static uint16_t scan_timestamp;
+
+#define TX_BUFSIZE 32
+static transfer_t tx_transfer __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t txbuffer[TX_BUFSIZE] __attribute__ ((aligned(32)));
+extern volatile uint8_t usb_high_speed;
+#if MULTITOUCH_SIZE > TX_BUFSIZE
+#error "Internal error, transmit buffer size is too small for touchscreen endpoint"
+#endif
+
+
+void usb_touchscreen_configure(void)
+{
+	memset(&tx_transfer, 0, sizeof(tx_transfer));
+	usb_config_tx(MULTITOUCH_ENDPOINT, MULTITOUCH_SIZE, 0, NULL);
+	usb_start_sof_interrupts(MULTITOUCH_INTERFACE);
+}
 
 
 void usb_touchscreen_press(uint8_t finger, uint32_t x, uint32_t y, uint32_t press)
@@ -86,39 +105,44 @@ void usb_touchscreen_release(uint8_t finger)
 //  5: Y msb
 //  6: scan time lsb
 //  7: scan time msb
-//	8: contact count
+//  8: contact count
 
 // Called by the start-of-frame interrupt.
 //
 void usb_touchscreen_update_callback(void)
 {
+	static uint8_t microframe_count=0;
 	uint8_t contact_count = 0;
 
+	if (usb_high_speed) {
+		// if 480 speed, run only every 8th micro-frame
+		if (++microframe_count < 8) return;
+		microframe_count = 0;
+	}
+
+	// do nothing if previous packet not yet sent
+	uint32_t status = usb_transfer_status(&tx_transfer);
+	if ((status & 0x80)) {
+		return;
+	}
+	if (status & 0x68) {
+		// TODO: what if status has errors???
+	}
+
 	if (scan_index == 0) {
-		if (usb_tx_packet_count(MULTITOUCH_ENDPOINT) > 1) {
-			// wait to begin another scan if if more than
-			// one prior packet remains to transmit
-			return;
-		}
 		scan_timestamp = millis() * 10;
 		scan_count = 0;
-
 		// Get the contact count (usage 0x54)
 		// Only set this value on first contact
 		// Subsequent concurrent contacts should report 0
-		for (uint8_t i = 0; i < MULTITOUCH_FINGERS; i++)
-		{
+		for (uint8_t i = 0; i < MULTITOUCH_FINGERS; i++) {
 			if (contactid[i]) contact_count++;
 		}
 	}
-
 	while (scan_index < MULTITOUCH_FINGERS) {
 		uint32_t press = pressure[scan_index];
 		uint32_t id = contactid[scan_index];
 		if (id) {
-			usb_packet_t *tx_packet;
-			tx_packet = usb_malloc();
-			if (tx_packet == NULL) return;
 			if (press == 0) {
 				// End a finger touch.  One final packet sent
 				// with same Contact Identifier (usage 0x51)
@@ -126,17 +150,20 @@ void usb_touchscreen_update_callback(void)
 				id &= 0xFE;
 				contactid[scan_index] = 0;
 			}
-			*(tx_packet->buf + 0) = id;
-			*(tx_packet->buf + 1) = press;
-			*(tx_packet->buf + 2) = xpos[scan_index];
-			*(tx_packet->buf + 3) = xpos[scan_index] >> 8;
-			*(tx_packet->buf + 4) = ypos[scan_index];
-			*(tx_packet->buf + 5) = ypos[scan_index] >> 8;
-			*(tx_packet->buf + 6) = scan_timestamp;
-			*(tx_packet->buf + 7) = scan_timestamp >> 8;
-			*(tx_packet->buf + 8) = contact_count;
-			tx_packet->len = 9;
-			usb_tx(MULTITOUCH_ENDPOINT, tx_packet);
+			//uint8_t buffer[MULTITOUCH_SIZE]; // MULTITOUCH_SIZE = 8
+			txbuffer[0] = id;
+			txbuffer[1] = press;
+			txbuffer[2] = xpos[scan_index];
+			txbuffer[3] = xpos[scan_index] >> 8;
+			txbuffer[4] = ypos[scan_index];
+			txbuffer[5] = ypos[scan_index] >> 8;
+			txbuffer[6] = scan_timestamp;
+			txbuffer[7] = scan_timestamp >> 8;
+			txbuffer[8] = contact_count;
+			//delayNanoseconds(30);
+			usb_prepare_transfer(&tx_transfer, txbuffer, MULTITOUCH_SIZE, 0);
+			arm_dcache_flush_delete(txbuffer, TX_BUFSIZE);
+			usb_transmit(MULTITOUCH_ENDPOINT, &tx_transfer);
 			scan_index++;
 			return;
 		}
@@ -149,5 +176,4 @@ void usb_touchscreen_update_callback(void)
 }
 
 
-#endif // F_CPU
 #endif // MULTITOUCH_INTERFACE

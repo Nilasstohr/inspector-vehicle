@@ -1,5 +1,5 @@
-/* Simple compatibility headers for AVR code used with ARM chips
- * Copyright (c) 2015 Paul Stoffregen <paul@pjrc.com>
+/* Simple compatibility headers for AVR code used with NXP IMXRT chips
+ * Copyright (c) 2018 Paul Stoffregen <paul@pjrc.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,14 @@
 
 #include <inttypes.h>
 
-#define PROGMEM
-#define FLASHMEM
+#define DMAMEM __attribute__ ((section(".dmabuffers"), used))
+#define FASTRUN __attribute__ ((section(".fastrun") ))
+#define PROGMEM __attribute__((section(".progmem")))
+#define FLASHMEM __attribute__((section(".flashmem")))
+#define EXTMEM __attribute__((section(".externalram")))
+
 #define PGM_P  const char *
-#define PSTR(str) (str)
+#define PSTR(str) ({static const char data[] PROGMEM = (str); &data[0];})
 
 #define _SFR_BYTE(n) (n)
 

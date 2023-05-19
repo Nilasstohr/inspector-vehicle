@@ -31,83 +31,80 @@
 #include "usb_dev.h"
 #include "usb_joystick.h"
 #include "core_pins.h" // for yield()
-#include "HardwareSerial.h"
 #include <string.h> // for memcpy()
+#include "avr/pgmspace.h" // for PROGMEM, DMAMEM, FASTRUN
+#include "debug/printf.h"
+#include "core_pins.h"
+
 
 #ifdef JOYSTICK_INTERFACE // defined by usb_dev.h -> usb_desc.h
-#if F_CPU >= 20000000
 
 
 uint32_t usb_joystick_data[(JOYSTICK_SIZE+3)/4];
-
-
-// Maximum number of transmit packets to queue so we don't starve other endpoints for memory
-#define TX_PACKET_LIMIT 3
 
 static uint8_t transmit_previous_timeout=0;
 
 // When the PC isn't listening, how long do we wait before discarding data?
 #define TX_TIMEOUT_MSEC 30
-#if F_CPU == 256000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1706)
-#elif F_CPU == 240000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1600)
-#elif F_CPU == 216000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1440)
-#elif F_CPU == 192000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1280)
-#elif F_CPU == 180000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1200)
-#elif F_CPU == 168000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1100)
-#elif F_CPU == 144000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 932)
-#elif F_CPU == 120000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 764)
-#elif F_CPU == 96000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 596)
-#elif F_CPU == 72000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 512)
-#elif F_CPU == 48000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 428)
-#elif F_CPU == 24000000
-  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 262)
+
+#define TX_NUM     4
+#if JOYSTICK_SIZE <= 32
+  #define TX_BUFSIZE 32
+#else
+  #define TX_BUFSIZE 64
+#endif
+static transfer_t tx_transfer[TX_NUM] __attribute__ ((used, aligned(32)));
+DMAMEM static uint8_t txbuffer[TX_NUM * TX_BUFSIZE] __attribute__ ((aligned(32)));
+static uint8_t tx_head=0;
+#if JOYSTICK_SIZE > TX_BUFSIZE
+#error "Internal error, transmit buffer size is too small for joystick endpoint"
 #endif
 
 
-
-int usb_joystick_send(void)
+void usb_joystick_configure(void)
 {
-        uint32_t wait_count=0;
-        usb_packet_t *tx_packet;
+	memset(tx_transfer, 0, sizeof(tx_transfer));
+	tx_head = 0;
+	usb_config_tx(JOYSTICK_ENDPOINT, JOYSTICK_SIZE, 0, NULL);
+}
 
-	//serial_print("send");
-	//serial_print("\n");
+
+int usb_joystick_send()
+{
+        if (!usb_configuration) return -1;
+        uint32_t head = tx_head;
+        transfer_t *xfer = tx_transfer + head;
+        uint32_t wait_begin_at = systick_millis_count;
         while (1) {
-                if (!usb_configuration) {
-			//serial_print("error1\n");
-                        return -1;
+                uint32_t status = usb_transfer_status(xfer);
+                if (!(status & 0x80)) {
+                        if (status & 0x68) {
+                                // TODO: what if status has errors???
+                                printf("ERROR status = %x, i=%d, ms=%u\n",
+                                        status, tx_head, systick_millis_count);
+                        }
+                        transmit_previous_timeout = 0;
+                        break;
                 }
-                if (usb_tx_packet_count(JOYSTICK_ENDPOINT) < TX_PACKET_LIMIT) {
-                        tx_packet = usb_malloc();
-                        if (tx_packet) break;
-                }
-                if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
+                if (transmit_previous_timeout) return -1;
+                if (systick_millis_count - wait_begin_at > TX_TIMEOUT_MSEC) {
+                        // waited too long, assume the USB host isn't listening
                         transmit_previous_timeout = 1;
-			//serial_print("error2\n");
                         return -1;
                 }
+                if (!usb_configuration) return -1;
                 yield();
         }
-	transmit_previous_timeout = 0;
-	memcpy(tx_packet->buf, usb_joystick_data, JOYSTICK_SIZE);
-        tx_packet->len = JOYSTICK_SIZE;
-        usb_tx(JOYSTICK_ENDPOINT, tx_packet);
-	//serial_print("ok\n");
+	delayNanoseconds(30); // TODO: why is status ready too soon?
+        uint8_t *buffer = txbuffer + head * TX_BUFSIZE;
+	memcpy(buffer, usb_joystick_data, JOYSTICK_SIZE);
+        usb_prepare_transfer(xfer, buffer, JOYSTICK_SIZE, 0);
+        arm_dcache_flush_delete(buffer, TX_BUFSIZE);
+        usb_transmit(JOYSTICK_ENDPOINT, xfer);
+        if (++head >= TX_NUM) head = 0;
+        tx_head = head;
         return 0;
 }
 
 
-
-#endif // F_CPU
 #endif // JOYSTICK_INTERFACE

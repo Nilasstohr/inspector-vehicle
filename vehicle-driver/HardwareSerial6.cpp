@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -31,19 +31,36 @@
 #include <Arduino.h>
 #include "HardwareSerial.h"
 
-#if defined(HAS_KINETISK_UART5) || defined (HAS_KINETISK_LPUART0)
+#ifndef SERIAL6_TX_BUFFER_SIZE
+#define SERIAL6_TX_BUFFER_SIZE     40 // number of outgoing bytes to buffer
+#endif
+#ifndef SERIAL6_RX_BUFFER_SIZE
+#define SERIAL6_RX_BUFFER_SIZE     64 // number of incoming bytes to buffer
+#endif
+#define IRQ_PRIORITY  64  // 0 = highest priority, 255 = lowest
 
-HardwareSerial6 Serial6(&serialEvent6);
-
-uint8_t _serialEvent6_default __attribute__((weak)) PROGMEM = 0 ;
-
-void HardwareSerial6::begin(uint32_t baud) { 	
-#if defined(__MK66FX1M0__)	// For LPUART just pass baud straight in. 
-	serial6_begin(baud);
-#else
-	serial6_begin(BAUD2DIV3(baud));
-#endif	
-	if (!_serialEvent6_default) addToSerialEventsList();
+void IRQHandler_Serial6()
+{
+	Serial6.IRQHandler();
 }
 
-#endif
+
+// Serial6
+static BUFTYPE tx_buffer6[SERIAL6_TX_BUFFER_SIZE];
+static BUFTYPE rx_buffer6[SERIAL6_RX_BUFFER_SIZE];
+uint8_t _serialEvent6_default __attribute__((weak)) PROGMEM = 0 ;
+
+static HardwareSerial::hardware_t UART1_Hardware = {
+	5, IRQ_LPUART1, &IRQHandler_Serial6, 
+	&serialEvent6, &_serialEvent6_default, 
+	CCM_CCGR5, CCM_CCGR5_LPUART1(CCM_CCGR_ON),
+	{{25,2, nullptr, 0}, {0xff, 0xff, nullptr, 0}},
+	{{24,2, nullptr, 0}, {0xff, 0xff, nullptr, 0}},
+	0xff, // No CTS pin
+	0, // No CTS
+	IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
+	XBARA1_OUT_LPUART1_TRG_INPUT
+};
+
+HardwareSerial Serial6(&IMXRT_LPUART1, &UART1_Hardware, tx_buffer6, SERIAL6_TX_BUFFER_SIZE,
+	rx_buffer6,  SERIAL6_RX_BUFFER_SIZE);

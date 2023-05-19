@@ -49,6 +49,7 @@ void eeprom_write_block(const void *buf, void *addr, uint32_t len);
 int eeprom_is_ready(void);
 #define eeprom_busy_wait() do {} while (!eeprom_is_ready())
 
+/*
 static inline float eeprom_read_float(const float *addr) __attribute__((pure, always_inline, unused));
 static inline float eeprom_read_float(const float *addr)
 {
@@ -90,6 +91,7 @@ static inline void eeprom_update_block(const void *buf, void *addr, uint32_t len
 {
 	eeprom_write_block(buf, addr, len);
 }
+*/
 
 
 char * ultoa(unsigned long val, char *buf, int radix);

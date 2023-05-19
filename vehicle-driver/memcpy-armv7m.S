@@ -26,11 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __ARM_FEATURE_UNALIGNED
-#undef __ARM_FEATURE_UNALIGNED
-#endif
-
-#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 #if defined (__ARM_ARCH_7M__) || defined (__ARM_ARCH_7EM__)
 /*
  * Let __ARM_FEATURE_UNALIGNED be set by the achitechture and the compiler flags:
@@ -38,6 +33,7 @@
  *   -mno-unaligned-access
  * instead of always setting it here.
  *
+ * #define __ARM_FEATURE_UNALIGNED 1
  */
  
 /* This memcpy routine is optimised for Cortex-M3/M4 cores with/without
@@ -334,6 +330,3 @@ memcpy:
 
 	.size	memcpy, .-memcpy
 #endif
-
-#endif // __MK20DX128__ || __MK20DX256__ || __MK66FX1M0__
-

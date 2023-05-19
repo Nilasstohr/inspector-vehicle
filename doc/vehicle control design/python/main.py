@@ -68,7 +68,7 @@ if __name__ == '__main__':
     #axs[0].plot(x, w_savgolf, color='red')
     #axs[0].plot(x, w_lowass, color='green')
     axs[0].plot(x, w_filtered, color='green')
-    axs[0].plot(t, w_sim, color='red')
+    #axs[0].plot(t, w_sim, color='red')
     axs[0].set(xlabel='t[s]', ylabel='\u03C9 [radians/second]')
     axs[0].grid()
     axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(w) + 2)
