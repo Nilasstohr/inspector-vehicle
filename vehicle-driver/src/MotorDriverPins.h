@@ -21,16 +21,16 @@ public:
 			uint16_t milliVoltPrAmp);
 	virtual ~MotorDriverPins();
 
-	uint8_t getIn1() const {
-		return in1;
+	uint8_t getInA() const {
+		return inA;
 	}
 
-	uint8_t getIn2() const {
-		return in2;
+	uint8_t getInB() const {
+		return inB;
 	}
 
-	uint8_t getPwmD2() const {
-		return pwmD2;
+	uint8_t getPwm() const {
+		return pwm;
 	}
 
 	uint32_t getPwmFrequency() const {
@@ -48,9 +48,9 @@ public:
 	void printPins();
 
 private:
-	uint8_t pwmD2;
-	uint8_t in1;
-	uint8_t in2;
+	uint8_t pwm;
+	uint8_t inA;
+	uint8_t inB;
 	uint8_t fb;
 	uint32_t pwmFrequency;
 	uint16_t milliVoltPrAmp;

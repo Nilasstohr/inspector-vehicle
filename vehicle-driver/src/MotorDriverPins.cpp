@@ -8,29 +8,26 @@
 #include "MotorDriverPins.h"
 
 MotorDriverPins::MotorDriverPins(
-		uint8_t pwmD2,
-		uint8_t in1,
-		uint8_t in2,
+		uint8_t pwm,
+		uint8_t inA,
+		uint8_t inB,
 		uint8_t fb,
 		uint32_t pwmFrequency,
 		uint16_t milliVoltPrAmp) {
-	this->pwmD2 = pwmD2;
-	this->in1=in1;
-	this->in2=in2;
+	this->pwm = pwm;
+	this->inA=inA;
+	this->inB=inB;
 	this->fb = fb;
 	this->pwmFrequency = pwmFrequency;
 	this->milliVoltPrAmp = milliVoltPrAmp;
 
 }
-MotorDriverPins::~MotorDriverPins() {
-	// TODO Auto-generated destructor stub
-}
-
-
-
 void MotorDriverPins::printPins() {
 	char buffer [50];
 	sprintf (buffer, "Configuration are: %d,%d,%d,%d",
-			getPwmD2(),getIn1(),getIn2(),getPwmFrequency());
+			getPwm(),getInA(),getInB(),getPwmFrequency());
 	Logger::error(buffer);
+}
+MotorDriverPins::~MotorDriverPins() {
+	// TODO Auto-generated destructor stub
 }

@@ -10,7 +10,7 @@
 
 #include "VehicleTestBase.h"
 #include "AverageCalc.h"
-#include "FirstOrderFilter.h"
+#include "TransposedIIRFilter.h"
 
 class TestVehiclePIControl: private VehicleTestBase{
 public:
@@ -21,8 +21,8 @@ public:
 private:
 	MotorDrivers * motorDrivers;
 	QuadratureEncoders * quadratureEncoders;
-	FirstOrderFilter * piControllerLeft;
-	FirstOrderFilter * piControllerRight;
+	TransposedIIRFilter * piControllerLeft;
+	TransposedIIRFilter * piControllerRight;
 	MotorDrivers* motors() const {
 			return motorDrivers;
 		}

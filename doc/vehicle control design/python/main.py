@@ -33,19 +33,20 @@ def fft(data, Ts):
 
 if __name__ == '__main__':
     y = loadtxt("data1.txt")
-    w = y[:, 1]
-    w_filtered = y[:, 2]
-    n = len(w)
+    wLeft = y[:, 0]
+    wRight = y[:, 1]
+    #w_filtered = y[:, 2]
+    n = len(wLeft)
     Ts = 100 / pow(10, 6)
     x = np.arange(n) * Ts
 
-    w[w == np.inf] = 0
+    wLeft[wLeft == np.inf] = 0
 
-    w_savgolf = savgol_filter(w, 51, 3)
-    w_lowass = butter_lowpass_filter(w, 110, 1/Ts, order=1)
+    w_savgolf = savgol_filter(wLeft, 51, 3)
+    w_lowass = butter_lowpass_filter(wLeft, 110, 1 / Ts, order=1)
 
     wlast = w_savgolf[n - 1]
-    tau = np.interp(wlast * 0.63, w, x)
+    tau = np.interp(wlast * 0.63, wLeft, x)
     fcut = 1 / tau
     OmegaCut = fcut / np.pi
     print(tau, " s")
@@ -64,14 +65,14 @@ if __name__ == '__main__':
 
     fig, axs = plt.subplots(2)
     fig.suptitle('Transient Time Response')
-    axs[0].plot(x, w, color='blue')
+    axs[0].plot(x, wLeft, color='blue')
     #axs[0].plot(x, w_savgolf, color='red')
     #axs[0].plot(x, w_lowass, color='green')
-    axs[0].plot(x, w_filtered, color='green')
+    axs[0].plot(x, wRight, color='green')
     #axs[0].plot(t, w_sim, color='red')
     axs[0].set(xlabel='t[s]', ylabel='\u03C9 [radians/second]')
     axs[0].grid()
-    axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(w) + 2)
+    axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(wLeft) + 2)
 
     # Fs = 8000
     # f = 1000
@@ -81,7 +82,8 @@ if __name__ == '__main__':
 
 
 
-    W, omega = fft(w, Ts)
+    WLeft, omega = fft(wLeft, Ts)
+    WRight, omega = fft(wRight, Ts)
     Wsavgol, omega = fft(w_savgolf, Ts)
     Wlowpass, omega = fft(w_lowass, Ts)
 
@@ -91,7 +93,7 @@ if __name__ == '__main__':
     # plt.xlabel('sample(n)')
     # plt.ylabel('voltage(V)')
     # plt.show()
-    axs[1].semilogx(omega, W, color='blue')
+    axs[1].semilogx(omega, WLeft, color='blue')
     axs[1].semilogx(omega, Wsavgol, color='red')
     axs[1].semilogx(omega, Wlowpass, color='green')
     axs[1].xaxis.set_minor_formatter(mticker.ScalarFormatter())

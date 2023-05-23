@@ -13,11 +13,7 @@ VehicleTestRunner::VehicleTestRunner() {
 	//new TestQuadratureEncorder();
 	//new TestMotorDrivers();
 	//new TestVehicleSystem();
-	//new TestVehiclePIControl();
-	while(1){
-		Serial.println("hello from teensy 4.1");
-		delay(1000);
-	}
+	new TestVehiclePIControl();
 }
 
 VehicleTestRunner::~VehicleTestRunner() {

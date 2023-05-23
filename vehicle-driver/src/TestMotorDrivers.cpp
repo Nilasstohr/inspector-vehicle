@@ -23,17 +23,17 @@ TestMotorDrivers::TestMotorDrivers() {
 void TestMotorDrivers::canSetMotorDriverPins() {
 	Logger::verbose(__FUNCTION__, " - TEST");
 	MotorDriverPins  *motorDriverPins = new MotorDriverPins(
-		VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
-		VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-		VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_PWM,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_INA,
+		VEHICLE_PIN_MOTOR_DRIVER_LEFT_INB,
 		VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB,
 		VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
 		VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
 	);
 
-	if( motorDriverPins->getPwmD2()         != VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2 ||
-		motorDriverPins->getIn1()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1||
-		motorDriverPins->getIn2()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2||
+	if( motorDriverPins->getPwm()         != VEHICLE_PIN_MOTOR_DRIVER_LEFT_PWM ||
+		motorDriverPins->getInA()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_INA||
+		motorDriverPins->getInB()           != VEHICLE_PIN_MOTOR_DRIVER_LEFT_INB||
 		motorDriverPins->getFb()            != VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB ||
 		motorDriverPins->getPwmFrequency()  != VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY||
 		motorDriverPins->getMilliVoltPrAmp()!= VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
@@ -46,15 +46,15 @@ void TestMotorDrivers::canSetMotorDriverPins() {
 void TestMotorDrivers::printMotorSettings(MotorDriverPins *motorDriverPins) {
 	char buffer [100];
 	sprintf (buffer, "Configuration are: %d,%d,%d,%lu",
-			motorDriverPins->getPwmD2(),
-			motorDriverPins->getIn1(),
-			motorDriverPins->getIn2(),
+			motorDriverPins->getPwm(),
+			motorDriverPins->getInA(),
+			motorDriverPins->getInB(),
 			motorDriverPins->getPwmFrequency());
 	Logger::error(buffer);
 	sprintf (buffer, "Expected: %d,%d,%d,%d",
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-			VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+			VEHICLE_PIN_MOTOR_DRIVER_LEFT_PWM,
+			VEHICLE_PIN_MOTOR_DRIVER_LEFT_INA,
+			VEHICLE_PIN_MOTOR_DRIVER_LEFT_INB,
 			VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY);
 	Logger::error(buffer);
 }
@@ -64,9 +64,9 @@ void TestMotorDrivers::canSetupMotorDriver() {
 
 	MotorDriver  *left = new MotorDriver(
 			new MotorDriverPins(
-				VEHICLE_PIN_MOTOR_DRIVER_LEFT_D2,
-				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN1,
-				VEHICLE_PIN_MOTOR_DRIVER_LEFT_IN2,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_PWM,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_INA,
+				VEHICLE_PIN_MOTOR_DRIVER_LEFT_INB,
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_FB,
 				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
 				VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP
@@ -79,9 +79,9 @@ void TestMotorDrivers::canSetupMotorDriver() {
 	Logger::verbose(__FUNCTION__, " - TEST right");
 	MotorDriver  *right = new MotorDriver(
 			new MotorDriverPins(
-				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_D2,
-				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN1,
-				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_IN2,
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_PWM,
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_INA,
+				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_INB,
 				VEHICLE_PIN_MOTOR_DRIVER_RIGHT_FB,
 				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
 				VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP

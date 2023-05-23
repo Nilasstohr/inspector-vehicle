@@ -4,8 +4,8 @@
 // motor driver
 
 // motor 1
-//#define _ENC1_A  22
-//#define _ENC1_B  23
+#define _ENC1_A  22
+#define _ENC1_B  23
 #define _INA1 17 // a1 (gray)
 #define _INB1 16  // b1 (lilla)
 #define _PWM1 14  // pwm1
@@ -13,42 +13,26 @@
 #define _CS1 15 // cs1
 
 // motor 2
-/*
-#define LEFT_A  31
-#define LEFT_B  32
+#define _ENC2_A  31
+#define _ENC2_B  32
 #define _INA2 27 // a2 (gray)
 #define _INB2 26 // b2 (lilla)
 #define _PWM2 12 // pwm2
 #define _EN2DIAG2 28 // en2
 #define _CS2 25 // cs2
-*/
-
-#define LEFT_A  22
-#define LEFT_B  23
-#define _INA2 17 // a2 (gray)
-#define _INB2 16 // b2 (lilla)
-#define _PWM2 14 // pwm2
-#define _EN2DIAG2 18 // en2
-#define _CS2 15 // cs2
 
 
 #define PWM_FREQ 18310.55
 #define MAX_SPEED_PWM (int)pow(2,13)
 #define MIN_SPEED_PWM 500
 
-#define VELOC_REF 15
-
+#define VELOC_REF 10
 
 unsigned int INTERVAL_MICROS = 100;
 
-
 IntervalTimer *timer;
 
-volatile signed int counts =0;
-volatile uint32_t deltaT=0;
 volatile uint32_t deltaT_Temp=0;
-volatile uint32_t lastT=0;
-volatile uint32_t currentT=0;
 volatile bool finish = false;
 
 volatile uint32_t deltaTBuffer[MAX_COUNTS];
@@ -76,15 +60,159 @@ double error_control;
 
 bool sampleReady=false;
 
+
+class TransposedIIRFilter{
+  float b0;
+  float b1;
+  float a1;
+  double feedForward;
+  double feedBack;
+  double error;
+  double output;
+  
+  public:
+    TransposedIIRFilter(float b0, float b1, float a1):
+      b0(b0),
+      b1(b1),
+      a1(a1),
+      feedForward(0),
+      feedBack(0),
+      error(0),
+      output(0)
+    {}
+
+    
+    double update(double input) {
+      output      = b0*input + feedForward - feedBack;
+      /*
+      Serial.print(" input= ");
+      Serial.print(input);
+      Serial.print(" ft= ");
+      Serial.print(feedForward);
+      Serial.print(" fb= ");
+      Serial.print(feedBack);
+      Serial.print(" o= ");
+      Serial.print(output);
+      */
+      feedForward = b1*input;
+      feedBack    = a1*output;
+      return output;
+    }
+};
+
+class MotorDriver{
+  int pwm;
+  int inA;
+  int inB;
+  int diag;
+  int cs;
+  double pwmFreq;
+  public:
+    MotorDriver(int pwm,int inA,int inB,int diag,int cs,double pwmFreq):
+      pwm(pwm),
+      inA(inA),
+      inB(inB),
+      diag(diag),
+      cs(cs),
+      pwmFreq(pwmFreq)
+    {
+      pinMode(inA,OUTPUT);
+      pinMode(inB,OUTPUT);
+      pinMode(pwm,OUTPUT);
+      pinMode(diag,INPUT);
+      pinMode(cs,INPUT);
+      digitalWrite(inA,HIGH);
+      digitalWrite(inB,LOW);
+      analogWriteFrequency(pwm,pwmFreq);
+    }
+
+    void forward(int speed){
+      analogWrite(pwm,speed); 
+    }
+};
+
+class DeltaT{
+  volatile uint32_t deltaT=0;
+  volatile uint32_t lastT=0;
+  volatile uint32_t currentT=0;
+  volatile signed int counts =0;
+  public:
+  DeltaT(){
+    reset();
+  }
+  void update(){
+      currentT = micros();
+      deltaT   = currentT - lastT;
+	    lastT    = currentT;
+  }
+  uint32_t getTime(){
+    return deltaT;
+  }
+  void decrease(){
+    counts--;
+  }
+  void increase(){
+    counts++;
+  }
+  void reset(){
+     deltaT=0;
+     lastT=0;
+     currentT=0;
+     counts =0;
+  }
+};
+
+TransposedIIRFilter *piControllerLeft;
+TransposedIIRFilter *piControllerRight;
+TransposedIIRFilter *velocityFilterLeft;
+TransposedIIRFilter *velocityFilterRight;
+MotorDriver * motorLeft;
+MotorDriver * motorRight;
+DeltaT * deltaTLeft;
+DeltaT * deltaTRight;
+
 void setup() {
-  init();
+	analogWriteResolution(13);
+	//analogReadResolution(10);
+	Serial.begin(115200);
+
+  piControllerLeft = new TransposedIIRFilter(b0_control,b1_control,a1_control);
+  piControllerRight = new TransposedIIRFilter(b0_control,b1_control,a1_control);
+  
+  velocityFilterLeft = new TransposedIIRFilter(b0_sensor,b1_sensor,a1_sensor);
+  velocityFilterRight = new TransposedIIRFilter(b0_sensor,b1_sensor,a1_sensor);
+  
+  motorLeft  = new MotorDriver(_PWM2,_INA2,_INB2,_EN2DIAG2,_CS2,PWM_FREQ);
+  motorRight = new MotorDriver(_PWM1,_INA1,_INB1,_EN1DIAG1,_CS1,PWM_FREQ);
+  deltaTLeft  = new DeltaT();
+  deltaTRight = new DeltaT();
+  
+  pinMode(_ENC1_A, INPUT);
+	digitalWrite(_ENC1_A, LOW);
+
+	pinMode(_ENC1_B, INPUT);
+	digitalWrite(_ENC1_B, LOW);
+
+	attachInterrupt(_ENC1_A,ISR_A_LEFT, CHANGE);
+	attachInterrupt(_ENC1_B,ISR_B_LEFT, CHANGE);
+
+  pinMode(_ENC2_A, INPUT);
+	digitalWrite(_ENC2_A, LOW);
+
+	pinMode(_ENC2_B, INPUT);
+	digitalWrite(_ENC2_B, LOW);
+
+	attachInterrupt(_ENC2_A,ISR_A_RIGHT, CHANGE);
+	attachInterrupt(_ENC2_B,ISR_B_RIGHT, CHANGE);
+
+	timer = new IntervalTimer;
+
 }
 
 void loop() { 
 	runProgram1();
   //analogWrite(_PWM1,0);
 }
-
 
 void runProgram1(){
 	while(1){
@@ -112,16 +240,14 @@ void runProgram1(){
 	}
 }
 void start(){
-	counts =0;
-	deltaTBufferCount =0;
-	deltaT   = 0;
-	lastT    = 0;
+	reset();
 	finish = false;
 	timer->begin(ISR_SAMPLE,INTERVAL_MICROS);
 	double w=0;
 	while(1){
 		if(finish){
-      forwardM2(0);
+      motorLeft->forward(0);
+      motorRight->forward(0);
 			break;
 		}
 		else if(sampleReady){
@@ -129,11 +255,7 @@ void start(){
 			if(isinf(w)){
 				w = 0;
 			}
-
-      //  b0 = 0.92, b1 = -0.79; a1 = -1;
-			error_control = VELOC_REF-w;
-      feedThroug_control = b0_control*error_control;
-			output_control  = feedThroug_control + feedForward_control - feedBack_control;
+      output_control = piController->update(VELOC_REF-w);
       forwardM2(output_control);
 
       if(output_control < MIN_SPEED_PWM)
@@ -141,30 +263,7 @@ void start(){
       else if(output_control>MAX_SPEED_PWM){
         output_control = MAX_SPEED_PWM;
       }
-			/*
-			Serial.print("w= ");
-			Serial.print(w);
-			Serial.print(" e= ");
-			Serial.print(error_control);
-      Serial.print(" ft= ");
-      Serial.print(feedThroug_control);
-			Serial.print(" ff= ");
-			Serial.print(feedForward_control);
-			Serial.print(" fb= ");
-			Serial.print(feedBack_control);
-			Serial.print(" o= ");
-			Serial.print(output_control);
-      */
-			feedForward_control = b1_control*error_control;
-			feedBack_control    = a1_control*output_control;
-			sampleReady = false;
-      /*
-      Serial.print(" ff(next)= ");
-      Serial.print(feedForward_control);
-      Serial.print(" fb(next)= ");
-      Serial.println(feedBack_control);
-      */
-      
+   		sampleReady = false;
 		}
 		delayMicroseconds(1);
 	}
@@ -222,55 +321,72 @@ void start(){
 }
 void ISR_SAMPLE() {
 	if(deltaTBufferCount<MAX_COUNTS){
+    // get sample and filter
 		deltaT_Temp = deltaT;
-		output_sensor  = b0_sensor*deltaT + feedForward_sensor - feedBack_sensor;
+		output_sensor  = velocityFilter->update(deltaT_Temp);
+    // store data
 		deltaTBufferFiltered[deltaTBufferCount]=output_sensor;
-		deltaTBuffer[deltaTBufferCount]=deltaT;
-		sampleReady = true;
-		feedForward_sensor = b1_sensor*output_sensor;
-		feedBack_sensor    = a1_sensor*output_sensor;
+		deltaTBuffer[deltaTBufferCount]=deltaT_Temp;
 		deltaTBufferCount++;
 		//Serial.println(deltaTBuffer[deltaTBufferCount]);
 		//Serial.print(deltaTBuffer[deltaTBufferCount]);
     //Serial.println(deltaTBufferCount);
+	  sampleReady = true;
 	}else{
 		timer->end();
 		finish = true;
 	}
 
 }
-void ISR_A(){
-	currentT = micros();
-	deltaT   = currentT - lastT;
-	lastT    = currentT;
-	uint8_t B = digitalRead(LEFT_B);
-	uint8_t A = digitalRead(LEFT_A) ;
+void ISR_A_LEFT(){
+	deltaTLeft->update();
+	uint8_t B = digitalRead(_ENC2_B);
+	uint8_t A = digitalRead(_ENC2_A);
 	if((A&&B)||(!A&&!B))
-		counts--;
+    deltaTLeft->decrease();
 	else
-		counts++;
-
+		deltaTLeft->increase();
 
 }
-void ISR_B(){
-	currentT = micros();
-	deltaT   = currentT - lastT;
-	lastT    = currentT;
-	uint8_t B = digitalRead(LEFT_B);
-	uint8_t A = digitalRead(LEFT_A);
+void ISR_B_LEFT(){
+	deltaTLeft->update();
+	uint8_t B = digitalRead(_ENC2_B);
+	uint8_t A = digitalRead(_ENC2_A);
 	if((B&&A)||(!B&&!A))
-		counts++;
+		deltaTLeft->increase();
 	else
-		counts--;
+		deltaTLeft->decrease();
+}
+void ISR_A_RIGHT(){
+	deltaTRight->update();
+	uint8_t B = digitalRead(_ENC1_B);
+	uint8_t A = digitalRead(_ENC1_A);
+	if((A&&B)||(!A&&!B))
+    deltaTRight->decrease();
+	else
+		deltaTRight->increase();
+
+}
+void ISR_B_RIGHT(){
+	deltaTRight->update();
+	uint8_t B = digitalRead(_ENC1_B);
+	uint8_t A = digitalRead(_ENC1_A);
+	if((B&&A)||(!B&&!A))
+		deltaTRight->increase();
+	else
+		deltaTRight->decrease();
 }
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;
 	s =  (double)(deltaT/pow(10,6));
 	return (double)(radian_pr_count/s);
 }
-void forwardM2(int speed){
-  analogWrite(_PWM2,speed); 
+
+void reset(){
+  deltaTLeft->reset();
+  deltaTRight->reset();
 }
+
 void init(){
 	analogWriteResolution(13);
 	//analogReadResolution(10);
