@@ -89,7 +89,7 @@ void TestQuadratureEncorder::canSetupQuadureEncoder(){
 
 void TestQuadratureEncorder::canGetIntevalCount() {
 	Logger::verbose(__FUNCTION__, "TEST");
-	this->quadratureEncoder->timeInterval();
+	this->quadratureEncoder->getTimeInterval();
 }
 
 void TestQuadratureEncorder::canDetroyQuadureEncoder() {

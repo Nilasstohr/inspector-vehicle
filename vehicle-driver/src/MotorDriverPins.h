@@ -14,8 +14,8 @@ class MotorDriverPins {
 public:
 	MotorDriverPins(
 			uint8_t pwmD2,
-			uint8_t in1,
-			uint8_t in2,
+			uint8_t inA,
+			uint8_t inB,
 			uint8_t fb,
 			uint32_t pwmFrequency,
 			uint16_t milliVoltPrAmp);

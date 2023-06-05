@@ -1,30 +1,18 @@
 #include <Arduino.h>
 #include "src/TransposedIIRFilter.h"
-#include "src/QuadratureEncoders.h"
 #include "src/VehiclePins.h"
 #include "src/VehicleParameters.h"
+#include "src/VehicleTestToolBox.h"
+#include "src/DualPiVelocityControl.h"
+#include "src/PiVelocityControllers.h"
 
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
 // motor 1
-#define _INA1 17 // a1 (gray)
-#define _INB1 16  // b1 (lilla)
-#define _PWM1 14  // pwm1
-#define _EN1DIAG1 18 // en1
-#define _CS1 15 // cs1
-// motor 2
-
-#define _INA2 27 // a2 (gray)
-#define _INB2 26 // b2 (lilla)
-#define _PWM2 12 // pwm2
-#define _EN2DIAG2 28 // en2
-#define _CS2 25 // cs2
-
-#define PWM_FREQ 18310.55
 #define MAX_SPEED_PWM (int)pow(2,13)
 #define MIN_SPEED_PWM 500
 
-#define VELOC_REF 10
+#define VELOC_REF 5
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
 
 // sensor sampling
@@ -35,48 +23,11 @@ volatile uint32_t deltaTRightBuffer[MAX_COUNTS];
 volatile uint32_t deltaTBufferCount =0;
 char message[100];
 
-// filter coeffiences
-float b0_control = 0.92;
-float b1_control = -0.79;
-float a1_control = -1;
-
-// helper classes
-class MotorDriver{
-  int pwm;
-  int inA;
-  int inB;
-  int diag;
-  int cs;
-  double pwmFreq;
-  public:
-    MotorDriver(int pwm,int inA,int inB,int diag,int cs,double pwmFreq):
-      pwm(pwm),
-      inA(inA),
-      inB(inB),
-      diag(diag),
-      cs(cs),
-      pwmFreq(pwmFreq)
-    {
-      pinMode(inA,OUTPUT);
-      pinMode(inB,OUTPUT);
-      pinMode(pwm,OUTPUT);
-      pinMode(diag,INPUT);
-      pinMode(cs,INPUT);
-      digitalWrite(inA,LOW);
-      digitalWrite(inB,HIGH);
-      analogWriteFrequency(pwm,pwmFreq);
-    }
-
-    void forward(int speed){
-      analogWrite(pwm,speed);
-    }
-};
-
 TransposedIIRFilter *piControllerLeft;
 TransposedIIRFilter *piControllerRight;
-MotorDriver * motorLeft;
-MotorDriver * motorRight;
 QuadratureEncoders * sensors;
+MotorDrivers *motors;
+DualPiVelocityControl * dualVelocityController;
 
 void runProgram1();
 void start();
@@ -119,8 +70,6 @@ void runProgram1(){
 }
 void start(){
 	reset();
-	sensors->startSampleTimer();
-	//timer->begin(ISR_SAMPLE,INTERVAL_MICROS);
 	double wLeft=0;
 	double wRight=0;
 
@@ -138,8 +87,15 @@ void start(){
 				deltaTRightBuffer[deltaTBufferCount]= deltaTTempRight;
 				deltaTBufferCount++;
 
-				wLeft  = radPrSekFromDeltaT(deltaTTempLeft);
-				wRight = radPrSekFromDeltaT(deltaTTempRight);
+				wLeft  = sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
+						->getParameters()->calculateAngularVelocity(deltaTTempLeft);
+				//radPrSekFromDeltaT(deltaTTempLeft);
+
+
+				wRight = sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_right)
+								->getParameters()->calculateAngularVelocity(deltaTTempRight);
+						//radPrSekFromDeltaT(deltaTTempRight);
+
 
 
 				// update controller for left
@@ -156,6 +112,7 @@ void start(){
 				if(isinf(wRight)){
 					wRight = 0;
 				}
+
 				wRight = piControllerRight->update(VELOC_REF- wRight);
 				if(wRight < MIN_SPEED_PWM)
 					wRight =MIN_SPEED_PWM;
@@ -163,14 +120,10 @@ void start(){
 					wRight = MAX_SPEED_PWM;
 				}
 
-				motorRight->forward(wRight);
-				motorLeft->forward(wLeft);
-
+				motors->forward(wLeft, wRight);
 				sensors->clearSampleReady();
 			}else{
-				sensors->stopSampleTimer();
-				motorLeft->forward(0);
-				motorRight->forward(0);
+				motors->forward(0, 0);
 				break;
 			}
 		}
@@ -241,45 +194,24 @@ void outputResult(){
 		}
 }
 void init(){
-	analogWriteResolution(13);
-	Serial.begin(115200);
+	VehicleTestToolBox *toolBox = new VehicleTestToolBox();
 
-	piControllerLeft = new TransposedIIRFilter(b0_control,b1_control,a1_control);
-	piControllerRight = new TransposedIIRFilter(b0_control,b1_control,a1_control);
+	piControllerLeft = new TransposedIIRFilter(
+			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
+	piControllerRight = new TransposedIIRFilter(
+			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
 
-	TransposedIIRFilter *sensorFilterLeft = new TransposedIIRFilter(
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_A1);
-
-	TransposedIIRFilter *sensorFilterRight = new TransposedIIRFilter(
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
-			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_A1);
-
-	motorLeft  = new MotorDriver(_PWM2,_INA2,_INB2,_EN2DIAG2,_CS2,PWM_FREQ);
-	motorRight = new MotorDriver(_PWM1,_INA1,_INB1,_EN1DIAG1,_CS1,PWM_FREQ);
-
-
-	QuadratureEncorderParameters *encorderParametersLeft = new QuadratureEncorderParameters(
-			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
-			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
-			VEHICLE_WHEEL_RADIUS_CM,
-			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV
-			);
-
-	QuadratureEncorderParameters *encorderParametersRight = new QuadratureEncorderParameters(
-			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_A,
-			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_B,
-			VEHICLE_WHEEL_RADIUS_CM,
-			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV
-			);
-
-	sensors =  new QuadratureEncoders(
-			encorderParametersLeft,
-			sensorFilterLeft,
-			encorderParametersRight,
-			sensorFilterRight,
-			VEHICLE_SAMPLE_TIMER_INTERVAL_MICROS);
+	motors = toolBox->createMotorDrivers();
+	sensors = toolBox->createQuadratureEncoders();
 	sensors->setupEncoders();
+
+	PiVelocityControllers* controlFilters = new
+			PiVelocityControllers(piControllerLeft,piControllerRight);
+
+	dualVelocityController = new DualPiVelocityControl(motors,sensors,controlFilters);
+
 }

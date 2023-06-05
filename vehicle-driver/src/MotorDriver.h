@@ -30,8 +30,8 @@ private:
 
 	uint8_t  getPwmPin();
 
-	void setIn1(uint8_t state);
-	void setIn2(uint8_t state);
+	void setInA(uint8_t state);
+	void setInB(uint8_t state);
 
 };
 

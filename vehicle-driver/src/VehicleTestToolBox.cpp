@@ -8,6 +8,8 @@
 #include "VehicleTestToolBox.h"
 
 VehicleTestToolBox::VehicleTestToolBox() {
+	analogWriteResolution(VEHICLE_MOTOR_DRIVER_PWM_RESOLUTION);
+	Serial.begin(VEHICLE_SERIAL_BAUD_RATE);
 	// TODO Auto-generated constructor stub
 
 }
@@ -32,10 +34,10 @@ QuadratureEncoders* VehicleTestToolBox::createQuadratureEncoders() {
 			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	QuadratureEncorderParameters *encorderParametersRight = new QuadratureEncorderParameters(
-				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
-				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
-				VEHICLE_WHEEL_RADIUS_CM,
-				VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
+			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_A,
+			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_B,
+			VEHICLE_WHEEL_RADIUS_CM,
+			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	return new QuadratureEncoders(
 			encorderParametersLeft,

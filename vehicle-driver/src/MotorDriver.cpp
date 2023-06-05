@@ -25,11 +25,11 @@ void MotorDriver::setup() {
 	pinMode(getPwmPin(),OUTPUT);
 	analogWriteFrequency(getPwmPin(),this->motorDriverPins->getPwmFrequency());
 
-	sprintf(buffer,"Setting in1 pin=%d as output and high",this->motorDriverPins->getInA());
+	sprintf(buffer,"Setting inA pin=%d as output and high",this->motorDriverPins->getInA());
 	Logger::verbose(__FUNCTION__,buffer);
 	pinMode(this->motorDriverPins->getInA(), OUTPUT);
 
-	sprintf(buffer,"Setting in2 pin=%d as output and Low",this->motorDriverPins->getInB());
+	sprintf(buffer,"Setting inB pin=%d as output and Low",this->motorDriverPins->getInB());
     Logger::verbose(__FUNCTION__,buffer);
 	pinMode(this->motorDriverPins->getInB(), OUTPUT);
 	setForward();
@@ -48,20 +48,20 @@ uint8_t MotorDriver::getPwmPin() {
 }
 
 void MotorDriver::setForward() {
-	setIn1(LOW);
-	setIn2(HIGH);
+	setInA(LOW);
+	setInB(HIGH);
 }
 
 void MotorDriver::setReverse() {
-	setIn1(HIGH);
-	setIn2(LOW);
+	setInA(HIGH);
+	setInB(LOW);
 }
 
-void MotorDriver::setIn1(uint8_t state) {
+void MotorDriver::setInA(uint8_t state) {
 	digitalWrite(this->motorDriverPins->getInA(), state);
 }
 
-void MotorDriver::setIn2(uint8_t state) {
+void MotorDriver::setInB(uint8_t state) {
 	digitalWrite(this->motorDriverPins->getInB(), state);
 }
 

@@ -39,8 +39,6 @@ public:
 	QuadratureEncoder * encoder(QuadratureEncoderSide side);
 	bool isSampleReady();
 	void clearSampleReady();
-	void stopSampleTimer();
-	void startSampleTimer();
 
 private:
 	QuadratureEncoder * quadratureEncoderLeft;

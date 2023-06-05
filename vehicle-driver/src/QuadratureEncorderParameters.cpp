@@ -27,9 +27,6 @@ double QuadratureEncorderParameters::calculateCmFromCount(signed int count){
 }
 
 double QuadratureEncorderParameters::calculateAngularVelocity(uint32_t timeDiffMs) {
-	if(timeDiffMs==0){
-		return 0;
-	}
 	return (double)(
 	   this->constantCountsToRadians / this->msToSeconds(timeDiffMs)
 	);

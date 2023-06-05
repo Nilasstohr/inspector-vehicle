@@ -68,7 +68,7 @@ void QuadratureEncoders::setupEncoders() {
 
 	// sample timer
 	sampleTimerEvent.Bind(this,&QuadratureEncoders::sampleEventTimerHandler);
-	//sampleTimer->begin(sample_timer_event,timerIntervalUs);
+	sampleTimer->begin(sample_timer_event,timerIntervalUs);
 
 }
 
@@ -84,14 +84,6 @@ bool QuadratureEncoders::isSampleReady() {
 
 void QuadratureEncoders::clearSampleReady() {
 	sampleReady=false;
-}
-
-void QuadratureEncoders::stopSampleTimer() {
-	sampleTimer->end();
-}
-
-void QuadratureEncoders::startSampleTimer() {
-	sampleTimer->begin(sample_timer_event,timerIntervalUs);
 }
 
 QuadratureEncoder* QuadratureEncoders::left() {

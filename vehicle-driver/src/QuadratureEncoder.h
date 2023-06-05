@@ -24,12 +24,10 @@ public:
 	virtual ~QuadratureEncoder();
 
 	signed int count();
-	float velocity();
 
-	uint32_t timeInterval();
+	uint32_t getTimeInterval();
 
 	void updateFilter();
-
 	uint16_t countInterval();
 
 	void setupChannels();
@@ -47,34 +45,28 @@ public:
     	return this->position;
     }
 
-	double getAngularVelocity() const {
-		return angularVelocity;
-	}
+	double getAngularVelocity();
 
 	template<typename ReadValue>
 	ReadValue read(QuadratureEncoderReadTypes readType);
 
 private:
 
-	QuadratureEncoderInterval *_timeInterval;
-	QuadratureEncoderInterval *_countInterval;
+	QuadratureEncoderInterval *timeIntervalHandler;
+	QuadratureEncoderInterval *countIntervalHandler;
 	QuadratureEncorderParameters *parameters;
 	TransposedIIRFilter *filter;
     double position;
-    double angularVelocity;
 
-    QuadratureEncoderInterval * getTimeInterval() {
-		return _timeInterval;
+    QuadratureEncoderInterval * getTimeIntervalHandler() {
+		return timeIntervalHandler;
 	}
 
     void setPosition(double position) {
 		this->position = position;
 	}
-    void setAngularVelocity(double angularVelocity) {
-		this->angularVelocity = angularVelocity;
-    }
 
-    uint32_t timeIntervalFiltered();
+    uint32_t getTimeIntervalFiltered();
 
     signed int counts =0;
     uint32_t timeMicros;
@@ -95,11 +87,12 @@ inline ReadValue QuadratureEncoder::read(QuadratureEncoderReadTypes readType) {
 			return this->count();
 		}
 		case QuadratureEncoderReadTypes::time_interval_micros:{
-			return this->timeInterval();
+			return this->getTimeInterval();
 		}
 		case QuadratureEncoderReadTypes::time_interval_micros_filtered:{
-			return this->timeIntervalFiltered();
+			return this->getTimeIntervalFiltered();
 		}
+
 	}
 }
 

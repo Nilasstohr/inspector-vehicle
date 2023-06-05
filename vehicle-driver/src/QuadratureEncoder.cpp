@@ -10,8 +10,8 @@
 
 QuadratureEncoder::QuadratureEncoder(QuadratureEncorderParameters *parameters,TransposedIIRFilter *filter) {
 	this->parameters = parameters;
-	this->_timeInterval = new QuadratureEncoderInterval();
-	this->_countInterval = new QuadratureEncoderInterval();
+	this->timeIntervalHandler = new QuadratureEncoderInterval();
+	this->countIntervalHandler = new QuadratureEncoderInterval();
 	this->timeMicros =0;
 	this->filter = filter;
 	this->filter->reset();
@@ -49,27 +49,27 @@ void QuadratureEncoder::channelBEventHandler() {
 	this->refresh();
 }
 
-uint32_t QuadratureEncoder::timeInterval() {
-	return this->getTimeInterval()->get();
+uint32_t QuadratureEncoder::getTimeInterval() {
+	return this->getTimeIntervalHandler()->get();
 }
 
 void QuadratureEncoder::updateFilter() {
-	this->filter->update(timeInterval());
+	this->filter->update(getTimeInterval());
 }
 
-uint32_t QuadratureEncoder::timeIntervalFiltered() {
+uint32_t QuadratureEncoder::getTimeIntervalFiltered() {
 	return this->filter->get();
 }
 
-float QuadratureEncoder::velocity() {
-	return 1;
-}
 
+double QuadratureEncoder::getAngularVelocity() {
+	return getParameters()->calculateAngularVelocity(getTimeIntervalFiltered());
+}
 
 void QuadratureEncoder::refresh() {
 	// update time interval
 	//this->timeMicros =micros();
-	this->getTimeInterval()->update(micros());
+	this->getTimeIntervalHandler()->update(micros());
 	//this->setPosition(this->getParameters()->calculateCmFromCount(this->count()));
 /*
 	this->setAngularVelocity(
@@ -79,7 +79,7 @@ void QuadratureEncoder::refresh() {
 }
 
 void QuadratureEncoder::reset() {
-	this->getTimeInterval()->reset();
+	this->getTimeIntervalHandler()->reset();
 	this->counts = 0 ;
 }
 
