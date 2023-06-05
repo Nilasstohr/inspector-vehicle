@@ -12,7 +12,10 @@ class TransposedIIRFilter {
 public:
 	TransposedIIRFilter(float b0,float b1,float a1);
 	double update(double input);
+	void reset();
+	double get();
 	virtual ~TransposedIIRFilter();
+private:
 	float b0;
 	float b1;
 	float a1;

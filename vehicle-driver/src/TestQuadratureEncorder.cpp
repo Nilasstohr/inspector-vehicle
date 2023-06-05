@@ -72,12 +72,19 @@ void TestQuadratureEncorder::printEncoderParmas(QuadratureEncorderParameters *pa
 
 void TestQuadratureEncorder::canSetupQuadureEncoder(){
 	Logger::verbose(__FUNCTION__, "TEST");
+
+
+	TransposedIIRFilter * sensorFilterLeft = new TransposedIIRFilter(
+			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
+			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
+			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_A1);
+
 	this->quadratureEncoder = new QuadratureEncoder(
 			new QuadratureEncorderParameters(
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
 				VEHICLE_WHEEL_RADIUS_CM,
-				VEHICLE_MOTOR_ENCODER_COUNT_PR_REV));
+				VEHICLE_MOTOR_ENCODER_COUNT_PR_REV),sensorFilterLeft);
 }
 
 void TestQuadratureEncorder::canGetIntevalCount() {

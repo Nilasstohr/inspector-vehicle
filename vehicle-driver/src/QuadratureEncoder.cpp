@@ -7,11 +7,14 @@
 
 #include "QuadratureEncoder.h"
 
-QuadratureEncoder::QuadratureEncoder(QuadratureEncorderParameters *parameters) {
+
+QuadratureEncoder::QuadratureEncoder(QuadratureEncorderParameters *parameters,TransposedIIRFilter *filter) {
 	this->parameters = parameters;
 	this->_timeInterval = new QuadratureEncoderInterval();
 	this->_countInterval = new QuadratureEncoderInterval();
-	this->timeMicros;
+	this->timeMicros =0;
+	this->filter = filter;
+	this->filter->reset();
 	this->setupChannels();
 }
 
@@ -46,15 +49,22 @@ void QuadratureEncoder::channelBEventHandler() {
 	this->refresh();
 }
 
-uint16_t QuadratureEncoder::timeInterval() {
+uint32_t QuadratureEncoder::timeInterval() {
 	return this->getTimeInterval()->get();
 }
 
+void QuadratureEncoder::updateFilter() {
+	this->filter->update(timeInterval());
+}
 
+uint32_t QuadratureEncoder::timeIntervalFiltered() {
+	return this->filter->get();
+}
 
 float QuadratureEncoder::velocity() {
 	return 1;
 }
+
 
 void QuadratureEncoder::refresh() {
 	// update time interval
@@ -77,11 +87,8 @@ signed int QuadratureEncoder::count() {
 	return this->counts;
 }
 
-
 QuadratureEncoder::~QuadratureEncoder() {
 	// TODO Auto-generated destructor stub
 }
-
-
 
 

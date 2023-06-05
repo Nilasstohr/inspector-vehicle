@@ -10,6 +10,7 @@
 
 #include "QuadratureEncoder.h"
 #include "QuadratureEncorderParameters.h"
+#include "TransposedIIRFilter.h"
 
 class QuadratureEncoders {
 public:
@@ -19,14 +20,12 @@ public:
 		quadrature_encoder_right
 	};
 
-
 	QuadratureEncoders(
-			int channel1A,
-			int channel1B,
-			int channel2A,
-			int channel2B,
-			uint8_t wheelDiameterCm,
-			uint16_t countPrRevolution);
+			QuadratureEncorderParameters * paramsLeft,
+			TransposedIIRFilter * sensorFilterLeft,
+			QuadratureEncorderParameters * paramsRight,
+			TransposedIIRFilter * sensorFilterRight,
+			unsigned int timerIntervalUs);
 	void setupEncoders();
 	virtual ~QuadratureEncoders();
 	QuadratureEncoder * left();
@@ -34,14 +33,23 @@ public:
 	void reset();
 	signed int count(QuadratureEncoderSide side);
 	float velocity(QuadratureEncoderSide side);
+	uint32_t timerInterval(QuadratureEncoderSide side);
 	double position(QuadratureEncoderSide side);
 	String * count(signed int & count,QuadratureEncoderSide side);
 	QuadratureEncoder * encoder(QuadratureEncoderSide side);
+	bool isSampleReady();
+	void clearSampleReady();
+	void stopSampleTimer();
+	void startSampleTimer();
 
 private:
 	QuadratureEncoder * quadratureEncoderLeft;
 	QuadratureEncoder * quadratureEncoderRight;
 
+	IntervalTimer * sampleTimer;
+	bool sampleReady;
+	unsigned int timerIntervalUs;
+	void sampleEventTimerHandler();
 };
 
 #endif /* SRC_QUADRATUREENCODERS_H_ */

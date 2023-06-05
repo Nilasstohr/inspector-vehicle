@@ -11,7 +11,7 @@ static CSyncEvent channelA1Event;
 static CSyncEvent channelB1Event;
 static CSyncEvent channelA2Event;
 static CSyncEvent channelB2Event;
-
+static CSyncEvent sampleTimerEvent;
 
 static void channel_a_isr_1(void){
 	channelA1Event();
@@ -29,23 +29,28 @@ static void channel_b_isr_2(void){
 	channelB2Event();
 }
 
+
+static void sample_timer_event(void){
+	sampleTimerEvent();
+}
+
 QuadratureEncoders::QuadratureEncoders(
-		int channel1A,
-		int channel1B,
-		int channel2A,
-		int channel2B,
-		uint8_t wheelDiameterCm,
-		uint16_t countPrRevolution)
+	QuadratureEncorderParameters * paramsLeft,
+	TransposedIIRFilter * sensorFilterLeft,
+	QuadratureEncorderParameters * paramsRight,
+	TransposedIIRFilter * sensorFilterRight,
+	unsigned int timerIntervalUs)
 {
-	this->quadratureEncoderLeft = new QuadratureEncoder(
-			new QuadratureEncorderParameters(channel1A,channel1B,wheelDiameterCm,countPrRevolution));
-	this->quadratureEncoderRight = new QuadratureEncoder(
-			new QuadratureEncorderParameters(channel2A,channel2B,wheelDiameterCm,countPrRevolution));
+	this->quadratureEncoderLeft = new QuadratureEncoder(paramsLeft,sensorFilterLeft);
+	this->quadratureEncoderRight = new QuadratureEncoder(paramsRight,sensorFilterRight);
+	this->sampleTimer = new IntervalTimer;
+	this->timerIntervalUs = timerIntervalUs;
+	sampleReady = false;
 }
 
 void QuadratureEncoders::setupEncoders() {
 
-	// encoder 1
+	// encoder left
 
 	channelA1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelAEventHandler);
 	attachInterrupt(this->quadratureEncoderLeft->getParameters()->getPinChannelA(),channel_a_isr_1, CHANGE);
@@ -53,7 +58,7 @@ void QuadratureEncoders::setupEncoders() {
 	channelB1Event.Bind(this->quadratureEncoderLeft,&QuadratureEncoder::channelBEventHandler);
 	attachInterrupt(this->quadratureEncoderLeft->getParameters()->getPinChannelB(),channel_b_isr_1, CHANGE);
 
-	// encoder 2
+	// encoder right
 
 	channelA2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelAEventHandler);
 	attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelA(),channel_a_isr_2, CHANGE);
@@ -61,6 +66,32 @@ void QuadratureEncoders::setupEncoders() {
 	channelB2Event.Bind(this->quadratureEncoderRight,&QuadratureEncoder::channelBEventHandler);
 	attachInterrupt(this->quadratureEncoderRight->getParameters()->getPinChannelB(),channel_b_isr_2, CHANGE);
 
+	// sample timer
+	sampleTimerEvent.Bind(this,&QuadratureEncoders::sampleEventTimerHandler);
+	//sampleTimer->begin(sample_timer_event,timerIntervalUs);
+
+}
+
+void QuadratureEncoders::sampleEventTimerHandler() {
+	left()->updateFilter();
+	right()->updateFilter();
+	sampleReady=true;
+}
+
+bool QuadratureEncoders::isSampleReady() {
+	return sampleReady;
+}
+
+void QuadratureEncoders::clearSampleReady() {
+	sampleReady=false;
+}
+
+void QuadratureEncoders::stopSampleTimer() {
+	sampleTimer->end();
+}
+
+void QuadratureEncoders::startSampleTimer() {
+	sampleTimer->begin(sample_timer_event,timerIntervalUs);
 }
 
 QuadratureEncoder* QuadratureEncoders::left() {
@@ -115,3 +146,4 @@ QuadratureEncoder* QuadratureEncoders::encoder(QuadratureEncoderSide side) {
 
 QuadratureEncoders::~QuadratureEncoders() {
 }
+

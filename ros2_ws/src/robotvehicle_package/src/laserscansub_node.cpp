@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ReadingLaser>();
-  RCLCPP_INFO(node->get_logger(), "Hello my friends");
+  RCLCPP_INFO(node->get_logger(), "Hello my friend");
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;

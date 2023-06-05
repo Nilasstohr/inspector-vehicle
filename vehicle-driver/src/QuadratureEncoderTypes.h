@@ -14,9 +14,8 @@ enum QuadratureEncoderReadTypes
 	angular_velocity_rev_pr_minuts,
 	position_linear,
 	encoder_counts,
-	time_ms,
 	time_interval_micros,
-	size
+	time_interval_micros_filtered
 };
 
 

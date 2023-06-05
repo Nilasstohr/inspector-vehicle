@@ -13,7 +13,7 @@ Eclipse Dev Invironment
 	1. add symbol "_MK20DX256_" (dependending on platform)
 	2. add symbol "F_CPU" with value "48000000"
 
-Ros and Clion
+Ros2 and Clion
 
 General Process
 

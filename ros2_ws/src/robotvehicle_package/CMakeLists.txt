@@ -26,7 +26,12 @@ find_package(sensor_msgs REQUIRED)
 add_executable(laserscansub_node src/laserscansub_node.cpp)
 ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 
-install(TARGETS laserscansub_node
+add_executable(controller_node src/controller_node.cpp)
+ament_target_dependencies(controller_node rclcpp)
+
+install(TARGETS
+  laserscansub_node
+  controller_node
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

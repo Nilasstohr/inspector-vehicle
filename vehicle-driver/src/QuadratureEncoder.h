@@ -14,18 +14,22 @@
 #include "math.h"
 #include "QuadratureEncorderParameters.h"
 #include "QuadratureEncoderTypes.h"
+#include "TransposedIIRFilter.h"
 
 class QuadratureEncoder {
 public:
 
 
-	QuadratureEncoder(QuadratureEncorderParameters *parameters);
+	QuadratureEncoder(QuadratureEncorderParameters *parameters,TransposedIIRFilter *filter);
 	virtual ~QuadratureEncoder();
 
 	signed int count();
 	float velocity();
 
-	uint16_t timeInterval();
+	uint32_t timeInterval();
+
+	void updateFilter();
+
 	uint16_t countInterval();
 
 	void setupChannels();
@@ -55,6 +59,7 @@ private:
 	QuadratureEncoderInterval *_timeInterval;
 	QuadratureEncoderInterval *_countInterval;
 	QuadratureEncorderParameters *parameters;
+	TransposedIIRFilter *filter;
     double position;
     double angularVelocity;
 
@@ -67,7 +72,9 @@ private:
 	}
     void setAngularVelocity(double angularVelocity) {
 		this->angularVelocity = angularVelocity;
-}
+    }
+
+    uint32_t timeIntervalFiltered();
 
     signed int counts =0;
     uint32_t timeMicros;
@@ -87,11 +94,11 @@ inline ReadValue QuadratureEncoder::read(QuadratureEncoderReadTypes readType) {
 		case QuadratureEncoderReadTypes::encoder_counts:{
 			return this->count();
 		}
-		case QuadratureEncoderReadTypes::time_ms:{
-			return this->timeMicros;
-		}
 		case QuadratureEncoderReadTypes::time_interval_micros:{
-			return this->getTimeInterval()->get();
+			return this->timeInterval();
+		}
+		case QuadratureEncoderReadTypes::time_interval_micros_filtered:{
+			return this->timeIntervalFiltered();
 		}
 	}
 }
