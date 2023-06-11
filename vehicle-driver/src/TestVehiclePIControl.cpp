@@ -22,8 +22,8 @@ TestVehiclePIControl::TestVehiclePIControl() {
 	this->timerIntervalMillis = (double)( this->timerIntervalUs/(pow(10,3)) );
 	this->averageSize = 5;
 
-	this->motorDrivers = createMotorDrivers();
-	this->quadratureEncoders = createQuadratureEncoders();
+	this->motorDrivers = buildMotorDrivers();
+	this->quadratureEncoders = buildQuadratureEncoders();
 	this->encoders()->setupEncoders();
 
 	this->sampleTimer = new IntervalTimer;

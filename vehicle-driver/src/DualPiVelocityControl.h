@@ -17,12 +17,33 @@ public:
 	DualPiVelocityControl(
 			MotorDrivers* motors,
 			QuadratureEncoders* sensors,
-			PiVelocityControllers*  controlFilters);
+			PiVelocityControllers*  controlFilters,
+			double maximumOutput,
+			double minimumOutput);
+	void update(double referenceVelocity);
 	virtual ~DualPiVelocityControl();
+
+	uint32_t getDeltaTLeft() const {
+		return deltaTLeft;
+	}
+
+	uint32_t getDeltaTRight() const {
+		return deltaTRight;
+	}
+	bool wasSensorReady();
+	void reset();
+
 private:
 	MotorDrivers* motors;
 	QuadratureEncoders* sensors;
 	PiVelocityControllers*  controlFilters;
+	double maximumOutput;
+	double minimumOutput;
+	uint32_t deltaTLeft;
+	uint32_t deltaTRight;
+	double wLeft;
+	double wRight;
+	bool sensorReady;
 };
 
 #endif /* SRC_DUALPIVELOCITYCONTROL_H_ */

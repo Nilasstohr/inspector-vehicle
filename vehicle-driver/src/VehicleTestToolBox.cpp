@@ -14,9 +14,7 @@ VehicleTestToolBox::VehicleTestToolBox() {
 
 }
 
-QuadratureEncoders* VehicleTestToolBox::createQuadratureEncoders() {
-
-
+QuadratureEncoders* VehicleTestToolBox::buildQuadratureEncoders() {
 	TransposedIIRFilter * sensorFilterLeft = new TransposedIIRFilter(
 			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
 			VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
@@ -39,17 +37,19 @@ QuadratureEncoders* VehicleTestToolBox::createQuadratureEncoders() {
 			VEHICLE_WHEEL_RADIUS_CM,
 			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
-	return new QuadratureEncoders(
+	quadratureEncoders =  new QuadratureEncoders(
 			encorderParametersLeft,
 			sensorFilterLeft,
 			encorderParametersRight,
 			sensorFilterRight,
 			VEHICLE_SAMPLE_TIMER_INTERVAL_MICROS);
+	quadratureEncoders->setupEncoders();
+	return quadratureEncoders;
 }
 
-MotorDrivers* VehicleTestToolBox::createMotorDrivers()
+MotorDrivers* VehicleTestToolBox::buildMotorDrivers()
 {
-    this->motorDrivers = new MotorDrivers(
+    motorDrivers = new MotorDrivers(
 		new MotorDriverPins(
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_PWM,
 				VEHICLE_PIN_MOTOR_DRIVER_LEFT_INA,
@@ -66,8 +66,33 @@ MotorDrivers* VehicleTestToolBox::createMotorDrivers()
 				VEHICLE_MOTOR_DRIVER_PWM_FREQUENCY,
 				VEHICLE_MOTOR_DRIVER_CURRENT_MILLIVOLT_PR_AMP)
     );
-    return this->motorDrivers;
+    return motorDrivers;
 }
+
+DualPiVelocityControl* VehicleTestToolBox::buildDualPiVelocityControl()
+{
+	TransposedIIRFilter *piControllerLeft = new TransposedIIRFilter(
+				VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+				VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+				VEHICLE_PI_CONTROL_COEFFICIENT_A1);
+	TransposedIIRFilter *piControllerRight = new TransposedIIRFilter(
+				VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+				VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+				VEHICLE_PI_CONTROL_COEFFICIENT_A1);
+
+	PiVelocityControllers *controlFilters = new
+				PiVelocityControllers(piControllerLeft,piControllerRight);
+
+
+
+	dualPiVelocityControl = new DualPiVelocityControl(
+			motorDrivers,quadratureEncoders,
+			controlFilters,
+			VEHICLE_MOTOR_DRIVER_PWM_MAX,
+			VEHICLE_MOTOR_DRIVER_PWM_MIN);
+    return dualPiVelocityControl;
+}
+
 
 VehicleTestToolBox::~VehicleTestToolBox() {
 	// TODO Auto-generated destructor stub

@@ -94,13 +94,13 @@ void TestMotorDrivers::canSetupMotorDriver() {
 
 void TestMotorDrivers::canSetupMotorDrivers() {
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 }
 
 void TestMotorDrivers::canDriveForward() {
 	delay(2000);
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 	motorDrivers->forward(30000);
 	delay(2000);
 	motorDrivers->stop();
@@ -109,7 +109,7 @@ void TestMotorDrivers::canDriveForward() {
 void TestMotorDrivers::canDriveReverse() {
 	delay(2000);
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 	motorDrivers->reverse(30000);
 	delay(2000);
 	motorDrivers->stop();
@@ -117,7 +117,7 @@ void TestMotorDrivers::canDriveReverse() {
 
 void TestMotorDrivers::canReadCurrentSenseWhenStopped() {
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 	motorDrivers->stop();
 	delay(2000);
 	checkCurrentOutputByState(motorDrivers,false);
@@ -125,7 +125,7 @@ void TestMotorDrivers::canReadCurrentSenseWhenStopped() {
 
 void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 	motorDrivers->stop();
 	delay(2000);
 	motorDrivers->forward(30000);
@@ -137,7 +137,7 @@ void TestMotorDrivers::canReadCurrentSenseWhenStarted() {
 
 void TestMotorDrivers::canDetermineLowestPWM() {
 	Logger::verbose(__FUNCTION__, " - TEST");
-	MotorDrivers *motorDrivers = createMotorDrivers();
+	MotorDrivers *motorDrivers = buildMotorDrivers();
 	motorDrivers->stop();
 	delay(2000);
 	motorDrivers->forward(65000);

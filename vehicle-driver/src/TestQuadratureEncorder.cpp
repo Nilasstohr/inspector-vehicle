@@ -100,7 +100,7 @@ void TestQuadratureEncorder::canDetroyQuadureEncoder() {
 void TestQuadratureEncorder::canSetupQuadratureEncoders() {
 	Logger::verbose(__FUNCTION__, "TEST");
 	this->quadratureEncoders = VehicleTestBase::
-			VehicleTestToolBox::createQuadratureEncoders();
+			VehicleTestToolBox::buildQuadratureEncoders();
 
 }
 

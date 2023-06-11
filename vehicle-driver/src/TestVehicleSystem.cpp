@@ -17,8 +17,8 @@ TestVehicleSystem::TestVehicleSystem() {
 	Logger::setLogLevel(Logger::VERBOSE);
 	Logger::verbose(__FUNCTION__, "############# TEST CLASS ############# ");
 
-	this->motorDrivers = createMotorDrivers();
-	this->quadratureEncoders = createQuadratureEncoders();
+	this->motorDrivers = buildMotorDrivers();
+	this->quadratureEncoders = buildQuadratureEncoders();
 	this->encoders()->setupEncoders();
 
 	// set up sample timer

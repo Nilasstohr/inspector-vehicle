@@ -15,17 +15,20 @@
 #include "QuadratureEncoderTypes.h"
 #include "MotorDrivers.h"
 #include "EncoderRecord.h"
+#include "DualPiVelocityControl.h"
 
 class VehicleTestToolBox {
 public:
 	VehicleTestToolBox();
-	QuadratureEncoders * createQuadratureEncoders();
-	MotorDrivers * createMotorDrivers();
+	QuadratureEncoders * buildQuadratureEncoders();
+	MotorDrivers * buildMotorDrivers();
+	DualPiVelocityControl* buildDualPiVelocityControl();
 	virtual ~VehicleTestToolBox();
 
 private:
 	QuadratureEncoders * quadratureEncoders;
 	MotorDrivers * motorDrivers;
+	DualPiVelocityControl *dualPiVelocityControl;
 };
 
 #endif /* SRC_VEHICLETESTTOOLBOX_H_ */

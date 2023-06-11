@@ -23,14 +23,11 @@ volatile uint32_t deltaTRightBuffer[MAX_COUNTS];
 volatile uint32_t deltaTBufferCount =0;
 char message[100];
 
-TransposedIIRFilter *piControllerLeft;
-TransposedIIRFilter *piControllerRight;
-QuadratureEncoders * sensors;
-MotorDrivers *motors;
 DualPiVelocityControl * dualVelocityController;
 
 void runProgram1();
 void start();
+void velocityContorl();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
 void reset();
@@ -38,7 +35,7 @@ void init();
 
 extern "C" int main(void){
 	init();
-	start();
+	velocityContorl();
 	//runProgram1();
   //analogWrite(_PWM1,0);
 }
@@ -69,6 +66,7 @@ void runProgram1(){
 	}
 }
 void start(){
+	/*
 	reset();
 	double wLeft=0;
 	double wRight=0;
@@ -97,12 +95,11 @@ void start(){
 						//radPrSekFromDeltaT(deltaTTempRight);
 
 
-
 				// update controller for left
 				if(isinf(wLeft)){
 					wLeft = 0;
 				}
-				wLeft = piControllerLeft->update(VELOC_REF- wLeft);
+				wLeft = controlFilters->left()->update(VELOC_REF- wLeft);
 				if(wLeft < MIN_SPEED_PWM)
 					wLeft =MIN_SPEED_PWM;
 				else if(wLeft>MAX_SPEED_PWM){
@@ -113,7 +110,7 @@ void start(){
 					wRight = 0;
 				}
 
-				wRight = piControllerRight->update(VELOC_REF- wRight);
+				wRight = controlFilters->right()->update(VELOC_REF- wRight);
 				if(wRight < MIN_SPEED_PWM)
 					wRight =MIN_SPEED_PWM;
 				else if(wRight>MAX_SPEED_PWM){
@@ -130,6 +127,26 @@ void start(){
 		delayMicroseconds(1);
 	}
 	outputResult();
+	*/
+}
+void velocityContorl(){
+	reset();
+	while(1){
+		if(deltaTBufferCount<MAX_COUNTS){
+			dualVelocityController->update(VELOC_REF);
+			// store data
+			if(dualVelocityController->wasSensorReady()){
+				deltaTLeftBuffer[deltaTBufferCount] = dualVelocityController->getDeltaTLeft();
+				deltaTRightBuffer[deltaTBufferCount]= dualVelocityController->getDeltaTRight();
+				deltaTBufferCount++;
+			}
+		}else{
+			reset();
+			break;
+		}
+		delayMicroseconds(1);
+	}
+	outputResult();
 }
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;
@@ -137,9 +154,8 @@ double radPrSekFromDeltaT(uint32_t deltaT) {
 	return (double)(RADIANS_PR_COUNT/s);
 }
 void reset(){
-  piControllerLeft->reset();
-  piControllerRight->reset();
-  sensors->reset();
+  dualVelocityController->reset();
+  deltaTBufferCount=0;
 }
 void outputResult(){
 	uint32_t sumDeltaT = 0;
@@ -195,23 +211,8 @@ void outputResult(){
 }
 void init(){
 	VehicleTestToolBox *toolBox = new VehicleTestToolBox();
-
-	piControllerLeft = new TransposedIIRFilter(
-			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
-			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
-			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
-	piControllerRight = new TransposedIIRFilter(
-			VEHICLE_PI_CONTROL_COEFFICIENT_B0,
-			VEHICLE_PI_CONTROL_COEFFICIENT_B1,
-			VEHICLE_PI_CONTROL_COEFFICIENT_A1);
-
-	motors = toolBox->createMotorDrivers();
-	sensors = toolBox->createQuadratureEncoders();
-	sensors->setupEncoders();
-
-	PiVelocityControllers* controlFilters = new
-			PiVelocityControllers(piControllerLeft,piControllerRight);
-
-	dualVelocityController = new DualPiVelocityControl(motors,sensors,controlFilters);
+	toolBox->buildMotorDrivers();
+	toolBox->buildQuadratureEncoders();
+	dualVelocityController = toolBox->buildDualPiVelocityControl();
 
 }
