@@ -8,9 +8,6 @@
 
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
-// motor 1
-#define MAX_SPEED_PWM (int)pow(2,13)
-#define MIN_SPEED_PWM 500
 
 #define VELOC_REF 5
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
@@ -25,20 +22,125 @@ char message[100];
 
 DualPiVelocityControl * dualVelocityController;
 
+enum VehicleMode
+{
+	DRIVING_MODE,
+	TRANSIENT_TEST_MODE
+};
+enum DrivingMode
+{
+	MANUAL_MODE,
+};
+
+enum DrivingModeManual
+{
+	FORWARD,
+	BACKWARD,
+	TURN_LEFT,
+	TURN_RIGHT,
+	STOP,
+	UNKNOWN
+};
+
 void runProgram1();
-void start();
 void velocityContorl();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
 void reset();
 void init();
+VehicleMode getVehicleMode();
+DrivingMode getDrivingMode();
+DrivingModeManual getDrivingModeManual();
+void drivingMode();
+void drivningManual();
+String* awaitCommand();
 
 extern "C" int main(void){
 	init();
-	velocityContorl();
-	//runProgram1();
-  //analogWrite(_PWM1,0);
+	//velocityContorl();
+	Serial.println("enter vehicle mode options");
+	while(1){
+		VehicleMode mode = getVehicleMode();
+		switch(mode){
+			case VehicleMode::TRANSIENT_TEST_MODE:{
+				//velocityContorl();
+				break;
+			}
+			case VehicleMode::DRIVING_MODE:{
+				drivingMode();
+				break;
+			}
+		}
+		delay(100);
+	}
+
 }
+
+// command interface
+VehicleMode getVehicleMode(){
+	return VehicleMode::DRIVING_MODE;
+}
+DrivingMode getDrivingMode(){
+	return DrivingMode::MANUAL_MODE;
+}
+DrivingModeManual getDrivingModeManual(){
+	 String* cmd = awaitCommand();
+	 if(cmd->compareTo("FORWARD")){
+		 Serial.print("going forward");
+		 return DrivingModeManual::FORWARD;
+	 }else{
+		 return DrivingModeManual::UNKNOWN;
+	 }
+
+}
+String* awaitCommand(){
+	while(1){
+		//Serial.println("awaiting command: ");
+		String *s = new String();
+		if(Serial.available()){
+			while (Serial.available()){
+				char c = Serial.read();
+				if(c==';'){
+					Serial.print("received command: ");
+					Serial.println(s->c_str());
+					return new String(message);
+				}
+				s->append(c);
+			}
+		}
+		delete s;
+		delay(20);
+	}
+	return new String();
+}
+void drivingMode(){
+	Serial.println("enter driving mode options");
+	while(1){
+		DrivingMode mode = getDrivingMode();
+		switch(mode){
+			case DrivingMode::MANUAL_MODE:{
+				drivningManual();
+				break;
+			}
+		}
+		delay(100);
+	}
+
+}
+void drivningManual(){
+	Serial.println("enter manual driving mode");
+	DrivingModeManual mode;
+	while(1){
+	    mode = getDrivingModeManual();
+		switch(mode){
+			case DrivingModeManual::FORWARD:{
+				break;
+			}
+		}
+		delay(100);
+	}
+}
+//--------------------------------------
 
 void runProgram1(){
 	while(1){
@@ -54,7 +156,7 @@ void runProgram1(){
 			  Serial.flush();
 			  //Serial.print("running test...");
 			  digitalWrite(LED_BUILTIN, HIGH);
-			  start();
+			  velocityContorl();
 			  delay(200);
 			  digitalWrite(LED_BUILTIN, LOW);
 			}else{
@@ -64,70 +166,6 @@ void runProgram1(){
 
 		delayMicroseconds(1);
 	}
-}
-void start(){
-	/*
-	reset();
-	double wLeft=0;
-	double wRight=0;
-
-	while(1){
-		 if(sensors->isSampleReady()){
-			if(deltaTBufferCount<MAX_COUNTS){
-				deltaTTempLeft =
-						sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
-									 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros_filtered);
-				deltaTTempRight =
-						sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_right)
-											 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros_filtered);
-				// store data
-				deltaTLeftBuffer[deltaTBufferCount] = deltaTTempLeft;
-				deltaTRightBuffer[deltaTBufferCount]= deltaTTempRight;
-				deltaTBufferCount++;
-
-				wLeft  = sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
-						->getParameters()->calculateAngularVelocity(deltaTTempLeft);
-				//radPrSekFromDeltaT(deltaTTempLeft);
-
-
-				wRight = sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_right)
-								->getParameters()->calculateAngularVelocity(deltaTTempRight);
-						//radPrSekFromDeltaT(deltaTTempRight);
-
-
-				// update controller for left
-				if(isinf(wLeft)){
-					wLeft = 0;
-				}
-				wLeft = controlFilters->left()->update(VELOC_REF- wLeft);
-				if(wLeft < MIN_SPEED_PWM)
-					wLeft =MIN_SPEED_PWM;
-				else if(wLeft>MAX_SPEED_PWM){
-					wLeft = MAX_SPEED_PWM;
-				}
-				// update controller for right
-				if(isinf(wRight)){
-					wRight = 0;
-				}
-
-				wRight = controlFilters->right()->update(VELOC_REF- wRight);
-				if(wRight < MIN_SPEED_PWM)
-					wRight =MIN_SPEED_PWM;
-				else if(wRight>MAX_SPEED_PWM){
-					wRight = MAX_SPEED_PWM;
-				}
-
-				motors->forward(wLeft, wRight);
-				sensors->clearSampleReady();
-			}else{
-				motors->forward(0, 0);
-				break;
-			}
-		}
-		delayMicroseconds(1);
-	}
-	outputResult();
-	*/
 }
 void velocityContorl(){
 	reset();
@@ -216,3 +254,5 @@ void init(){
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
 
 }
+
+
