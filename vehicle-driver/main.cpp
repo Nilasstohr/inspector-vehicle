@@ -5,6 +5,8 @@
 #include "src/VehicleTestToolBox.h"
 #include "src/DualPiVelocityControl.h"
 #include "src/PiVelocityControllers.h"
+#include "src/SerialInterface.h"
+
 
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
@@ -21,6 +23,7 @@ volatile uint32_t deltaTBufferCount =0;
 char message[100];
 
 DualPiVelocityControl * dualVelocityController;
+SerialInterface *serial;
 
 enum VehicleMode
 {
@@ -53,12 +56,11 @@ DrivingMode getDrivingMode();
 DrivingModeManual getDrivingModeManual();
 void drivingMode();
 void drivningManual();
-String* awaitCommand();
 
 extern "C" int main(void){
 	init();
 	//velocityContorl();
-	Serial.println("enter vehicle mode options");
+	Serial.println("entered vehicle mode options");
 	while(1){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
@@ -84,37 +86,22 @@ DrivingMode getDrivingMode(){
 	return DrivingMode::MANUAL_MODE;
 }
 DrivingModeManual getDrivingModeManual(){
-	 String* cmd = awaitCommand();
-	 if(cmd->compareTo("FORWARD")){
-		 Serial.print("going forward");
+	 String* cmd = serial->getReceived();
+	 if(cmd->equals("f")){
 		 return DrivingModeManual::FORWARD;
-	 }else{
+	 }else if(cmd->equals("b")){
+		 return DrivingModeManual::BACKWARD;
+	 }else if(cmd->equals("s")){
+		 return DrivingModeManual::STOP;
+	 }
+	 else{
 		 return DrivingModeManual::UNKNOWN;
 	 }
 
 }
-String* awaitCommand(){
-	while(1){
-		//Serial.println("awaiting command: ");
-		String *s = new String();
-		if(Serial.available()){
-			while (Serial.available()){
-				char c = Serial.read();
-				if(c==';'){
-					Serial.print("received command: ");
-					Serial.println(s->c_str());
-					return new String(message);
-				}
-				s->append(c);
-			}
-		}
-		delete s;
-		delay(20);
-	}
-	return new String();
-}
+
 void drivingMode(){
-	Serial.println("enter driving mode options");
+	Serial.println("entered driving mode options");
 	while(1){
 		DrivingMode mode = getDrivingMode();
 		switch(mode){
@@ -123,21 +110,36 @@ void drivingMode(){
 				break;
 			}
 		}
+
 		delay(100);
 	}
 
 }
 void drivningManual(){
-	Serial.println("enter manual driving mode");
-	DrivingModeManual mode;
+	Serial.println("entered manual driving mode (default stopped)");
+	DrivingModeManual mode=DrivingModeManual::UNKNOWN;
 	while(1){
-	    mode = getDrivingModeManual();
+		if(serial->availableRead()){
+			mode = getDrivingModeManual();
+		}
 		switch(mode){
 			case DrivingModeManual::FORWARD:{
+				dualVelocityController->update(VELOC_REF);
 				break;
 			}
+			case DrivingModeManual::BACKWARD:{
+				break;
+			}
+			case DrivingModeManual::STOP:{
+				reset();
+				break;
+			}
+			default:{
+
+			}
 		}
-		delay(100);
+
+		delayMicroseconds(1);
 	}
 }
 //--------------------------------------
@@ -249,6 +251,7 @@ void outputResult(){
 }
 void init(){
 	VehicleTestToolBox *toolBox = new VehicleTestToolBox();
+	serial = new SerialInterface();
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
