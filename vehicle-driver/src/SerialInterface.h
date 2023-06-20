@@ -13,13 +13,13 @@
 class SerialInterface {
 public:
 	SerialInterface();
-	bool availableRead();
-	String* getReceived();
+	bool hasMessage();
+	String* getMessage();
 	virtual ~SerialInterface();
 private:
 	uint8_t readSize;
     char  buffer[256];
-    void printReceived();
+    void printMessage();
 };
 
 #endif /* SRC_SERIALINTERFACE_H_ */

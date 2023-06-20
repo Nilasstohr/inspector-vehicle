@@ -11,6 +11,7 @@
 #include "MotorDriverPins.h"
 #include "MotorDriver.h"
 #include "Side.h"
+#include "VehicleDrivingModeTypes.h"
 
 class MotorDrivers {
 public:
@@ -19,6 +20,8 @@ public:
     void forward(uint16_t pwm);
     void forward(uint16_t pwmLeft,uint16_t pwmRight);
     void reverse(uint16_t pwm);
+    void setDir(DrivingDirection dir);
+    void drive(uint16_t pwmLeft,uint16_t pwmRight);
     void stop();
     float getCurrent(Side side);
 

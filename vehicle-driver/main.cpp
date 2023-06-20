@@ -6,6 +6,7 @@
 #include "src/DualPiVelocityControl.h"
 #include "src/PiVelocityControllers.h"
 #include "src/SerialInterface.h"
+#include "src/VehicleDrivingModeTypes.h"
 
 
 #define MAX_COUNTS 35000
@@ -35,16 +36,6 @@ enum DrivingMode
 	MANUAL_MODE,
 };
 
-enum DrivingModeManual
-{
-	FORWARD,
-	BACKWARD,
-	TURN_LEFT,
-	TURN_RIGHT,
-	STOP,
-	UNKNOWN
-};
-
 void runProgram1();
 void velocityContorl();
 double radPrSekFromDeltaT(uint32_t deltaT);
@@ -53,12 +44,13 @@ void reset();
 void init();
 VehicleMode getVehicleMode();
 DrivingMode getDrivingMode();
-DrivingModeManual getDrivingModeManual();
+DrivingDirection getDrivingModeManual();
 void drivingMode();
 void drivningManual();
 
 extern "C" int main(void){
 	init();
+
 	//velocityContorl();
 	Serial.println("entered vehicle mode options");
 	while(1){
@@ -85,19 +77,21 @@ VehicleMode getVehicleMode(){
 DrivingMode getDrivingMode(){
 	return DrivingMode::MANUAL_MODE;
 }
-DrivingModeManual getDrivingModeManual(){
-	 String* cmd = serial->getReceived();
+DrivingDirection getDrivingModeManual(){
+	 String* cmd = serial->getMessage();
 	 if(cmd->equals("f")){
-		 return DrivingModeManual::FORWARD;
+		 Serial.println("going forward");
+		 return DrivingDirection::FORWARD;
 	 }else if(cmd->equals("b")){
-		 return DrivingModeManual::BACKWARD;
+		 Serial.println("going backward");
+		 return DrivingDirection::BACKWARD;
 	 }else if(cmd->equals("s")){
-		 return DrivingModeManual::STOP;
+		 Serial.println("stopping");
+		 return DrivingDirection::STOP;
 	 }
 	 else{
-		 return DrivingModeManual::UNKNOWN;
+		 return DrivingDirection::UNKNOWN;
 	 }
-
 }
 
 void drivingMode(){
@@ -117,28 +111,20 @@ void drivingMode(){
 }
 void drivningManual(){
 	Serial.println("entered manual driving mode (default stopped)");
-	DrivingModeManual mode=DrivingModeManual::UNKNOWN;
+	DrivingDirection mode=DrivingDirection::UNKNOWN;
+	reset();
 	while(1){
-		if(serial->availableRead()){
+		if(serial->hasMessage()){
 			mode = getDrivingModeManual();
 		}
-		switch(mode){
-			case DrivingModeManual::FORWARD:{
-				dualVelocityController->update(VELOC_REF);
-				break;
-			}
-			case DrivingModeManual::BACKWARD:{
-				break;
-			}
-			case DrivingModeManual::STOP:{
-				reset();
-				break;
-			}
-			default:{
-
-			}
+		if(mode==DrivingDirection::STOP){
+			reset();
+			mode=DrivingDirection::UNKNOWN;
+		}else if(mode==DrivingDirection::UNKNOWN){
+			// do noting
+		}else{
+			dualVelocityController->update(VELOC_REF,mode);
 		}
-
 		delayMicroseconds(1);
 	}
 }
@@ -173,7 +159,7 @@ void velocityContorl(){
 	reset();
 	while(1){
 		if(deltaTBufferCount<MAX_COUNTS){
-			dualVelocityController->update(VELOC_REF);
+			dualVelocityController->update(VELOC_REF,DrivingDirection::FORWARD);
 			// store data
 			if(dualVelocityController->wasSensorReady()){
 				deltaTLeftBuffer[deltaTBufferCount] = dualVelocityController->getDeltaTLeft();
@@ -255,7 +241,6 @@ void init(){
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
-
 }
 
 

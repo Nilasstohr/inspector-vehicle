@@ -11,6 +11,7 @@
 #include "MotorDrivers.h"
 #include "QuadratureEncoders.h"
 #include "PiVelocityControllers.h"
+#include "VehicleDrivingModeTypes.h"
 
 class DualPiVelocityControl {
 public:
@@ -20,7 +21,7 @@ public:
 			PiVelocityControllers*  controlFilters,
 			double maximumOutput,
 			double minimumOutput);
-	void update(double referenceVelocity);
+	void update(double referenceVelocity,DrivingDirection dir);
 	virtual ~DualPiVelocityControl();
 
 	uint32_t getDeltaTLeft() const {

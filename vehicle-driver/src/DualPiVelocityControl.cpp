@@ -25,7 +25,8 @@ DualPiVelocityControl::DualPiVelocityControl(
 	sensorReady=false;
 }
 
-void DualPiVelocityControl::update(double referenceVelocity) {
+void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir) {
+	motors->setDir(dir);
 	sensorReady = sensors->isSampleReady();
 	if(sensorReady){
 		deltaTLeft =
@@ -64,7 +65,7 @@ void DualPiVelocityControl::update(double referenceVelocity) {
 			wRight = maximumOutput;
 		}
 
-		motors->forward(wLeft, wRight);
+		motors->drive(wLeft, wRight);
 		sensors->clearSampleReady();
 	}
 }

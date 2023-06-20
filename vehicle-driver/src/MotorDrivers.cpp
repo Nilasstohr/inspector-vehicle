@@ -25,8 +25,7 @@ void MotorDrivers::forward(uint16_t pwm) {
 
 void MotorDrivers::forward(uint16_t pwmLeft,uint16_t pwmRight) {
 	setForward();
-	this->left()->setMotorPwm(pwmLeft);
-	this->right()->setMotorPwm(pwmRight);
+	drive( pwmLeft, pwmRight);
 }
 
 
@@ -58,4 +57,21 @@ void MotorDrivers::setForward() {
 void MotorDrivers::setReverse() {
 	this->left()->setReverse();
 	this->right()->setReverse();
+}
+
+void MotorDrivers::setDir(DrivingDirection dir) {
+	switch(dir){
+		case DrivingDirection::FORWARD:{
+			setForward();
+			break;
+		}
+		case DrivingDirection::BACKWARD:{
+			setReverse();
+		}
+	}
+}
+
+void MotorDrivers::drive(uint16_t pwmLeft,uint16_t pwmRight) {
+	this->left()->setMotorPwm(pwmLeft);
+	this->right()->setMotorPwm(pwmRight);
 }
