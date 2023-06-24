@@ -22,7 +22,7 @@ void TestQuadratureEncorder::canSetEncoderParams() {
 	QuadratureEncorderParameters* params = new QuadratureEncorderParameters(
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
-				VEHICLE_WHEEL_RADIUS_CM,
+				VEHICLE_WHEEL_DIAMETER_CM,
 				VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	if( params->getPinChannelA()!= VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A ||
@@ -31,15 +31,15 @@ void TestQuadratureEncorder::canSetEncoderParams() {
 		this->printEncoderParmas(params);
 	}
 	uint64_t count = 10;
-	double constantCountsToCm =  (double)((VEHICLE_WHEEL_RADIUS_CM*M_PI)/VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
+	double constantCountsToCm =  (double)((VEHICLE_WHEEL_DIAMETER_CM*M_PI)/VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 	char buffer [100];
 	dtostrf(constantCountsToCm,1,6,buffer);
 
 	String *s = new String();
 
-	s->append("\nwheel radius is ").append(VEHICLE_WHEEL_RADIUS_CM).append(" cm");
+	s->append("\nwheel radius is ").append(VEHICLE_WHEEL_DIAMETER_CM).append(" cm");
 	s->append("\ncount pr rev ").append(VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
-	s->append("\nomkreds is ").append(VEHICLE_WHEEL_RADIUS_CM*M_PI).append(" cm");
+	s->append("\nomkreds is ").append(VEHICLE_WHEEL_DIAMETER_CM*M_PI).append(" cm");
 	s->append("\nconv is ").append(buffer).append("\n");
 	Logger::verbose(s->c_str());
 
@@ -83,7 +83,7 @@ void TestQuadratureEncorder::canSetupQuadureEncoder(){
 			new QuadratureEncorderParameters(
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
 				VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
-				VEHICLE_WHEEL_RADIUS_CM,
+				VEHICLE_WHEEL_DIAMETER_CM,
 				VEHICLE_MOTOR_ENCODER_COUNT_PR_REV),sensorFilterLeft);
 }
 

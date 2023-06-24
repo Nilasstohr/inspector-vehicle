@@ -1,5 +1,5 @@
 import numpy as np
-#import serial.tools.list_ports
+# import serial.tools.list_ports
 from matplotlib import pyplot as plt, ticker as mticker
 import numpy.fft
 from numpy import loadtxt
@@ -31,11 +31,11 @@ def fft(data, Ts):
     return yfftabs, omega
 
 
-if __name__ == '__main__':
+def velocity_controller_design():
     y = loadtxt("data1.txt")
     wLeft = y[:, 0]
     wRight = y[:, 1]
-    #w_filtered = y[:, 2]
+    # w_filtered = y[:, 2]
     n = len(wLeft)
     Ts = 100 / pow(10, 6)
     x = np.arange(n) * Ts
@@ -66,10 +66,10 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(2)
     fig.suptitle('Transient Time Response')
     axs[0].plot(x, wLeft, color='blue')
-    #axs[0].plot(x, w_savgolf, color='red')
-    #axs[0].plot(x, w_lowass, color='green')
+    # axs[0].plot(x, w_savgolf, color='red')
+    # axs[0].plot(x, w_lowass, color='green')
     axs[0].plot(x, wRight, color='green')
-    #axs[0].plot(t, w_sim, color='red')
+    # axs[0].plot(t, w_sim, color='red')
     axs[0].set(xlabel='t[s]', ylabel='\u03C9 [radians/second]')
     axs[0].grid()
     axs[0].axis(xmin=0, xmax=max(x), ymin=0, ymax=max(wLeft) + 2)
@@ -80,13 +80,10 @@ if __name__ == '__main__':
     # x = np.arange(N)
     # y = np.sin(2 * np.pi * f * x / Fs)
 
-
-
     WLeft, omega = fft(wLeft, Ts)
     WRight, omega = fft(wRight, Ts)
     Wsavgol, omega = fft(w_savgolf, Ts)
     Wlowpass, omega = fft(w_lowass, Ts)
-
 
     # y = data
     # plt.plot(x, y)
@@ -100,3 +97,20 @@ if __name__ == '__main__':
     axs[1].grid()
     axs[1].set(xlabel='\u03C9 [radians/second]', ylabel='dB')
     plt.show()
+
+
+if __name__ == '__main__':
+    # velocity_controller_design()
+
+    omega_0 = 15
+    r = 4.5
+    d_end = 50
+    d_start = 30
+    fi_end = d_end / r  # end distance
+    fi_start = d_start / r  # start deaccelerate at distance
+    alfa = -pow(omega_0, 2) / (2 * (fi_end - fi_start))
+    print(alfa)
+    d = np.arange(start=30, stop=50 + 0.1, step=0.1)
+    w = np.sqrt(pow(omega_0, 2) + 2 * alfa * (d/r - fi_start))
+    print(d)
+    print(w)

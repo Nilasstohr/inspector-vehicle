@@ -7,6 +7,8 @@
 #include "src/PiVelocityControllers.h"
 #include "src/SerialInterface.h"
 #include "src/VehicleDrivingModeTypes.h"
+#include "src/DualAccelerationControl.h"
+
 
 
 #define MAX_COUNTS 35000
@@ -241,6 +243,19 @@ void init(){
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
+
+	DualAccelerationControl * accControl =
+			new DualAccelerationControl(VEHICLE_WHEEL_RADIUS_CM);
+
+	double dStart = 30;
+	double dEnd =50;
+	double w0 = 15;
+	accControl->setAlfa(dStart, dEnd, w0);
+
+	for(int i=30; i<=dEnd; i++){
+		Serial.println(accControl->getVelocity(i));
+	}
+
 }
 
 

@@ -28,13 +28,13 @@ QuadratureEncoders* VehicleTestToolBox::buildQuadratureEncoders() {
 	QuadratureEncorderParameters *encorderParametersLeft = new QuadratureEncorderParameters(
 			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_A,
 			VEHICLE_PIN_QUADRAENCODER_LEFT_CHANNEL_B,
-			VEHICLE_WHEEL_RADIUS_CM,
+			VEHICLE_WHEEL_DIAMETER_CM,
 			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	QuadratureEncorderParameters *encorderParametersRight = new QuadratureEncorderParameters(
 			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_A,
 			VEHICLE_PIN_QUADRAENCODER_RIGHT_CHANNEL_B,
-			VEHICLE_WHEEL_RADIUS_CM,
+			VEHICLE_WHEEL_DIAMETER_CM,
 			VEHICLE_MOTOR_ENCODER_COUNT_PR_REV);
 
 	quadratureEncoders =  new QuadratureEncoders(
