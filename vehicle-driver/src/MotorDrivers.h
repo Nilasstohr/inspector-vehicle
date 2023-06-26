@@ -36,6 +36,9 @@ private:
 	}
 	void setForward();
 	void setReverse();
+	void setTurnLeft();
+	void setTurnRight();
+
 };
 
 #endif /* SRC_MOTORDRIVERS_H_ */

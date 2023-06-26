@@ -69,7 +69,6 @@ void TestQuadratureEncorder::printEncoderParmas(QuadratureEncorderParameters *pa
 	Logger::error(buffer);
 }
 
-
 void TestQuadratureEncorder::canSetupQuadureEncoder(){
 	Logger::verbose(__FUNCTION__, "TEST");
 

@@ -67,11 +67,31 @@ void MotorDrivers::setDir(DrivingDirection dir) {
 		}
 		case DrivingDirection::BACKWARD:{
 			setReverse();
+			break;
+		}
+		case DrivingDirection::TURN_LEFT:{
+			setTurnLeft();
+			break;
+		}
+		case DrivingDirection::TURN_RIGHT:{
+			setTurnRight();
+			break;
 		}
 	}
 }
 
+void MotorDrivers::setTurnLeft() {
+	this->left()->setReverse();
+	this->right()->setForward();
+}
+
+void MotorDrivers::setTurnRight() {
+	this->left()->setForward();
+	this->right()->setReverse();
+}
 void MotorDrivers::drive(uint16_t pwmLeft,uint16_t pwmRight) {
 	this->left()->setMotorPwm(pwmLeft);
 	this->right()->setMotorPwm(pwmRight);
 }
+
+

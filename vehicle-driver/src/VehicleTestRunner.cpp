@@ -12,8 +12,8 @@ VehicleTestRunner::VehicleTestRunner() {
 	Logger::verbose(__FUNCTION__, "Starting Vehicle Tests");
 	//new TestQuadratureEncorder();
 	//new TestMotorDrivers();
-	//new TestVehicleSystem();
-	new TestVehiclePIControl();
+	new TestVehicleSystem();
+	//new TestVehiclePIControl();
 }
 
 VehicleTestRunner::~VehicleTestRunner() {

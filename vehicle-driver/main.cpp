@@ -36,6 +36,7 @@ enum VehicleMode
 enum DrivingMode
 {
 	MANUAL_MODE,
+
 };
 
 void runProgram1();
@@ -87,6 +88,12 @@ DrivingDirection getDrivingModeManual(){
 	 }else if(cmd->equals("b")){
 		 Serial.println("going backward");
 		 return DrivingDirection::BACKWARD;
+	 }else if(cmd->equals("l")){
+		 Serial.print("turning left");
+		 return DrivingDirection::TURN_LEFT;
+	 }else if(cmd->equals("r")){
+		 Serial.print("turning right");
+		 return DrivingDirection::TURN_RIGHT;
 	 }else if(cmd->equals("s")){
 		 Serial.println("stopping");
 		 return DrivingDirection::STOP;
@@ -112,7 +119,7 @@ void drivingMode(){
 
 }
 void drivningManual(){
-	Serial.println("entered manual driving mode (default stopped)");
+	Serial.println("entered manual driving mode (default stopped, send f,b or s)");
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 	while(1){
@@ -244,18 +251,22 @@ void init(){
 	toolBox->buildQuadratureEncoders();
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
 
+
 	DualAccelerationControl * accControl =
 			new DualAccelerationControl(VEHICLE_WHEEL_RADIUS_CM);
 
+	//toolBox->getMotorsDrivers()->forward(600);
+
+/*
 	double dStart = 30;
 	double dEnd =50;
-	double w0 = 15;
+	double w0 = 5;
 	accControl->setAlfa(dStart, dEnd, w0);
 
 	for(int i=30; i<=dEnd; i++){
 		Serial.println(accControl->getVelocity(i));
 	}
-
+*/
 }
 
 

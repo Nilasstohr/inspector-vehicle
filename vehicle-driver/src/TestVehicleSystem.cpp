@@ -34,9 +34,9 @@ TestVehicleSystem::TestVehicleSystem() {
 
 	testIncreasedEncoderCounts();
 	testDecreasedEncoderCounts();
-	//testCanGetPositionForward();
-	//testCanGetPositionBackWards();
-	testCanAngularVelocity();
+	testCanGetPositionForward();
+	testCanGetPositionBackWards();
+	//testCanAngularVelocity();
 	//testManualAngularVelocityCalc();
 	//testCanDoEncoderRecord();
 	//testCanSampleEncoderRecords();
@@ -48,7 +48,7 @@ void TestVehicleSystem::testIncreasedEncoderCounts() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	delay(2000);
 	encoders()->reset();
-	motors()->forward(30000);
+	motors()->forward(600);
 	delay(1000);
 
 	String * log;
@@ -69,7 +69,7 @@ void TestVehicleSystem::testDecreasedEncoderCounts() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	delay(2000);
 	encoders()->reset();
-	motors()->reverse(30000);
+	motors()->reverse(600);
 	delay(1000);
 
 	String * log;
@@ -87,7 +87,7 @@ void TestVehicleSystem::testCanGetPositionForward() {
 	Logger::verbose(__FUNCTION__, "- TEST");
 	delay(2000);
 	encoders()->reset();
-	motors()->forward(30000);
+	motors()->forward(600);
 	delay(1500);
     double position;
 	for(int i=0;i<2;i++){
@@ -110,7 +110,7 @@ void TestVehicleSystem::testCanGetPositionBackWards(){
 	Logger::verbose(__FUNCTION__, "- TEST");
 	delay(2000);
 	encoders()->reset();
-	motors()->reverse(30000);
+	motors()->reverse(600);
 	delay(1500);
 	double position;
 	for(int i=0;i<2;i++){

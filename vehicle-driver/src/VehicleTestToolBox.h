@@ -23,6 +23,7 @@ public:
 	QuadratureEncoders * buildQuadratureEncoders();
 	MotorDrivers * buildMotorDrivers();
 	DualPiVelocityControl* buildDualPiVelocityControl();
+	MotorDrivers * getMotorsDrivers();
 	virtual ~VehicleTestToolBox();
 
 private:

@@ -93,8 +93,12 @@ DualPiVelocityControl* VehicleTestToolBox::buildDualPiVelocityControl()
     return dualPiVelocityControl;
 }
 
+MotorDrivers* VehicleTestToolBox::getMotorsDrivers() {
+	return motorDrivers;
+}
+
+
 VehicleTestToolBox::~VehicleTestToolBox() {
 	// TODO Auto-generated destructor stub
 }
-
 
