@@ -33,9 +33,9 @@ void QuadratureEncoder::channelAEventHandler() {
 	uint8_t B = digitalRead(this->getParameters()->getPinChannelB());
 	uint8_t A = digitalRead(this->getParameters()->getPinChannelA()) ;
 	  if((A&&B)||(!A&&!B))
-		counts--;
-	  else
 		counts++;
+	  else
+		counts--;
 	this->refresh();
 }
 
@@ -43,9 +43,9 @@ void QuadratureEncoder::channelBEventHandler() {
 	uint8_t B = digitalRead(this->getParameters()->getPinChannelB()) ;
 	uint8_t A = digitalRead(this->getParameters()->getPinChannelA()) ;
 	if((B&&A)||(!B&&!A))
-		counts++;
-	else
 		counts--;
+	else
+		counts++;
 	this->refresh();
 }
 
@@ -70,7 +70,7 @@ void QuadratureEncoder::refresh() {
 	// update time interval
 	//this->timeMicros =micros();
 	this->getTimeIntervalHandler()->update(micros());
-	//this->setPosition(this->getParameters()->calculateCmFromCount(this->count()));
+	this->setPosition(this->getParameters()->calculateCmFromCount(this->count()));
 /*
 	this->setAngularVelocity(
 			this->getParameters()->calculateAngularVelocity(

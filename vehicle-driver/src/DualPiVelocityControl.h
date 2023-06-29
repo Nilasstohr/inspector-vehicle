@@ -22,6 +22,7 @@ public:
 			double maximumOutput,
 			double minimumOutput);
 	void update(double referenceVelocity,DrivingDirection dir);
+	void update(uint16_t pwm);
 	virtual ~DualPiVelocityControl();
 
 	uint32_t getDeltaTLeft() const {

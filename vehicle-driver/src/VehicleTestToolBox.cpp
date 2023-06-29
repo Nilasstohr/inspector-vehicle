@@ -93,12 +93,32 @@ DualPiVelocityControl* VehicleTestToolBox::buildDualPiVelocityControl()
     return dualPiVelocityControl;
 }
 
+DualPPositionControl* VehicleTestToolBox::buildPositionControl() {
+	dualPsitionControl = new DualPPositionControl(
+			controlEssentials,VEHICLE_POSITION_CONTROL_COEFFICIENT_P);
+	return dualPsitionControl;
+}
+
+ControlEssentials* VehicleTestToolBox::buildControlEssentials() {
+	controlEssentials = new ControlEssentials(
+			motorDrivers,quadratureEncoders,
+			VEHICLE_MOTOR_DRIVER_PWM_MAX,
+			VEHICLE_MOTOR_DRIVER_PWM_MIN);
+	return controlEssentials;
+}
+
 MotorDrivers* VehicleTestToolBox::getMotorsDrivers() {
 	return motorDrivers;
+}
+
+
+QuadratureEncoders * VehicleTestToolBox::getSensors() {
+	return quadratureEncoders;
 }
 
 
 VehicleTestToolBox::~VehicleTestToolBox() {
 	// TODO Auto-generated destructor stub
 }
+
 

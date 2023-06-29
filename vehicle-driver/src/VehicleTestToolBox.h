@@ -16,20 +16,27 @@
 #include "MotorDrivers.h"
 #include "EncoderRecord.h"
 #include "DualPiVelocityControl.h"
+#include "DualPPositionControl.h"
+#include "ControlEssentials.h"
 
 class VehicleTestToolBox {
 public:
 	VehicleTestToolBox();
 	QuadratureEncoders * buildQuadratureEncoders();
 	MotorDrivers * buildMotorDrivers();
+	ControlEssentials * buildControlEssentials();
 	DualPiVelocityControl* buildDualPiVelocityControl();
+	DualPPositionControl * buildPositionControl();
 	MotorDrivers * getMotorsDrivers();
+	QuadratureEncoders * getSensors();
 	virtual ~VehicleTestToolBox();
 
 private:
 	QuadratureEncoders * quadratureEncoders;
 	MotorDrivers * motorDrivers;
 	DualPiVelocityControl *dualPiVelocityControl;
+	DualPPositionControl* dualPsitionControl;
+	ControlEssentials * controlEssentials;
 };
 
 #endif /* SRC_VEHICLETESTTOOLBOX_H_ */

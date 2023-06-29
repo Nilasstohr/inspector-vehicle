@@ -70,6 +70,21 @@ void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir
 	}
 }
 
+void DualPiVelocityControl::update(uint16_t pwm) {
+	    motors->setDir(DrivingDirection::FORWARD);
+		sensorReady = sensors->isSampleReady();
+		if(sensorReady){
+			deltaTLeft =
+					sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
+								 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros_filtered);
+			deltaTRight =
+					sensors->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_right)
+										 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros_filtered);
+			motors->drive(pwm, pwm);
+			sensors->clearSampleReady();
+		}
+}
+
 void DualPiVelocityControl::reset() {
 	motors->stop();
 	sensors->reset();

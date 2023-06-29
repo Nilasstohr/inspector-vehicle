@@ -26,12 +26,14 @@ volatile uint32_t deltaTBufferCount =0;
 char message[100];
 
 DualPiVelocityControl * dualVelocityController;
+DualPPositionControl *  dualPositionControl;
 SerialInterface *serial;
 
 enum VehicleMode
 {
 	DRIVING_MODE,
-	TRANSIENT_TEST_MODE
+	TRANSIENT_TEST_MODE,
+	POSITION_CONTROL_MODE
 };
 enum DrivingMode
 {
@@ -40,7 +42,8 @@ enum DrivingMode
 };
 
 void runProgram1();
-void velocityContorl();
+void velocityContorl(bool doControl);
+void positionControl();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
 void reset();
@@ -54,13 +57,17 @@ void drivningManual();
 extern "C" int main(void){
 	init();
 
-	//velocityContorl();
+	velocityContorl(true);
 	Serial.println("entered vehicle mode options");
 	while(1){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
 			case VehicleMode::TRANSIENT_TEST_MODE:{
-				//velocityContorl();
+				velocityContorl(false);
+				break;
+			}
+			case VehicleMode::POSITION_CONTROL_MODE:{
+				positionControl();
 				break;
 			}
 			case VehicleMode::DRIVING_MODE:{
@@ -153,7 +160,7 @@ void runProgram1(){
 			  Serial.flush();
 			  //Serial.print("running test...");
 			  digitalWrite(LED_BUILTIN, HIGH);
-			  velocityContorl();
+			  velocityContorl(true);
 			  delay(200);
 			  digitalWrite(LED_BUILTIN, LOW);
 			}else{
@@ -164,11 +171,15 @@ void runProgram1(){
 		delayMicroseconds(1);
 	}
 }
-void velocityContorl(){
+void velocityContorl(bool doControl){
 	reset();
 	while(1){
 		if(deltaTBufferCount<MAX_COUNTS){
-			dualVelocityController->update(VELOC_REF,DrivingDirection::FORWARD);
+			if(doControl){
+				dualVelocityController->update(VELOC_REF,DrivingDirection::FORWARD);
+			}else{
+				dualVelocityController->update(1000);
+			}
 			// store data
 			if(dualVelocityController->wasSensorReady()){
 				deltaTLeftBuffer[deltaTBufferCount] = dualVelocityController->getDeltaTLeft();
@@ -183,6 +194,12 @@ void velocityContorl(){
 	}
 	outputResult();
 }
+
+void positionControl(){
+
+}
+
+
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;
 	s =  (double)(deltaT/pow(10,6));
@@ -249,13 +266,28 @@ void init(){
 	serial = new SerialInterface();
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
+	toolBox->buildControlEssentials();
 	dualVelocityController = toolBox->buildDualPiVelocityControl();
+	dualPositionControl = toolBox->buildPositionControl();
 
+	//DualAccelerationControl * accControl =
+	//		new DualAccelerationControl(VEHICLE_WHEEL_RADIUS_CM);
 
-	DualAccelerationControl * accControl =
-			new DualAccelerationControl(VEHICLE_WHEEL_RADIUS_CM);
+	//toolBox->getMotorsDrivers()->forward(0);
 
-	//toolBox->getMotorsDrivers()->forward(600);
+	/*
+	double position =0;
+	uint32_t dt =0;
+	while(1){
+		position = toolBox->getSensors()->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
+					 ->read<double>(QuadratureEncoderReadTypes::position_linear);
+
+		dt =toolBox->getSensors()->encoder(QuadratureEncoders::QuadratureEncoderSide::quadrature_encoder_left)
+									 ->read<uint32_t>(QuadratureEncoderReadTypes::time_interval_micros_filtered);
+		Serial.println(position);
+		delay(200);
+	}
+	*/
 
 /*
 	double dStart = 30;
