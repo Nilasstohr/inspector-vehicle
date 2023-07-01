@@ -73,8 +73,10 @@ void QuadratureEncoders::setupEncoders() {
 }
 
 void QuadratureEncoders::sampleEventTimerHandler() {
-	left()->updateFilter();
-	right()->updateFilter();
+	left()->updateVelocity();
+	right()->updateVelocity();
+	left()->updatePosition();
+	right()->updatePosition();
 	sampleReady=true;
 }
 

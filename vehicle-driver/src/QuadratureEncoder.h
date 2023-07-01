@@ -27,7 +27,8 @@ public:
 
 	uint32_t getTimeInterval();
 
-	void updateFilter();
+	void updateVelocity();
+	void updatePosition();
 	uint16_t countInterval();
 
 	void setupChannels();
@@ -41,9 +42,7 @@ public:
 		return parameters;
 	}
 
-    double getPosition() {
-    	return this->position;
-    }
+    double getPosition();
 
 	double getAngularVelocity();
 

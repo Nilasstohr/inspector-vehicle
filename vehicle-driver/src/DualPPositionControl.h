@@ -14,14 +14,15 @@ class DualPPositionControl {
 public:
 	DualPPositionControl(ControlEssentials * essentials,double p);
 	void update(double referencePosition);
+	void reset();
 	virtual ~DualPPositionControl();
 private:
 	double getControlOutput(QuadratureEncoders::QuadratureEncoderSide side,double referencePosition);
-	double getPosition(QuadratureEncoders::QuadratureEncoderSide side);
 	ControlEssentials * essentials;
 	double p;
 	double position;
 	double output;
+	double minimumOutput;
 };
 
 #endif /* DUALPPOSITIONCONTROL_H_ */

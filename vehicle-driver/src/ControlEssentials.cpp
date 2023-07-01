@@ -37,14 +37,30 @@ QuadratureEncoders* ControlEssentials::getSensors()  {
 }
 
 double ControlEssentials::checkForSaturation(double input) {
+	return checkForSaturation(input,maximumOutput,minimumOutput);
+}
+
+double ControlEssentials::checkForSaturation(double input,
+		double minimumOutput) {
+	return checkForSaturation(input,maximumOutput,minimumOutput);
+}
+
+double ControlEssentials::checkForSaturation(double input, double maximumOutput,
+		double minimumOutput) {
 	if(input < minimumOutput)
 		input = minimumOutput;
 	else if(input>maximumOutput)
 		input = maximumOutput;
 	return input;
 }
+void ControlEssentials::reset() {
+	motors->stop();
+	sensors->reset();
+}
+
 
 ControlEssentials::~ControlEssentials() {
 	// TODO Auto-generated destructor stub
 }
+
 

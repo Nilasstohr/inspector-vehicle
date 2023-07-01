@@ -24,6 +24,7 @@ public:
 	double getMaximumOutput();
 	double getMinimumOutput();
 	double checkForSaturation(double input);
+	double checkForSaturation(double input, double minimumOutput);
 	virtual ~ControlEssentials();
 
 	double getWLeft() const {
@@ -41,10 +42,13 @@ public:
 	void setWRight(double wRight) {
 		this->wRight = wRight;
 	}
+	void reset();
 
 private:
 	MotorDrivers* motors;
 	QuadratureEncoders* sensors;
+	double checkForSaturation(double input,double maximumOutput,
+			double minimumOutput);
 	double maximumOutput;
 	double minimumOutput;
 	double wLeft;

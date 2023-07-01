@@ -42,7 +42,7 @@ enum DrivingMode
 };
 
 void runProgram1();
-void velocityContorl(bool doControl);
+void velocityControl(bool doControl);
 void positionControl();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
@@ -57,13 +57,13 @@ void drivningManual();
 extern "C" int main(void){
 	init();
 
-	velocityContorl(true);
+	//velocityControl(true);
 	Serial.println("entered vehicle mode options");
 	while(1){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
 			case VehicleMode::TRANSIENT_TEST_MODE:{
-				velocityContorl(false);
+				velocityControl(true);
 				break;
 			}
 			case VehicleMode::POSITION_CONTROL_MODE:{
@@ -160,7 +160,7 @@ void runProgram1(){
 			  Serial.flush();
 			  //Serial.print("running test...");
 			  digitalWrite(LED_BUILTIN, HIGH);
-			  velocityContorl(true);
+			  velocityControl(true);
 			  delay(200);
 			  digitalWrite(LED_BUILTIN, LOW);
 			}else{
@@ -171,7 +171,7 @@ void runProgram1(){
 		delayMicroseconds(1);
 	}
 }
-void velocityContorl(bool doControl){
+void velocityControl(bool doControl){
 	reset();
 	while(1){
 		if(deltaTBufferCount<MAX_COUNTS){
@@ -196,7 +196,11 @@ void velocityContorl(bool doControl){
 }
 
 void positionControl(){
-
+	reset();
+	 Serial.println("entered position control mode");
+	while(1){
+		dualPositionControl->update(10);
+	}
 }
 
 
@@ -207,6 +211,7 @@ double radPrSekFromDeltaT(uint32_t deltaT) {
 }
 void reset(){
   dualVelocityController->reset();
+  dualPositionControl->reset();
   deltaTBufferCount=0;
 }
 void outputResult(){

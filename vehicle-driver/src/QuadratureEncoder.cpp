@@ -53,8 +53,12 @@ uint32_t QuadratureEncoder::getTimeInterval() {
 	return this->getTimeIntervalHandler()->get();
 }
 
-void QuadratureEncoder::updateFilter() {
+void QuadratureEncoder::updateVelocity() {
 	this->filter->update(getTimeInterval());
+}
+
+void QuadratureEncoder::updatePosition() {
+	position = getParameters()->calculateCmFromCount(count());
 }
 
 uint32_t QuadratureEncoder::getTimeIntervalFiltered() {
@@ -66,11 +70,17 @@ double QuadratureEncoder::getAngularVelocity() {
 	return getParameters()->calculateAngularVelocity(getTimeIntervalFiltered());
 }
 
+double QuadratureEncoder::getPosition() {
+	return position;
+}
+
+
+
 void QuadratureEncoder::refresh() {
 	// update time interval
 	//this->timeMicros =micros();
-	this->getTimeIntervalHandler()->update(micros());
-	this->setPosition(this->getParameters()->calculateCmFromCount(this->count()));
+	getTimeIntervalHandler()->update(micros());
+
 /*
 	this->setAngularVelocity(
 			this->getParameters()->calculateAngularVelocity(
