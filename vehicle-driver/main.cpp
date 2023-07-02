@@ -33,7 +33,9 @@ enum VehicleMode
 {
 	DRIVING_MODE,
 	TRANSIENT_TEST_MODE,
-	POSITION_CONTROL_MODE
+	VELOCITY_CONTROL_MODE,
+	POSITION_CONTROL_MODE,
+	COMBO_CONTROL_MODE
 };
 enum DrivingMode
 {
@@ -44,6 +46,7 @@ enum DrivingMode
 void runProgram1();
 void velocityControl(bool doControl);
 void positionControl();
+void comboControl();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
 void reset();
@@ -63,11 +66,19 @@ extern "C" int main(void){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
 			case VehicleMode::TRANSIENT_TEST_MODE:{
+				velocityControl(false);
+				break;
+			}
+			case VehicleMode::VELOCITY_CONTROL_MODE:{
 				velocityControl(true);
 				break;
 			}
 			case VehicleMode::POSITION_CONTROL_MODE:{
 				positionControl();
+				break;
+			}
+			case VehicleMode::COMBO_CONTROL_MODE:{
+				comboControl();
 				break;
 			}
 			case VehicleMode::DRIVING_MODE:{
@@ -82,7 +93,7 @@ extern "C" int main(void){
 
 // command interface
 VehicleMode getVehicleMode(){
-	return VehicleMode::DRIVING_MODE;
+	return VehicleMode::COMBO_CONTROL_MODE;
 }
 DrivingMode getDrivingMode(){
 	return DrivingMode::MANUAL_MODE;
@@ -120,7 +131,6 @@ void drivingMode(){
 				break;
 			}
 		}
-
 		delay(100);
 	}
 
@@ -197,12 +207,70 @@ void velocityControl(bool doControl){
 
 void positionControl(){
 	reset();
-	 Serial.println("entered position control mode");
+	Serial.println("entered position control mode");
+	dualPositionControl->setReferencePosition(10);
+	dualPositionControl->setReferenceTolerance(1);
 	while(1){
-		dualPositionControl->update(10);
+		dualPositionControl->update();
+		if(dualPositionControl->isPositionReached()){
+			while(1){
+				Serial.println("goal reached");
+				delay(500);
+			}
+		}
+		delayMicroseconds(1);
 	}
 }
 
+void comboControl(){
+	reset();
+	Serial.println("entered combo control mode");
+	VehicleMode mode = VehicleMode::VELOCITY_CONTROL_MODE;
+	double dis = 120;
+	dualPositionControl->setReferencePosition(dis);
+	dualPositionControl->setReferenceTolerance(1);
+	double disPosControl = dis -10;
+	Serial.println(disPosControl);
+	double l = 0;
+	double r = 0;
+
+	while(1){
+		switch(mode){
+			case VehicleMode::VELOCITY_CONTROL_MODE:{
+				l = dualPositionControl->getLeftPosition();
+				r = dualPositionControl->getRightPosition();
+
+				//if(isfinite(l))
+				//	Serial.println("overflow");
+				//Serial.print(l);
+				//Serial.print(" ");
+				//Serial.println(r);
+
+				dualVelocityController->update(VELOC_REF,DrivingDirection::FORWARD);
+				if(l  > disPosControl  && r  > disPosControl){
+					//Serial.print("changing controller to position");
+					mode = VehicleMode::POSITION_CONTROL_MODE;
+				}
+				break;
+			}
+			case VehicleMode::POSITION_CONTROL_MODE:{
+
+				dualPositionControl->update();
+				if(dualPositionControl->isPositionReached()){
+					Serial.println("position has been reached");
+					while(1){
+						Serial.print(dualPositionControl->getLeftPosition());
+						Serial.print(" ");
+						Serial.println(dualPositionControl->getRightPosition());
+						delay(1000);
+					}
+				}
+				break;
+			}
+		}
+		delayMicroseconds(1);
+	}
+}
 
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;
@@ -213,6 +281,7 @@ void reset(){
   dualVelocityController->reset();
   dualPositionControl->reset();
   deltaTBufferCount=0;
+  delay(500);
 }
 void outputResult(){
 	uint32_t sumDeltaT = 0;
@@ -268,6 +337,7 @@ void outputResult(){
 }
 void init(){
 	VehicleTestToolBox *toolBox = new VehicleTestToolBox();
+
 	serial = new SerialInterface();
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
