@@ -26,6 +26,11 @@ DualPiVelocityControl::DualPiVelocityControl(
 }
 
 void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir) {
+	update( referenceVelocity,referenceVelocity,  dir);
+}
+
+void DualPiVelocityControl::update(double referenceVelocityLeft,
+		double referenceVelocityRight, DrivingDirection dir) {
 	motors->setDir(dir);
 	sensorReady = sensors->isSampleReady();
 	if(sensorReady){
@@ -47,7 +52,7 @@ void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir
 		if(isinf(wLeft)){
 			wLeft = 0;
 		}
-		wLeft = controlFilters->left()->update(referenceVelocity- wLeft);
+		wLeft = controlFilters->left()->update(referenceVelocityLeft- wLeft);
 		if(wLeft < minimumOutput)
 			wLeft =minimumOutput;
 		else if(wLeft>maximumOutput){
@@ -58,7 +63,7 @@ void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir
 			wRight = 0;
 		}
 
-		wRight = controlFilters->right()->update(referenceVelocity- wRight);
+		wRight = controlFilters->right()->update(referenceVelocityRight- wRight);
 		if(wRight < minimumOutput)
 			wRight =minimumOutput;
 		else if(wRight>maximumOutput){
@@ -69,6 +74,7 @@ void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir
 		sensors->clearSampleReady();
 	}
 }
+
 
 void DualPiVelocityControl::update(uint16_t pwm) {
 	    motors->setDir(DrivingDirection::FORWARD);

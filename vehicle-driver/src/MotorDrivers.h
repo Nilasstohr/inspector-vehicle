@@ -36,8 +36,8 @@ private:
 	}
 	void setForward();
 	void setReverse();
-	void setTurnLeft();
-	void setTurnRight();
+	void setSpinLeft();
+	void setSpinRight();
 
 };
 

@@ -31,7 +31,7 @@
 #define VEHICLE_PI_CONTROL_COEFFICIENT_A1 -1
 
 // P position controller coeffiences
-#define VEHICLE_POSITION_CONTROL_COEFFICIENT_P  70
+#define VEHICLE_POSITION_CONTROL_COEFFICIENT_P  80
 
 
 // encoder filter

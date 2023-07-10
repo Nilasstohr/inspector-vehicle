@@ -14,7 +14,10 @@
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
 
+
 #define VELOC_REF 5
+
+
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
 
 // sensor sampling
@@ -31,16 +34,12 @@ SerialInterface *serial;
 
 enum VehicleMode
 {
+	IDLE,
 	DRIVING_MODE,
 	TRANSIENT_TEST_MODE,
 	VELOCITY_CONTROL_MODE,
 	POSITION_CONTROL_MODE,
 	COMBO_CONTROL_MODE
-};
-enum DrivingMode
-{
-	MANUAL_MODE,
-
 };
 
 void runProgram1();
@@ -52,19 +51,29 @@ void outputResult();
 void reset();
 void init();
 VehicleMode getVehicleMode();
-DrivingMode getDrivingMode();
 DrivingDirection getDrivingModeManual();
+bool modeEscapeRequest();
 void drivingMode();
 void drivningManual();
 
 extern "C" int main(void){
-	init();
+	/*
+	while(1){
+		Serial.print("hello world");
+		delay(1000);
+	}
 
+*/
+	init();
 	//velocityControl(true);
-	Serial.println("entered vehicle mode options");
+	Serial.println("entered vehicle mode options (enter mode 1-5)");
 	while(1){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
+			case VehicleMode::DRIVING_MODE:{
+				drivningManual();
+				break;
+			}
 			case VehicleMode::TRANSIENT_TEST_MODE:{
 				velocityControl(false);
 				break;
@@ -81,10 +90,6 @@ extern "C" int main(void){
 				comboControl();
 				break;
 			}
-			case VehicleMode::DRIVING_MODE:{
-				drivingMode();
-				break;
-			}
 		}
 		delay(100);
 	}
@@ -93,26 +98,36 @@ extern "C" int main(void){
 
 // command interface
 VehicleMode getVehicleMode(){
-	return VehicleMode::COMBO_CONTROL_MODE;
+	if(serial->hasMessage()){
+		String* cmd = serial->getMessage();
+		return  (VehicleMode)atoi( cmd->c_str() );
+	}else{
+		return VehicleMode::IDLE;
+	}
 }
-DrivingMode getDrivingMode(){
-	return DrivingMode::MANUAL_MODE;
-}
+
 DrivingDirection getDrivingModeManual(){
+
 	 String* cmd = serial->getMessage();
-	 if(cmd->equals("f")){
+	 if(cmd->equals("y")){
 		 Serial.println("going forward");
 		 return DrivingDirection::FORWARD;
-	 }else if(cmd->equals("b")){
+	 }else if(cmd->equals("h")){
 		 Serial.println("going backward");
 		 return DrivingDirection::BACKWARD;
-	 }else if(cmd->equals("l")){
-		 Serial.print("turning left");
+	 }else if(cmd->equals("d")){
+		 Serial.println("spin left");
+		 return DrivingDirection::SPIN_LEFT;
+	 }else if(cmd->equals("f")){
+		 Serial.println("spin right");
+		 return DrivingDirection::SPIN_RIGHT;
+	 }else if(cmd->equals("g")){
+		 Serial.println("turn left");
 		 return DrivingDirection::TURN_LEFT;
-	 }else if(cmd->equals("r")){
-		 Serial.print("turning right");
+	 }else if(cmd->equals("j")){
+		 Serial.println("turn right");
 		 return DrivingDirection::TURN_RIGHT;
-	 }else if(cmd->equals("s")){
+	 } else if(cmd->equals("s")){
 		 Serial.println("stopping");
 		 return DrivingDirection::STOP;
 	 }
@@ -121,26 +136,14 @@ DrivingDirection getDrivingModeManual(){
 	 }
 }
 
-void drivingMode(){
-	Serial.println("entered driving mode options");
-	while(1){
-		DrivingMode mode = getDrivingMode();
-		switch(mode){
-			case DrivingMode::MANUAL_MODE:{
-				drivningManual();
-				break;
-			}
-		}
-		delay(100);
-	}
-
-}
 void drivningManual(){
-	Serial.println("entered manual driving mode (default stopped, send f,b or s)");
+	Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 	while(1){
 		if(serial->hasMessage()){
+			if(modeEscapeRequest())
+				return;
 			mode = getDrivingModeManual();
 		}
 		if(mode==DrivingDirection::STOP){
@@ -149,11 +152,28 @@ void drivningManual(){
 		}else if(mode==DrivingDirection::UNKNOWN){
 			// do noting
 		}else{
-			dualVelocityController->update(VELOC_REF,mode);
+			//Serial.println(mode);
+			if(mode==DrivingDirection::TURN_LEFT){
+				dualVelocityController->update(VELOC_REF,VELOC_REF+4,DrivingDirection::FORWARD);
+			}else if(mode==DrivingDirection::TURN_RIGHT){
+				dualVelocityController->update(VELOC_REF+4,VELOC_REF,DrivingDirection::FORWARD);
+			}else{
+				dualVelocityController->update(VELOC_REF,mode);
+			}
 		}
 		delayMicroseconds(1);
 	}
 }
+
+bool modeEscapeRequest(){
+	String* cmd = serial->getMessage();
+	if(cmd->equals("0")){
+		Serial.println("return from mode..");
+		return true;
+	}
+	return false;
+}
+
 //--------------------------------------
 
 void runProgram1(){
@@ -235,17 +255,14 @@ void comboControl(){
 	double r = 0;
 
 	while(1){
+		if(serial->hasMessage()){
+			if(modeEscapeRequest())
+				return;
+		}
 		switch(mode){
 			case VehicleMode::VELOCITY_CONTROL_MODE:{
 				l = dualPositionControl->getLeftPosition();
 				r = dualPositionControl->getRightPosition();
-
-				//if(isfinite(l))
-				//	Serial.println("overflow");
-				//Serial.print(l);
-				//Serial.print(" ");
-				//Serial.println(r);
-
 				dualVelocityController->update(VELOC_REF,DrivingDirection::FORWARD);
 				if(l  > disPosControl  && r  > disPosControl){
 					//Serial.print("changing controller to position");
@@ -254,16 +271,14 @@ void comboControl(){
 				break;
 			}
 			case VehicleMode::POSITION_CONTROL_MODE:{
-
+				//Serial.println("position");
 				dualPositionControl->update();
 				if(dualPositionControl->isPositionReached()){
 					Serial.println("position has been reached");
-					while(1){
-						Serial.print(dualPositionControl->getLeftPosition());
-						Serial.print(" ");
-						Serial.println(dualPositionControl->getRightPosition());
-						delay(1000);
-					}
+					Serial.print(dualPositionControl->getLeftPosition());
+					Serial.print(" ");
+					Serial.println(dualPositionControl->getRightPosition());
+					return;
 				}
 				break;
 			}

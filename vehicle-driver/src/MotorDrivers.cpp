@@ -69,23 +69,23 @@ void MotorDrivers::setDir(DrivingDirection dir) {
 			setReverse();
 			break;
 		}
-		case DrivingDirection::TURN_LEFT:{
-			setTurnLeft();
+		case DrivingDirection::SPIN_LEFT:{
+			setSpinLeft();
 			break;
 		}
-		case DrivingDirection::TURN_RIGHT:{
-			setTurnRight();
+		case DrivingDirection::SPIN_RIGHT:{
+			setSpinRight();
 			break;
 		}
 	}
 }
 
-void MotorDrivers::setTurnLeft() {
+void MotorDrivers::setSpinLeft() {
 	this->left()->setReverse();
 	this->right()->setForward();
 }
 
-void MotorDrivers::setTurnRight() {
+void MotorDrivers::setSpinRight() {
 	this->left()->setForward();
 	this->right()->setReverse();
 }

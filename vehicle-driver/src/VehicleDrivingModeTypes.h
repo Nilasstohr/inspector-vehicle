@@ -12,6 +12,8 @@ enum DrivingDirection
 {
 	FORWARD,
 	BACKWARD,
+	SPIN_LEFT,
+	SPIN_RIGHT,
 	TURN_LEFT,
 	TURN_RIGHT,
 	STOP,

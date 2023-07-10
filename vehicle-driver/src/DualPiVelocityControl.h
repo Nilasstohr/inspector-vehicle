@@ -22,6 +22,7 @@ public:
 			double maximumOutput,
 			double minimumOutput);
 	void update(double referenceVelocity,DrivingDirection dir);
+	void update(double referenceVelocityLeft,double referenceVelocityRight,DrivingDirection dir);
 	void update(uint16_t pwm);
 	virtual ~DualPiVelocityControl();
 
