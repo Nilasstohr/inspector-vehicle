@@ -157,3 +157,17 @@ https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.butter.html
 https://www.tutorialspoint.com/how-to-remove-scientific-notation-from-a-matplotlib-log-log-plot
 https://stackoverflow.com/questions/25191620/creating-lowpass-filter-in-scipy-understanding-methods-and-units
 
+
+robot dictionary
+---------------------------------------------------------------
+
+	mobile robot kinematicts (differential wheel)
+	--------------------------------------
+	forward kinematics - from pose termi
+	inverse kinematics - 
+	
+	Mobile robot localizatiob
+	--------------------------------------
+	side 270-274 
+	side 336-342
+

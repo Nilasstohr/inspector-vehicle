@@ -141,6 +141,7 @@ void drivningManual(){
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 	while(1){
+
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())
 				return;
@@ -158,6 +159,7 @@ void drivningManual(){
 			}else if(mode==DrivingDirection::TURN_RIGHT){
 				dualVelocityController->update(VELOC_REF+4,VELOC_REF,DrivingDirection::FORWARD);
 			}else{
+
 				dualVelocityController->update(VELOC_REF,mode);
 			}
 		}

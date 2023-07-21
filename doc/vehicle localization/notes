@@ -1,0 +1,32 @@
+robot general
+---------------------------------------------------------------
+
+	mobile robot kinematicts (differential wheel)
+	--------------------------------------
+	forward kinematics - from pose termi
+	inverse kinematics - 
+	
+	Mobile robot localizatiob
+	--------------------------------------
+	side 270-274 
+	side 336-342
+
+
+robot localization
+---------------------------------------------------------------
+
+	probability
+	-----------
+	unions
+		side 45-49
+
+	axions 
+		side 58-60
+
+	conditional distribution
+		side 66-72
+	
+	bayer rule/theorem
+	
+
+	prior and posterior prob:
