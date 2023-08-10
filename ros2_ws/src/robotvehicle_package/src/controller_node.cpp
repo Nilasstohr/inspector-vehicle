@@ -1,99 +1,190 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <linux/input.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <signal.h>
+#include <cstdio>
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "SerialInterface.h"
+#include "AwaitTimer.h"
+#include <Eigen/Dense>
+#include "OdomRangeLog.h";
 
-void handler (int sig)
-{
-    printf ("nexiting...(%d)n", sig);
-    exit (0);
-}
+using Eigen::MatrixXd;
+using Eigen::Vector3d;
 
-void perror_exit (char *error)
-{
-    perror (error);
-    handler (9);
-}
+using std::placeholders::_1;
 
-int main (int argc, char *argv[])
-{
-    struct input_event ev[64];
-    int fd, rd, value, size = sizeof (struct input_event);
-    char name[256] = "Unknown";
-    char *device = "./keyboard_key_capture /dev/input/event1";
+#define ROS_INFO RCUTILS_LOG_INFO
+#define M_PI 3.1415926535897932384626433832795
+#define RAD2DEG(x) ((x)*180./M_PI)
 
-    if ((getuid ()) != 0)
-        printf ("You are not root! This may not work...n");
+#define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 
-    //Open Device
-    if ((fd = open (device, O_RDONLY)) == -1)
-        printf ("%s is not a vaild device.n", device);
 
-    //Print Device Name
-    ioctl (fd, EVIOCGNAME (sizeof (name)), name);
-    printf ("Reading From : %s (%s)n", device, name);
+class ReadingLaser : public rclcpp::Node {
+public:
 
-    while (1){
-        if ((rd = read (fd, ev, size * 64)) < size)
-            perror_exit ("read()");
-
-        value = ev[0].value;
-
-        if (value != ' ' && ev[1].value == 1 && ev[1].type == 1){ // Only read the key press event
-            printf ("Code[%d]n", (ev[1].code));
+    ReadingLaser() : Node("reading_laser") {
+        auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
+        serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
+        sensorLogger = new std::list<OdomRangeLog>;
+        output = new std::string();
+        odomStr = new std::string();
+        if (serialInterface->hasResponse()) {
+            ROS_INFO(serialInterface->getResponse()->c_str());
         }
+        serialInterface->sendRequest("0");
+        serialInterface->sendRequest("6");
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+                "scan", default_qos,
+                std::bind(&ReadingLaser::topic_callback, this, _1));
+
+        timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
+                                         std::bind(&ReadingLaser::timer_callback, this));
     }
 
+private:
+    uint64_t getSystemMillis() {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    }
+
+    void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
+        currentScan = scan;
+        //int count = scan->scan_time / scan->time_increment;
+        //time_cur = getSystemMillis();
+        //time_diff = time_cur-time_last;
+        //output->append(" time diff=");
+        //output->append(std::to_string(time_diff));
+        //output->append(" ms");
+        //ROS_INFO(+output->c_str());
+        //time_last = time_cur;
+        //output->clear();
+        //ROS_INFO("I heard a laser scan %s[%d]:", scan->header.frame_id.c_str(), count);
+        //ROS_INFO("angle_rang         e, %f, %f", RAD2DEG(scan->angle_min), RAD2DEG(scan->angle_max));
+        //ROS_INFO("----------------------------- scan received %d-----------------------------------",count);
+        /*
+        for(int i = 0; i < count; i++) {
+            float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
+                    ROS_INFO(": [% i,%f, %f]",i, degree, scan->ranges[i]);
+        }
+         */
+        //ROS_INFO("----------------------------- end of scan -----------------------------------");
+    }
+    void timer_callback(){
+        serialInterface->sendRequest("p");
+        odomStr->append(serialInterface->getResponse()->c_str());
+        ROS_INFO(odomStr->c_str());
+        posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
+        posRight  = std::stod(odomStr->substr(odomStr->find(" "),odomStr->size()));
+        sensorLogger->push_back(OdomRangeLog(posLeft,posRight,currentScan));
+        odomStr->clear();
+    }
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    SerialInterface * serialInterface;
+    std::string *output;
+    uint64_t time_cur=0;
+    uint64_t time_diff=0;
+    uint64_t time_last=0;
+    std::list<OdomRangeLog> * sensorLogger;
+    std::string *odomStr;
+    double posLeft;
+    double posRight;
+    sensor_msgs::msg::LaserScan::SharedPtr currentScan;
+};
+
+
+int main(int argc, char ** argv)
+{
+    /*
+    serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
+    if (serialInterface->hasResponse()) {
+        ROS_INFO(serialInterface->getResponse()->c_str());
+    }
+    serialInterface->sendRequest("0");
+    serialInterface->sendRequest("6");
+    uint64_t n=0;
+    std::string *output;
+    while (1) {
+        try {
+            serialInterface->sendRequest("p");
+        }
+        catch(const std::runtime_error &ex){
+            serialInterface->reopen();
+            ROS_INFO(ex.what());
+        }
+        output = serialInterface->getResponse();
+        output->append(" ");
+        output->append(std::to_string(n));
+        ROS_INFO(output->c_str());
+        n++;
+        serialInterface->flush();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    */
+    //serialInterface->close();
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<ReadingLaser>();
+    rclcpp::spin(node);
+    rclcpp::shutdown();
     return 0;
 }
 
 /*
-#include <cstdio>
-// Linux headers
-#include <fcntl.h> // Contains file controls like O_RDWR
-#include <errno.h> // Error integer and strerror() function
-#include <termios.h> // Contains POSIX terminal control definitions
-#include <unistd.h> // write(), read(), close()
+// simulation data;
+double d_sr = 1;
+double d_sl = 1;
+// distance between wheels in cm
+double b= 27;
+// angle of robot
+// initial position
+double phi = 0;
+Vector3d p(30,30,phi);
+// Q covariance constants
+//kl  = 0.10;
+//kr  = 0.10;
+// %%%%%%%%%%%%%%%%%%% position estimate %%%%%%%%%%%%%%%%%%%%%%
+double  d_phi = (d_sr - d_sl)/b;
+// distance traveled
+double   d_s   = (d_sr + d_sl)/2;
 
-#include <iostream>
-using namespace std;
+// kinematic model for differential driver page 270
+Vector3d p_t(d_s*cos(phi + d_phi/2),
+             d_s*sin(phi + d_phi/2),
+             d_phi);
+Vector3d p_hat = p + p_t;
+std::cout << p_hat << std::endl;
 
-int main(int argc, char ** argv)
-{
-    int serial_port = open("/dev/ttyACM0", O_RDWR);
-    char read_buf [256];
+//convert rad to degrees
+p_hat(3) = rad2deg(p_hat(3));
+% transpose to make plotting easier
+p_hat = p_hat';
+x = p_hat(:,1);
+y = p_hat(:,2);
+% plot
+        figure
+plot(x,y);
+title('differential mobile robot trajectory')
+xlabel('x [cm]')
+ylabel('y [cm]')
+xlim([0 50])
+ylim([0 50])
+grid on
 
-    // Read bytes. The behaviour of read() (e.g. does it block?,
-    // how long does it block for?) depends on the configuration
-    // settings above, specifically VMIN and VTIME
+     %%%%%%%%%%%% covariance of estimated pose %%%%%%%%%%%%%%%%%
 
-    int n = read(serial_port, &read_buf, sizeof(read_buf));
-    if(n>0)
-        cout << read_buf<< endl; // prints !!!Hello World!!!
-    else
-        cout << "no data available" << endl;
-    close(serial_port);
-    return 0;
+                                          % covariance page 270
+P_last = [0 0 0;...
+0 0 0;...
+0 0 0;];
+Fx = [1 0 -d_s.*sin(phi + d_phi/2);...
+0 1  d_s.*cos(phi + d_phi/2);...
+0 0  1];
+Fu = [ 1/2*cos(phi + d_phi/2)-d_s/(2*b)*sin(phi + d_phi/2) , 1/2*cos(phi + d_phi/2)+d_s/(2*b)*sin(phi + d_phi/2);...
+1/2*sin(phi + d_phi/2)+d_s/(2*b)*cos(phi + d_phi/2) , 1/2*sin(phi + d_phi/2)-d_s/(2*b)*cos(phi + d_phi/2);...
+1/b                                                 , -1/b];
 
-    char c;
-    printf("\n>>");
-    while(1) {
-        scanf("%c", &c);
-        if (c != '\n') {
-            printf("%c", c);
-            printf("\n>>");
-        }
-    }
-    return 0;
-}
+Q = [kr*abs(d_sr) 0;...
+0  kl*abs(d_sl)];
+
+P_hat = Fx*P_last*Fx' + Fu*Q*Fu'
 */
+
+
