@@ -15,7 +15,19 @@ posLeft(posLeft),posRight(posRight){
     for(int i = 0; i < count; i++) {
         angle = RAD2DEG(scan->angle_min + scan->angle_increment * i);
         distance = scan->ranges[i];
-        this->scan->push_back(LaserScanPoint(angle,distance));
+        this->scan->push_back(LaserScanPoint(angle, distance));
         //ROS_INFO(": [% i,%f, %f]",i, degree, scan->ranges[i]);
     }
+}
+
+double OdomRangeLog::getPosLeft() const {
+    return posLeft;
+}
+
+double OdomRangeLog::getPosRight() const {
+    return posRight;
+}
+
+std::vector<LaserScanPoint> *OdomRangeLog::getScan() const {
+    return scan;
 }

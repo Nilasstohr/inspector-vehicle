@@ -54,7 +54,7 @@ Clion
 Added rplidar SDK to ros package
 --------------------------------------------------------------------
 	1.open terminal in target package folder then perform 
-"git clone https://github.com/Slamtec/rplidar_sdk.git" this will create a folder "rplidar_sdk"
+	"git clone https://github.com/Slamtec/rplidar_sdk.git" this will create a folder "rplidar_sdk"
 	2. In target package create a folder called "sdk" a copy the "include" and "src" folder   
 	   from "rplidar_sdk->sdk" into it. 
 	3. Now add the below to the target package CMakeLists.txt
@@ -70,6 +70,7 @@ Added rplidar SDK to ros package
 			Add ${RPLIDAR_SDK_SRC} to any "add_executable" where you need the sdk e.g
 			add_executable(my_package src/my_package.cpp ${RPLIDAR_SDK_SRC})
 	5. if started close Clion and Perform "Clion" guide above (!!! remember to run "sudo chmod 666 /dev/ttyUSB0" before starting Clion)
+
 inspiration from:
 git clone https://github.com/slamtec/rplidar_ros 
 https://github.com/CreedyNZ/rplidar_ros2 

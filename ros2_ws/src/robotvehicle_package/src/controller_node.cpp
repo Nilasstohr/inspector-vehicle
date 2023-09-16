@@ -4,6 +4,7 @@
 #include "SerialInterface.h"
 #include "AwaitTimer.h"
 #include <Eigen/Dense>
+#include <fstream>
 #include "OdomRangeLog.h";
 
 using Eigen::MatrixXd;
@@ -24,20 +25,23 @@ public:
     ReadingLaser() : Node("reading_laser") {
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
-        sensorLogger = new std::list<OdomRangeLog>;
         output = new std::string();
         odomStr = new std::string();
         if (serialInterface->hasResponse()) {
             ROS_INFO(serialInterface->getResponse()->c_str());
         }
+        // return to main menu
         serialInterface->sendRequest("0");
-        serialInterface->sendRequest("6");
+        // enter manual driving mode
+        serialInterface->sendRequest("1");
         subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
                 "scan", default_qos,
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
         timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-                                         std::bind(&ReadingLaser::timer_callback, this));
+                                      std::bind(&ReadingLaser::timer_callback, this));
+        // drive forward.
+        serialInterface->sendRequest("y");
     }
 
 private:
@@ -47,16 +51,19 @@ private:
 
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
         currentScan = scan;
-        //int count = scan->scan_time / scan->time_increment;
-        //time_cur = getSystemMillis();
-        //time_diff = time_cur-time_last;
-        //output->append(" time diff=");
-        //output->append(std::to_string(time_diff));
-        //output->append(" ms");
-        //ROS_INFO(+output->c_str());
-        //time_last = time_cur;
-        //output->clear();
-        //ROS_INFO("I heard a laser scan %s[%d]:", scan->header.frame_id.c_str(), count);
+        scanReady=true;
+        /*
+        int count = scan->scan_time / scan->time_increment;
+        time_cur = getSystemMillis();
+        time_diff = time_cur-time_last;
+        output->append(" time diff=");
+        output->append(std::to_string(time_diff));
+        output->append(" ms");
+        ROS_INFO(+output->c_str());
+        time_last = time_cur;
+        output->clear();
+        */
+         //ROS_INFO("I heard a laser scan %s[%d]:", scan->header.frame_id.c_str(), count);
         //ROS_INFO("angle_rang         e, %f, %f", RAD2DEG(scan->angle_min), RAD2DEG(scan->angle_max));
         //ROS_INFO("----------------------------- scan received %d-----------------------------------",count);
         /*
@@ -68,13 +75,69 @@ private:
         //ROS_INFO("----------------------------- end of scan -----------------------------------");
     }
     void timer_callback(){
-        serialInterface->sendRequest("p");
-        odomStr->append(serialInterface->getResponse()->c_str());
-        ROS_INFO(odomStr->c_str());
-        posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
-        posRight  = std::stod(odomStr->substr(odomStr->find(" "),odomStr->size()));
-        sensorLogger->push_back(OdomRangeLog(posLeft,posRight,currentScan));
-        odomStr->clear();
+        if(scanReady) {
+            scanReady=false;
+            //ROS_INFO("scan found");
+            serialInterface->sendRequest("p");
+            odomStr->append(serialInterface->getResponse()->c_str());
+            //ROS_INFO(odomStr->c_str());
+            posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
+            posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
+            sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
+            odomStr->clear();
+            logCount++;
+            //std::cout << n << std::endl;
+            if (n > 2000) {
+                // stop driving
+                serialInterface->sendRequest("s");
+                timer_->cancel();
+                json->append("\n{").append("\n");
+                json->append("\"data\":[").append("\n");
+                for (int i = 0; i < logCount; i++) {
+                    json->append("{").append("\n");
+                    // odom
+                    json->append("\"odom\":");
+                    json->append("{").append("\n");
+                    json->append("\"posLeft\":");
+                    json->append(std::to_string(sensorLogger[i]->getPosLeft())).append(",\n");
+                    json->append("\"posRight\":");
+                    json->append(std::to_string(sensorLogger[i]->getPosRight())).append("\n");
+                    json->append("},").append("\n");
+                    // laser scan
+                    json->append("\"scan\":{").append("\n");
+                    json->append("\"points\":[").append("\n");
+                    int lenScans = sensorLogger[i]->getScan()->size() - 1;
+                    for (int j = 0; j < lenScans; j++) {
+                        json->append("{").append("\n");
+                        json->append("\"angle\":");
+                        json->append(std::to_string(sensorLogger[i]->getScan()->at(j).getAngle())).append(",\n");
+                        json->append("\"distance\":");
+                        json->append(std::to_string(sensorLogger[i]->getScan()->at(j).getDistance())).append("\n");
+                        json->append("}");
+                        if (j < lenScans - 1) {
+                            json->append(",");
+                        }
+                        json->append("\n");
+                    }
+                    json->append("]").append("\n");
+                    json->append("}").append("\n");
+                    json->append("}");
+                    if (i < logCount - 1) {
+                        json->append(",");
+                    }
+                    json->append("\n");
+                }
+                json->append("]").append("\n");
+                json->append("}");
+                //ROS_INFO(json->c_str());
+                std::ofstream out("log.json");
+                out << json->c_str();
+                out.close();
+                json->clear();
+            }
+        }
+        n++;
+        std::cout << n << std::endl;
     }
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -83,11 +146,15 @@ private:
     uint64_t time_cur=0;
     uint64_t time_diff=0;
     uint64_t time_last=0;
-    std::list<OdomRangeLog> * sensorLogger;
+    OdomRangeLog  * sensorLogger[5000];
     std::string *odomStr;
     double posLeft;
     double posRight;
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
+    uint64_t n=0;
+    uint64_t logCount =0;
+    bool scanReady=false;
+    std::string *json = new std::string();
 };
 
 

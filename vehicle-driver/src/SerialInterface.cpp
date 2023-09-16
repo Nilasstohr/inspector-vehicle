@@ -17,7 +17,7 @@ bool SerialInterface::hasMessage() {
 		while (Serial.available()){
 			char c = Serial.read();
 			if(c=='\n'){
-				printMessage();
+				//printMessage();
 				return true;
 			}
 			buffer[readSize]=c;
@@ -29,7 +29,7 @@ bool SerialInterface::hasMessage() {
 }
 
 void SerialInterface::printMessage() {
-	Serial.print("received command: ");
+	//Serial.print("received command: ");
 	for(int i=0; i<readSize; i++){
 		Serial.print(buffer[i]);
 	}
@@ -37,16 +37,28 @@ void SerialInterface::printMessage() {
 
 }
 String* SerialInterface::getMessage() {
-	String *s = new String();
+	String * s = new String();
 	for(int i=0; i<readSize; i++){
 		s->append(buffer[i]);
 	}
 	return s;
 }
 
+char * SerialInterface::getMessageBuf() {
+	return buffer;
+}
 
+uint8_t * SerialInterface::getMessageSize() {
+	return readSize;
+}
+
+void SerialInterface::sendAck() {
+	Serial.println("ack");
+}
 SerialInterface::~SerialInterface() {
 
 }
 
-
+bool SerialInterface::validateCommand(uint8_t size, char id) {
+	return getMessageSize()==size && getMessageBuf()[0]==id;
+}

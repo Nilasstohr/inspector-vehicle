@@ -10,13 +10,10 @@
 #include "src/DualAccelerationControl.h"
 
 
-
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
 
-
 #define VELOC_REF 5
-
 
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
 
@@ -39,13 +36,15 @@ enum VehicleMode
 	TRANSIENT_TEST_MODE,
 	VELOCITY_CONTROL_MODE,
 	POSITION_CONTROL_MODE,
-	COMBO_CONTROL_MODE
+	COMBO_CONTROL_MODE,
+	DATA_REQUEST_MODE
 };
 
 void runProgram1();
 void velocityControl(bool doControl);
 void positionControl();
 void comboControl();
+void dataRequests();
 double radPrSekFromDeltaT(uint32_t deltaT);
 void outputResult();
 void reset();
@@ -55,24 +54,26 @@ DrivingDirection getDrivingModeManual();
 bool modeEscapeRequest();
 void drivingMode();
 void drivningManual();
+bool handlePositionRequest();
 
 extern "C" int main(void){
+
 	/*
 	while(1){
-		Serial.print("hello world");
-		delay(1000);
+		Serial.print("hello world\n");
+		//delay(1000);
 	}
-
-*/
+	*/
 	init();
 	//velocityControl(true);
-	Serial.println("entered vehicle mode options (enter mode 1-5)");
+	Serial.println("entered vehicle mode options (enter mode 1-6)");
 	while(1){
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
 			case VehicleMode::DRIVING_MODE:{
 				drivningManual();
 				break;
+
 			}
 			case VehicleMode::TRANSIENT_TEST_MODE:{
 				velocityControl(false);
@@ -90,7 +91,13 @@ extern "C" int main(void){
 				comboControl();
 				break;
 			}
+			case VehicleMode::DATA_REQUEST_MODE:{
+				dataRequests();
+				break;
+			}
+
 		}
+
 		delay(100);
 	}
 
@@ -99,6 +106,8 @@ extern "C" int main(void){
 // command interface
 VehicleMode getVehicleMode(){
 	if(serial->hasMessage()){
+		if(modeEscapeRequest())
+			return VehicleMode::IDLE;
 		String* cmd = serial->getMessage();
 		return  (VehicleMode)atoi( cmd->c_str() );
 	}else{
@@ -107,45 +116,51 @@ VehicleMode getVehicleMode(){
 }
 
 DrivingDirection getDrivingModeManual(){
-
 	 String* cmd = serial->getMessage();
 	 if(cmd->equals("y")){
-		 Serial.println("going forward");
+		 //Serial.println("going forward");
+		 serial->sendAck();
 		 return DrivingDirection::FORWARD;
 	 }else if(cmd->equals("h")){
-		 Serial.println("going backward");
+		 //Serial.println("going backward");
+		 serial->sendAck();
 		 return DrivingDirection::BACKWARD;
 	 }else if(cmd->equals("d")){
-		 Serial.println("spin left");
+		 //Serial.println("spin left");
+		 serial->sendAck();
 		 return DrivingDirection::SPIN_LEFT;
 	 }else if(cmd->equals("f")){
-		 Serial.println("spin right");
+		 //Serial.println("spin right");
+		 serial->sendAck();
 		 return DrivingDirection::SPIN_RIGHT;
 	 }else if(cmd->equals("g")){
-		 Serial.println("turn left");
+		 //Serial.println("turn left");
+		 serial->sendAck();
 		 return DrivingDirection::TURN_LEFT;
 	 }else if(cmd->equals("j")){
-		 Serial.println("turn right");
+		 //Serial.println("turn right");
+		 serial->sendAck();
 		 return DrivingDirection::TURN_RIGHT;
 	 } else if(cmd->equals("s")){
-		 Serial.println("stopping");
+		 //Serial.println("stopping");
+		 serial->sendAck();
 		 return DrivingDirection::STOP;
-	 }
-	 else{
+	 }else{
 		 return DrivingDirection::UNKNOWN;
 	 }
 }
 
 void drivningManual(){
-	Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
+	//Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
+	serial->sendAck();
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 	while(1){
-
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())
 				return;
-			mode = getDrivingModeManual();
+			else if(!handlePositionRequest())
+				mode = getDrivingModeManual();
 		}
 		if(mode==DrivingDirection::STOP){
 			reset();
@@ -159,7 +174,6 @@ void drivningManual(){
 			}else if(mode==DrivingDirection::TURN_RIGHT){
 				dualVelocityController->update(VELOC_REF+4,VELOC_REF,DrivingDirection::FORWARD);
 			}else{
-
 				dualVelocityController->update(VELOC_REF,mode);
 			}
 		}
@@ -168,9 +182,9 @@ void drivningManual(){
 }
 
 bool modeEscapeRequest(){
-	String* cmd = serial->getMessage();
-	if(cmd->equals("0")){
-		Serial.println("return from mode..");
+	if(serial->validateCommand(1, '0'))
+	{
+		serial->sendAck();
 		return true;
 	}
 	return false;
@@ -287,6 +301,43 @@ void comboControl(){
 		}
 		delayMicroseconds(1);
 	}
+}
+
+
+void dataRequests(){
+	serial->sendAck();
+	//uint32_t tic;
+	//uint32_t toc;
+	reset();
+
+	//Serial.println("entered data request mode");
+	while(1)
+	{
+		if(serial->hasMessage()){
+			//tic = micros();
+			if(modeEscapeRequest())
+				return;
+			handlePositionRequest();
+			//toc = micros();
+			//Serial.print("(");
+			//Serial.print(toc-tic);
+			//Serial.print(" us)");
+		}
+		delayMicroseconds(1);
+	}
+
+}
+
+bool handlePositionRequest(){
+	if(serial->validateCommand(1, 'p')){
+		//Serial.print("33.54 33.56 ");
+		Serial.print(dualPositionControl->getLeftPosition());
+		Serial.print(" ");
+		Serial.print(dualPositionControl->getRightPosition());
+		serial->sendAck();
+		return true;
+	}
+	return false;
 }
 
 double radPrSekFromDeltaT(uint32_t deltaT) {

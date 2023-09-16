@@ -14,8 +14,16 @@ public:
     OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::LaserScan::SharedPtr scan);
 private:
     double posLeft;
+public:
+    double getPosLeft() const;
+
+    double getPosRight() const;
+
+private:
     double posRight;
     std::vector<LaserScanPoint> *scan;
+public:
+    std::vector<LaserScanPoint> *getScan() const;
 };
 
 

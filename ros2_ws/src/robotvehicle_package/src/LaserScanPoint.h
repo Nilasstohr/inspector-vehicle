@@ -13,6 +13,12 @@ public:
     LaserScanPoint(float angle, float distance);
 private:
     float angle;
+public:
+    float getAngle() const;
+
+    float getDistance() const;
+
+private:
     float distance;
 };
 

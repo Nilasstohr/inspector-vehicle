@@ -15,11 +15,17 @@ public:
 	SerialInterface();
 	bool hasMessage();
 	String* getMessage();
+	bool validateCommand(uint8_t size, char id);
+	void sendAck();
 	virtual ~SerialInterface();
 private:
 	uint8_t readSize;
     char  buffer[256];
+    String * s;
     void printMessage();
+    char * getMessageBuf();
+	uint8_t * getMessageSize();
+
 };
 
 #endif /* SRC_SERIALINTERFACE_H_ */

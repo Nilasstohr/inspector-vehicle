@@ -19,6 +19,8 @@ robot localization
 	-----------
 	unions
 		side 45-49
+		notes U=union, other n = intersection
+		sample space S = all data, event = subset of S 
 
 	axions 
 		side 58-60
