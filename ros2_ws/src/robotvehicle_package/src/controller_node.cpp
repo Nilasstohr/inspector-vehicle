@@ -5,8 +5,8 @@
 #include "AwaitTimer.h"
 #include <Eigen/Dense>
 #include <fstream>
-#include "OdomRangeLog.h";
-
+#include "OdomRangeLog.h"
+#include "PredictionDifferentialDrive.h"
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
 
@@ -160,6 +160,60 @@ private:
 
 int main(int argc, char ** argv)
 {
+    PredictionDifferentialDrive * differentialDrive =
+            new PredictionDifferentialDrive();
+
+    MatrixXd pEst(3, 3);
+    double sigmaXY = 2; // cm
+    double sigmaTheta = differentialDrive->deg2rad(2); // degrees;
+    pEst(0, 0)= pow(sigmaXY,2); pEst(0, 1)= 0; pEst(0, 2)= 0;
+    pEst(1, 0)= 0; pEst(1, 1)= pow(sigmaXY,2); pEst(1, 2)= 0;
+    pEst(2, 0)= 0; pEst(2, 1)= 0; pEst(2, 2)=  pow(sigmaTheta,2);
+    Vector3d xEst(40,40,0);
+    //printMatrix(pEstLast,"pEst");
+    //printVector(xEstLast,"xEst");
+
+    double sl[27];
+    double sr[27];
+    sl[0]=0.00; sr[0]=0.00;
+    sl[1]=0.02; sr[1]=0.02;
+    sl[2]=0.12; sr[2]=0.19;
+    sl[3]=0.41; sr[3]=0.56;
+    sl[4]=0.93; sr[4]=1.10;
+    sl[5]=1.94; sr[5]=2.08;
+    sl[6]=3.29; sr[6]=3.38;
+    sl[7]=4.71; sr[7]=4.73;
+    sl[8]=6.49; sr[8]=6.46;
+    sl[9]=8.42; sr[9]=8.36;
+    sl[10]=10.16; sr[10]=10.06;
+    sl[11]=12.28; sr[11]=12.16;
+    sl[12]=14.03; sr[12]=13.86;
+    sl[13]=16.16; sr[13]=15.97;
+    sl[14]=18.26; sr[14]=18.09;
+    sl[15]=20.03; sr[15]=19.90;
+    sl[16]=22.03; sr[16]=21.98;
+    sl[17]=23.94; sr[17]=24.02;
+    sl[18]=25.57; sr[18]=25.72;
+    sl[19]=27.45; sr[19]=27.65;
+    sl[20]=29.04; sr[20]=29.26;
+    sl[21]=30.93; sr[21]=31.16;
+    sl[22]=32.82; sr[22]=33.00;
+    sl[23]=34.46; sr[23]=34.58;
+    sl[24]=36.39; sr[24]=36.46;
+    sl[25]=38.32; sr[25]=38.30;
+    sl[26]=39.99; sr[26]=39.89;
+
+    for(int i=0; i<26; i++){
+        differentialDrive->update(sl[i],sr[i],xEst,pEst);
+        xEst = differentialDrive->getXEstLast();
+        pEst = differentialDrive->getPEstLast();
+        std::cout <<xEst(0);
+        std::cout <<" ";
+        std::cout <<xEst(1);
+        std::cout <<std::endl;
+    }
+
+
     /*
     serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
     if (serialInterface->hasResponse()) {

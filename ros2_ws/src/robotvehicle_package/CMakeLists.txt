@@ -36,8 +36,26 @@ add_executable(
         src/UsbSerial.cpp
         src/UsbSerial.h
         src/AwaitTimer.cpp
-        src/AwaitTimer.h src/OdomRangeLog.cpp src/OdomRangeLog.h src/LaserScanPoint.cpp src/LaserScanPoint.h)
+        src/AwaitTimer.h
+        src/OdomRangeLog.cpp
+        src/OdomRangeLog.h
+        src/LaserScanPoint.cpp
+        src/LaserScanPoint.h
+        src/PredictionDifferentialDrive.cpp
+        src/PredictionDifferentialDrive.h
+)
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
+
+# add Feature extraction library
+#add_subdirectory(FeatureExtraction)
+#target_include_directories(controller_node PUBLIC FeatureExtraction)
+#target_link_directories(controller_node PRIVATE FeatureExtraction)
+
+# add Localization library
+#add_subdirectory(Localization)
+#target_include_directories(controller_node PUBLIC Localization)
+#target_link_directories(controller_node PRIVATE Localization)
+
 target_link_libraries (controller_node Eigen3::Eigen)
 
 install(TARGETS
