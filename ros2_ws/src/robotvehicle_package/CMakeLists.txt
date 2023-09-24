@@ -37,13 +37,16 @@ add_executable(
         src/UsbSerial.h
         src/AwaitTimer.cpp
         src/AwaitTimer.h
-        src/OdomRangeLog.cpp
-        src/OdomRangeLog.h
-        src/LaserScanPoint.cpp
-        src/LaserScanPoint.h
-        src/PredictionDifferentialDrive.cpp
-        src/PredictionDifferentialDrive.h
-)
+        src/Sensor/OdomRangeLog.cpp
+        src/Sensor/OdomRangeLog.h
+        src/Sensor/LaserScanPoint.cpp
+        src/Sensor/LaserScanPoint.h
+        src/Localization/PredictionDifferentialDrive.cpp
+        src/Localization/PredictionDifferentialDrive.h
+        src/Localization/Observations.cpp
+        src/Localization/Observations.h
+        src/Localization/FeatureExstraction/Line.cpp
+        src/Localization/FeatureExstraction/Line.h)
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
 
 # add Feature extraction library
