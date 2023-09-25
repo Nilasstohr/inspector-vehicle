@@ -7,7 +7,7 @@
 
 
 #include <sensor_msgs/msg/detail/laser_scan__struct.hpp>
-#include "LaserScanPoint.h"
+#include "PointPolarForm.h"
 
 class OdomRangeLog {
 public:
@@ -21,9 +21,9 @@ public:
 
 private:
     double posRight;
-    std::vector<LaserScanPoint> *scan;
+    std::vector<PointPolarForm> *scan;
 public:
-    std::vector<LaserScanPoint> *getScan() const;
+    std::vector<PointPolarForm> *getScan() const;
 };
 
 

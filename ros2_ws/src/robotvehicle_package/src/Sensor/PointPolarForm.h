@@ -2,15 +2,15 @@
 // Created by robot1 on 8/10/23.
 //
 
-#ifndef ROBOTVEHICLE_PACKAGE_LASERSCANPOINT_H
-#define ROBOTVEHICLE_PACKAGE_LASERSCANPOINT_H
+#ifndef ROBOTVEHICLE_PACKAGE_POINTPOLARFORM_H
+#define ROBOTVEHICLE_PACKAGE_POINTPOLARFORM_H
 
 
 #include <sensor_msgs/msg/detail/laser_scan__struct.hpp>
 
-class LaserScanPoint {
+class PointPolarForm {
 public:
-    LaserScanPoint(float angle, float distance);
+    PointPolarForm(float angle, float distance);
 private:
     float angle;
 public:
@@ -23,4 +23,4 @@ private:
 };
 
 
-#endif //ROBOTVEHICLE_PACKAGE_LASERSCANPOINT_H
+#endif //ROBOTVEHICLE_PACKAGE_POINTPOLARFORM_H

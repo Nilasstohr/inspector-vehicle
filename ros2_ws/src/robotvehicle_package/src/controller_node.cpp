@@ -7,6 +7,8 @@
 #include <fstream>
 #include "Sensor/OdomRangeLog.h"
 #include "Localization/PredictionDifferentialDrive.h"
+#include "Sensor/PointRectForm.h"
+
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
 

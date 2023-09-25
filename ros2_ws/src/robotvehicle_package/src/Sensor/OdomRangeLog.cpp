@@ -8,14 +8,14 @@
 
 OdomRangeLog::OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::LaserScan::SharedPtr scan):
 posLeft(posLeft),posRight(posRight){
-    this->scan = new std::vector<LaserScanPoint>;
+    this->scan = new std::vector<PointPolarForm>;
     int count = scan->scan_time / scan->time_increment;
     float angle;
     float distance;
     for(int i = 0; i < count; i++) {
         angle = RAD2DEG(scan->angle_min + scan->angle_increment * i);
         distance = scan->ranges[i];
-        this->scan->push_back(LaserScanPoint(angle, distance));
+        this->scan->push_back(PointPolarForm(angle, distance));
         //ROS_INFO(": [% i,%f, %f]",i, degree, scan->ranges[i]);
     }
 }
@@ -28,6 +28,6 @@ double OdomRangeLog::getPosRight() const {
     return posRight;
 }
 
-std::vector<LaserScanPoint> *OdomRangeLog::getScan() const {
+std::vector<PointPolarForm> *OdomRangeLog::getScan() const {
     return scan;
 }
