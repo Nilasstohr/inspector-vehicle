@@ -6,6 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_PREDICTIONDIFFERENTIALDRIVE_H
 
 #include <Eigen/Dense>
+#include "../Utilities/MathConstants.h"
 
 using Eigen::MatrixXd;
 using Eigen::Matrix;

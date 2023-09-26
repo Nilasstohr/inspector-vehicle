@@ -14,8 +14,7 @@ srLast(0),slLast(0)
 }
 
 double PredictionDifferentialDrive::deg2rad(double deg) {
-    double pi = 3.1415926535897932384626433832795;
-    return (deg * (pi / 180));
+    return (deg * (PI / 180));
 }
 
 void PredictionDifferentialDrive::printMatrix(MatrixXd matrix,char * name) {

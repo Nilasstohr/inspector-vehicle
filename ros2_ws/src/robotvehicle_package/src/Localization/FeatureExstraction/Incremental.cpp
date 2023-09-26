@@ -29,12 +29,25 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
     }
     scan->erase(scan->cbegin());
     scan->erase(scan->cbegin());
-    for(int i=0; i<scan->size(); i++){
-
-        if(esp < line->perpendicularDistance(scan->at(i)) ){
-
+    while(scan->size()>0){
+        if(esp < line->perpendicularDistance(scan->at(0)) ){
+            line->addRecPointFromPolar(
+                    scan->at(0).getAngle(),scan->at(0).getDistance());
+            scan->erase(scan->cbegin());
+        }
+        else{
+            lineNum++;
+            break;
         }
     }
+    if(scan->size()==0){
+        lineNum++;
+        return;
+    }
+    if(scan->size()>2){
+        return;
+    }
+    executeAlgoritm(scan);
 }
 
 
