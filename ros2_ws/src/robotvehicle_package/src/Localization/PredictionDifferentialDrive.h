@@ -6,7 +6,6 @@
 #define ROBOTVEHICLE_PACKAGE_PREDICTIONDIFFERENTIALDRIVE_H
 
 #include <Eigen/Dense>
-#include "../Utilities/MathConstants.h"
 
 using Eigen::MatrixXd;
 using Eigen::Matrix;
@@ -16,7 +15,6 @@ class PredictionDifferentialDrive {
 public:
     PredictionDifferentialDrive();
     void update(double sl, double sr, Vector3d xt, MatrixXd pt);
-    double deg2rad(double deg);
     void printMatrix(MatrixXd matrix, char *name);
     void printVector(Vector3d vector,char* name);
     const Vector3d getXEstLast() const;

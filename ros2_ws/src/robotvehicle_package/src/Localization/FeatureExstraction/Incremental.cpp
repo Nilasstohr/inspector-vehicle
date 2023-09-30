@@ -3,8 +3,18 @@
 //
 
 #include "Incremental.h"
+#include "rclcpp/rclcpp.hpp"
+#define ROS_INFO RCUTILS_LOG_INFO
 
-Incremental::Incremental(double esp) : lineNum(0),esp(esp) {}
+Incremental::Incremental(double esp) :
+        lineNum(0),
+        esp(esp),
+        currentPointIndex(0),
+        scanPointsNum(0)
+{
+    std::vector<Line> lines(100);
+    this->lines = lines;
+}
 
 int Incremental::getLineNum() {
     return lineNum ;
@@ -12,42 +22,65 @@ int Incremental::getLineNum() {
 
 void Incremental::reset() {
     lineNum=0;
+    scanPointsNum=0;
+    currentPointIndex=0;
 }
 
-void Incremental::update(std::vector<PointPolarForm> *scan) {
+void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {
     reset();
+    this->scanPointsNum = scanPointsNum;
     executeAlgoritm(scan);
 }
 
 void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
-    Line * line = lines[lineNum];
-    line->addRecPointFromPolar(scan->at(1).getAngle(),scan->at(1).getDistance());
-    line->addRecPointFromPolar(scan->at(2).getAngle(),scan->at(2).getDistance());
-    if(scan->size()==2){
+    Line *line = &lines.at(lineNum);
+    // add first to point to line;
+    addPointToLine(line,scan->at(next()));
+    addPointToLine(line,scan->at(next()));
+    // make sure that there are at least 1 to process to continue
+    if(!pointToProcess()){
         lineNum++;
         return;
     }
-    scan->erase(scan->cbegin());
-    scan->erase(scan->cbegin());
-    while(scan->size()>0){
-        if(esp < line->perpendicularDistance(scan->at(0)) ){
-            line->addRecPointFromPolar(
-                    scan->at(0).getAngle(),scan->at(0).getDistance());
-            scan->erase(scan->cbegin());
+    PointPolarForm *point;
+    while(true){
+        point = &scan->at(current());
+        if(line->perpendicularDistance(point) < esp ){
+            addPointToLine(line,*point);
+            if(!pointToProcess()){
+                lineNum++;
+                return;
+            }
         }
         else{
             lineNum++;
+            if(!pointToProcess()){
+                return;
+            }
             break;
         }
-    }
-    if(scan->size()==0){
-        lineNum++;
-        return;
-    }
-    if(scan->size()>2){
-        return;
+        next();
     }
     executeAlgoritm(scan);
 }
 
 
+void Incremental::addPointToLine(Line *line, PointPolarForm point) {
+    line->addRecPointFromPolar(point.getAngle(),point.getDistance());
+}
+
+int Incremental::next() {
+    return currentPointIndex++;
+}
+
+bool Incremental::pointToProcess() {
+    return scanPointsNum - (currentPointIndex+1) > 0;
+}
+
+int Incremental::current() {
+    return currentPointIndex;
+}
+
+std::vector<Line> *Incremental::getLines() {
+    return &lines;
+}

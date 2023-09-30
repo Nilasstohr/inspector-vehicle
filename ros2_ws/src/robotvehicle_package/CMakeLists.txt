@@ -48,7 +48,11 @@ add_executable(
         src/Localization/FeatureExstraction/Line.cpp
         src/Localization/FeatureExstraction/Line.h
         src/Localization/FeatureExstraction/Incremental.cpp
-        src/Localization/FeatureExstraction/Incremental.h src/Sensor/PointRectForm.cpp src/Sensor/PointRectForm.h src/Utilities/MathConstants.h)
+        src/Localization/FeatureExstraction/Incremental.h
+        src/Sensor/PointRectForm.cpp
+        src/Sensor/PointRectForm.h
+        src/Utilities/MathConversions.cpp
+        src/Utilities/MathConversions.h)
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
 
 # add Feature extraction library

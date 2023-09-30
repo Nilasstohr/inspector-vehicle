@@ -13,10 +13,6 @@ srLast(0),slLast(0)
 
 }
 
-double PredictionDifferentialDrive::deg2rad(double deg) {
-    return (deg * (PI / 180));
-}
-
 void PredictionDifferentialDrive::printMatrix(MatrixXd matrix,char * name) {
     ROS_INFO(name);
     for(int i=0; i<matrix.rows(); i++){

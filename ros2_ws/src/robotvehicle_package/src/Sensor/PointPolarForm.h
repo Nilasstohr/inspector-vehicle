@@ -10,13 +10,13 @@
 
 class PointPolarForm {
 public:
-    PointPolarForm(float angle, float distance);
+    PointPolarForm(double angle, double distance);
 private:
     float angle;
 public:
-    float getAngle() const;
+    double getAngle() const;
 
-    float getDistance() const;
+    double getDistance() const;
 
 private:
     float distance;

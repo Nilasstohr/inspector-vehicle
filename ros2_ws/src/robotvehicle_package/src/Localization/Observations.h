@@ -14,8 +14,10 @@ using Eigen::MatrixXd;
 
 class Observations {
 public:
-    Observations(double esp, const MatrixXd &r);
-    void update(std::vector<PointPolarForm> *scan);
+    Observations(double eps, const MatrixXd &r);
+    void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
+    Line *getLineByIndex(int index);
+    int getLineNum();
 private:
     Incremental * incremental;
     double esp;

@@ -4,12 +4,12 @@
 
 #include "PointPolarForm.h"
 
-PointPolarForm::PointPolarForm(float angle, float distance): angle(angle), distance(distance) {}
+PointPolarForm::PointPolarForm(double angle, double distance): angle(angle), distance(distance) {}
 
-float PointPolarForm::getAngle() const {
+double PointPolarForm::getAngle() const {
     return angle;
 }
 
-float PointPolarForm::getDistance() const {
+double PointPolarForm::getDistance() const {
     return distance;
 }

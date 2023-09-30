@@ -8,26 +8,36 @@
 
 #include "../../Sensor/PointRectForm.h"
 #include "../../Sensor/PointPolarForm.h"
-#include "../../Utilities/MathConstants.h"
+#include "math.h"
 
 class Line {
 public:
-    explicit Line();
+    Line();
     void addRecPointFromPolar(double theta,double d);
-    double perpendicularDistance(PointPolarForm point);
-
+    double perpendicularDistance(PointPolarForm *point);
+    void updateOriginLineNormal();
 private:
     // line in normal form from origo.
     double alfa;
+public:
+    double getAlfa() const;
+
+    void setAlfa(double alfa);
+
+    double getR() const;
+
+    void setR(double r);
+
+private:
     double r;
     // line in slope form from first and last point
     double m;
     double b;
     //
-    PointRectForm* points[700];
+    std::vector<PointRectForm> points;
     int pointsNum;
     void reset();
-    void updateOriginLineNormal();
+
     void updateSlopeForm();
     double getXFromPolarForm(double theta, double d);
     double getYFromPolarForm(double theta, double d);
