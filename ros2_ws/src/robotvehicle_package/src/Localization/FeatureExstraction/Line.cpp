@@ -15,6 +15,11 @@ void Line::addRecPointFromPolar(double theta, double d) {
     points.at(pointsNum).set(getXFromPolarForm(theta,d), getYFromPolarForm(theta,d));
     pointsNum++;
 }
+
+void Line::addRecPoint(double x, double y) {
+    points.at(pointsNum).set(x,y);
+}
+
 void Line::reset() {
     pointsNum=0;
 }

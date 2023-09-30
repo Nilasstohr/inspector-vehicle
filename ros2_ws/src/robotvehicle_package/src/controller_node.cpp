@@ -10,6 +10,8 @@
 #include "Sensor/PointRectForm.h"
 #include "Localization/Observations.h"
 #include "Utilities/MathConversions.h"
+#include "Localization/MeasurementPrediction.h"
+#include "Localization/TestMap.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -182,6 +184,8 @@ int main(int argc, char ** argv)
     PredictionDifferentialDrive * differentialDrive =
             new PredictionDifferentialDrive();
 
+
+    // for prediction step
     MatrixXd pEst(3, 3);
     double sigmaXY = 2; // cm
     double sigmaTheta = MathConversions::deg2rad(2); // degrees;
@@ -191,6 +195,16 @@ int main(int argc, char ** argv)
     Vector3d xEst(40,40,0);
     //printMatrix(pEstLast,"pEst");
     //printVector(xEstLast,"xEst");
+
+    // for observations step
+    double eps = 1;
+    MatrixXd R(2, 2);
+    R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
+    R(1, 0)= 0; R(1, 1)= pow(2,2);
+    Observations *observations = new Observations(eps,R);
+
+    TestMap * testMap = new TestMap();
+    MeasurementPrediction *measurementPrediction = new MeasurementPrediction(testMap->getMap());
 
     double sl[27];
     double sr[27];
@@ -233,14 +247,7 @@ int main(int argc, char ** argv)
         std::cout <<std::endl;
     }
     */
-    double eps = 1;
 
-    MatrixXd R(2, 2);
-    R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
-    R(1, 0)= 0; R(1, 1)= pow(2,2);
-
-
-    Observations *observations = new Observations(eps,R);
     std::vector<PointPolarForm> scan;
     scan.push_back(PointPolarForm(MathConversions::deg2rad(-179.824+180),0.8380*100));
     scan.push_back(PointPolarForm(MathConversions::deg2rad(-179.258+180),0.8400*100));
@@ -837,14 +844,31 @@ int main(int argc, char ** argv)
     }
     */
 
-    observations->update(&scan,scan.size());
+    //observations->update(&scan,scan.size());
 
+    /*
     Line * line;
     for(int i=0; i<observations->getLineNum(); i++){
         line = observations->getLineByIndex(i);
         line->updateOriginLineNormal();
         std::cout << line->getAlfa() << " " << line->getR() << std::endl;
     }
+    */
+
+
+    for(int i=0; i<26; i++){
+        differentialDrive->update(sl[i],sr[i],xEst,pEst);
+        xEst = differentialDrive->getXEstLast();
+        pEst = differentialDrive->getPEstLast();
+
+        std::cout <<xEst(0);
+        std::cout <<" ";
+        std::cout <<xEst(1);
+        std::cout <<std::endl;
+    }
+
+
+
 
     /*
     serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
