@@ -5,6 +5,7 @@
 #include "TestMap.h"
 
 TestMap::TestMap() {
+
     double d = 124.4;
     double t = 1.6;
     double uncertainty = 0.1;
@@ -20,12 +21,16 @@ TestMap::TestMap() {
     Line line4;
     line4.addRecPoint(0+uncertainty,0);
     line4.addRecPoint(0,d-2*t);
-    lines.push_back(line1);
-    lines.push_back(line2);
-    lines.push_back(line3);
-    lines.push_back(line4);
+    line1.updateOriginLineNormal();
+    line2.updateOriginLineNormal();
+    line3.updateOriginLineNormal();
+    line4.updateOriginLineNormal();
+    lineStack.add(&line1);
+    lineStack.add(&line2);
+    lineStack.add(&line3);
+    lineStack.add(&line4);
 }
 
-const std::vector<Line> *TestMap::getMap() {
-    return &lines;
+LineStack *TestMap::getMap() {
+    return &lineStack;
 }

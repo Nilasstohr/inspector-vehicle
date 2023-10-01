@@ -8,14 +8,14 @@
 
 #include <vector>
 #include "FeatureExstraction/Line.h"
+#include "FeatureExstraction/LineStack.h"
 
 class TestMap {
 public:
     TestMap();
-    const std::vector<Line> * getMap();
+    LineStack * getMap();
 private:
-    std::vector<Line> lines;
-
+    LineStack lineStack = LineStack(4);
 };
 
 

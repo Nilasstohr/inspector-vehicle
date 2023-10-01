@@ -6,14 +6,21 @@
 #define ROBOTVEHICLE_PACKAGE_MEASUREMENTPREDICTION_H
 
 #include "FeatureExstraction/Line.h"
+#include "PredictionDifferentialDrive.h"
+#include "FeatureExstraction/LineStack.h"
+#include "HStack.h"
 
 class MeasurementPrediction {
 public:
 
-    MeasurementPrediction(const std::vector<Line> *lines);
+    MeasurementPrediction(const LineStack *lines);
+    void update(const PredictionDifferentialDrive *  prediction);
+
 private:
-    std::vector<Line> *linesW;
-    std::vector<Line> *linesR;
+    const LineStack *linesW;
+    LineStack *linesR;
+    HStack *hStack;
+    MatrixXd H;
 };
 
 

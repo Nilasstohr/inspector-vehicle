@@ -17,20 +17,14 @@ public:
     void addRecPoint(double x, double y);
     double perpendicularDistance(PointPolarForm *point);
     void updateOriginLineNormal();
+    double getAlfa() const;
+    void setAlfa(double alfa);
+    double getR() const;
+    void setR(double r);
 private:
     // line in normal form from origo.
-    double alfa;
-public:
-    double getAlfa() const;
-
-    void setAlfa(double alfa);
-
-    double getR() const;
-
-    void setR(double r);
-
-private:
     double r;
+    double alfa;
     // line in slope form from first and last point
     double m;
     double b;

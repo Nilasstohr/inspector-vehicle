@@ -17,8 +17,8 @@ public:
     void update(double sl, double sr, Vector3d xt, MatrixXd pt);
     void printMatrix(MatrixXd matrix, char *name);
     void printVector(Vector3d vector,char* name);
-    const Vector3d getXEstLast() const;
-    const MatrixXd getPEstLast() const;
+    const Vector3d *getXEstLast() const;
+    const MatrixXd *getPEstLast() const;
 
 private:
     double slLast;

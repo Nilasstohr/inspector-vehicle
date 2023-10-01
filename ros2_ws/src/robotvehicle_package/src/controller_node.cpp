@@ -848,14 +848,14 @@ int main(int argc, char ** argv)
 
     /*
     Line * line;
-    for(int i=0; i<observations->getLineNum(); i++){
+    for(int i=0; i<observations->size(); i++){
         line = observations->getLineByIndex(i);
         line->updateOriginLineNormal();
         std::cout << line->getAlfa() << " " << line->getR() << std::endl;
     }
     */
 
-
+/*
     for(int i=0; i<26; i++){
         differentialDrive->update(sl[i],sr[i],xEst,pEst);
         xEst = differentialDrive->getXEstLast();
@@ -866,7 +866,7 @@ int main(int argc, char ** argv)
         std::cout <<xEst(1);
         std::cout <<std::endl;
     }
-
+*/
 
 
 
