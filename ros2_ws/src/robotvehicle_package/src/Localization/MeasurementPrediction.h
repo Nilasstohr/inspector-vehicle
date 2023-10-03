@@ -10,7 +10,7 @@
 #include "FeatureExstraction/LineStack.h"
 #include "HStack.h"
 
-class MeasurementPrediction {
+class MeasurementPrediction: public MatrixHelper{
 public:
 
     MeasurementPrediction(const LineStack *lines);

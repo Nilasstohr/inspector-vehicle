@@ -5,16 +5,12 @@
 #include <iostream>
 #include "MeasurementPrediction.h"
 
-using namespace std;
-
 MeasurementPrediction::MeasurementPrediction(const LineStack *linesW) {
     this->linesW = linesW;
-    LineStack lines(linesW->size());
-    linesR = &lines;
-    // initilize the H matrix vector with 2 x 3 space.
+    this->linesR = new LineStack(linesW->size());
+    this->hStack = new HStack(linesW->size());
+    // initialize the H matrix vector with 2 x 3 space.
     H = MatrixXd(2,3);
-    hStack = HStack(0, linesW->size());
-
 }
 
 
@@ -27,7 +23,8 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
     double rR;
     for(int j=0; j<linesW->size(); j++){
         alfaW = linesW->getAlfaByIndex(j);
-        rW    = linesW->getRByIndex(j);
+            rW    = linesW->getRByIndex(j);
+
         alfaR = alfaW - prediction->getXEstLast()->z();
         x     = prediction->getXEstLast()->x();
         y     = prediction->getXEstLast()->y();
@@ -39,12 +36,14 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         H(0,2)=-1;
         // row 2
         H(1,0)=-cos(alfaW);
-        H(1,1)=-cos(alfaW);
+        H(1,1)=-sin(alfaW);
         H(1,2)=0;
-
-
+        printMatrix(&H,"H");
+        hStack->add(&H);
 
     }
+    printMatrix(linesR->getStack(),"z_est stacked");
+    printMatrix(hStack->getStack(),"H stacked");
 }
 
 

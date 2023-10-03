@@ -8,13 +8,13 @@
 
 #include "../Utilities/MatrixStackBase.h"
 
-class HStack: private MatrixStackBase{
-
+class HStack: public MatrixStackBase{
 public:
     HStack(int capacity);
     void add(MatrixXd * H);
+    MatrixXd * getHByIndex(int j);
 private:
-    MatrixXd hStack;
+    MatrixXd H;
 };
 
 

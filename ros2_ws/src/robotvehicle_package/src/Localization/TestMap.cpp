@@ -29,6 +29,8 @@ TestMap::TestMap() {
     lineStack.add(&line2);
     lineStack.add(&line3);
     lineStack.add(&line4);
+    printMatrix(lineStack.getStack(), "Line W");
+
 }
 
 LineStack *TestMap::getMap() {

@@ -13,23 +13,6 @@ srLast(0),slLast(0)
 
 }
 
-void PredictionDifferentialDrive::printMatrix(MatrixXd matrix,char * name) {
-    ROS_INFO(name);
-    for(int i=0; i<matrix.rows(); i++){
-        for(int j=0; j<matrix.cols();j++){
-            std::cout <<matrix(i,j);
-            std::cout << " ";
-        }
-        std::cout <<std::endl;
-    }
-}
-
-void PredictionDifferentialDrive::printVector(Eigen::Vector3d vector, char *name) {
-    ROS_INFO(name);
-    for(int i=0; i<3; i++){
-        std::cout <<vector(i)<<std::endl;
-    }
-}
 
 void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, MatrixXd pt) {
 
@@ -38,7 +21,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, Matr
     //setXEstLast(xt);
     //setXEstLast(pt);
 
-    //printVector(xEstLast,"xEstLast");
+    //printVector(&xEstLast,"xEstLast");
 
     double dSl = sl -slLast;
     double dSr = sr -srLast;
@@ -62,7 +45,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, Matr
                                          dS*sin(phi + dPhi/2),
                                          dPhi);
 
-    //printVector(xEst,"xEst");
+    //printVector(&xEst,"xEst");
 
     MatrixXd Fx(3,3);
     Fx(0,0)= 1; Fx(0,1)= 0; Fx(0,2)= -dS*sin(phi + dPhi/2);
@@ -86,7 +69,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, Matr
 
     MatrixXd Pest(3,3);
     Pest = Fx * pEstLast * Fx.transpose() + Fu * Q * Fu.transpose();
-    //printMatrix(Pest,"pEst");
+    //printMatrix(&Pest,"pEst");
     pEstLast = Pest;
     xEstLast = xEst;
 }

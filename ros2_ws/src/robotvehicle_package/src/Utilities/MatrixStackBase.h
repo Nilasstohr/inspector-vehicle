@@ -5,18 +5,21 @@
 #ifndef ROBOTVEHICLE_PACKAGE_MATRIXSTACKBASE_H
 #define ROBOTVEHICLE_PACKAGE_MATRIXSTACKBASE_H
 
-#include <Eigen/Dense>
+#include "MatrixHelper.h"
 
-using Eigen::MatrixXd;
-
-class MatrixStackBase{
+class MatrixStackBase: public MatrixHelper{
 public:
     explicit MatrixStackBase(int capacity);
-    int size();
+    int size() const;
+    void reset();
+    const MatrixXd *const getStack() const;
+    int mapIndexFirst(int i) const;
+    int mapIndexSecond(int i) const;
 protected:
     int stackNum;
     int index;
     int capacity;
+    MatrixXd stack;
 };
 
 

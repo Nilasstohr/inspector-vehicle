@@ -9,15 +9,13 @@
 #include "Line.h"
 #include "../../Utilities/MatrixStackBase.h"
 
-class LineStack: private MatrixStackBase {
+class LineStack: public MatrixStackBase {
 public:
     LineStack(int capacity);
     void   add(Line * line);
     void   add(double alfa,double r);
     double getAlfaByIndex(int j) const;
     double getRByIndex(int j) const;
-private:
-    MatrixXd lineStack;
 };
 
 

@@ -6,17 +6,16 @@
 #define ROBOTVEHICLE_PACKAGE_PREDICTIONDIFFERENTIALDRIVE_H
 
 #include <Eigen/Dense>
+#include "../Utilities/MatrixHelper.h"
 
 using Eigen::MatrixXd;
 using Eigen::Matrix;
 using Eigen::Vector3d;
 
-class PredictionDifferentialDrive {
+class PredictionDifferentialDrive: MatrixHelper{
 public:
     PredictionDifferentialDrive();
     void update(double sl, double sr, Vector3d xt, MatrixXd pt);
-    void printMatrix(MatrixXd matrix, char *name);
-    void printVector(Vector3d vector,char* name);
     const Vector3d *getXEstLast() const;
     const MatrixXd *getPEstLast() const;
 

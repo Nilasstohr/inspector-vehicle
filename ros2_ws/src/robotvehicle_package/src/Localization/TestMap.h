@@ -10,7 +10,7 @@
 #include "FeatureExstraction/Line.h"
 #include "FeatureExstraction/LineStack.h"
 
-class TestMap {
+class TestMap: public MatrixHelper{
 public:
     TestMap();
     LineStack * getMap();
