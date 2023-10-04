@@ -4,7 +4,7 @@
 
 #include "LineStack.h"
 
-LineStack::LineStack(int capacity) :MatrixStackBase(capacity){
+LineStack::LineStack(int capacity) :MatrixStackBase(capacity,2){
     stack = MatrixXd(this->capacity * 2, 1);
 }
 

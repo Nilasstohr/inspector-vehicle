@@ -12,8 +12,8 @@ Incremental::Incremental(double esp) :
         currentPointIndex(0),
         scanPointsNum(0)
 {
-    std::vector<Line> lines(100);
-    this->lines = lines;
+    this->lines = new LineStack(50);
+    this->line = new Line();
 }
 
 int Incremental::getLineNum() {
@@ -33,12 +33,12 @@ void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {
 }
 
 void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
-    Line *line = &lines.at(lineNum);
     // add first to point to line;
     addPointToLine(line,scan->at(next()));
     addPointToLine(line,scan->at(next()));
     // make sure that there are at least 1 to process to continue
     if(!pointToProcess()){
+        addLine(line);
         lineNum++;
         return;
     }
@@ -48,11 +48,13 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
         if(line->perpendicularDistance(point) < esp ){
             addPointToLine(line,*point);
             if(!pointToProcess()){
+                addLine(line);
                 lineNum++;
                 return;
             }
         }
         else{
+            addLine(line);
             lineNum++;
             if(!pointToProcess()){
                 return;
@@ -69,6 +71,12 @@ void Incremental::addPointToLine(Line *line, PointPolarForm point) {
     line->addRecPointFromPolar(point.getAngle(),point.getDistance());
 }
 
+void Incremental::addLine(Line *line) {
+    line->updateOriginLineNormal();
+    lines->add(line->getAlfa(), line->getR());
+    line->reset();
+}
+
 int Incremental::next() {
     return currentPointIndex++;
 }
@@ -81,6 +89,6 @@ int Incremental::current() {
     return currentPointIndex;
 }
 
-std::vector<Line> *Incremental::getLines() {
-    return &lines;
+LineStack *Incremental::getLineStack() {
+    return lines;
 }

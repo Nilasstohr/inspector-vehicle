@@ -9,16 +9,18 @@
 
 class MatrixStackBase: public MatrixHelper{
 public:
-    explicit MatrixStackBase(int capacity);
+    explicit MatrixStackBase(int capacity,int subSetRowsNum);
     int size() const;
     void reset();
     const MatrixXd *const getStack() const;
     int mapIndexFirst(int i) const;
     int mapIndexSecond(int i) const;
+    void printMatrix(char *name);
 protected:
     int stackNum;
     int index;
     int capacity;
+    int subSetRowsNum;
     MatrixXd stack;
 };
 

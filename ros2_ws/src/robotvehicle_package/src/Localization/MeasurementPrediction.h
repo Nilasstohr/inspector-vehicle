@@ -18,7 +18,7 @@ public:
 
 private:
     const LineStack *linesW;
-    LineStack *linesR;
+    LineStack *z_est;
     HStack *hStack;
     MatrixXd H;
 };

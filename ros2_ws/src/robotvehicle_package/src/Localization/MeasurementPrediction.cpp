@@ -7,7 +7,7 @@
 
 MeasurementPrediction::MeasurementPrediction(const LineStack *linesW) {
     this->linesW = linesW;
-    this->linesR = new LineStack(linesW->size());
+    this->z_est = new LineStack(linesW->size());
     this->hStack = new HStack(linesW->size());
     // initialize the H matrix vector with 2 x 3 space.
     H = MatrixXd(2,3);
@@ -29,7 +29,7 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         x     = prediction->getXEstLast()->x();
         y     = prediction->getXEstLast()->y();
         rR    = rW - ( x*cos(alfaW)+y*sin(alfaW) );
-        linesR->add(alfaR,rR);
+        z_est->add(alfaR, rR);
         // row 1
         H(0,0)=0;
         H(0,1)=0;
@@ -42,8 +42,8 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         hStack->add(&H);
 
     }
-    printMatrix(linesR->getStack(),"z_est stacked");
-    printMatrix(hStack->getStack(),"H stacked");
+    z_est->printMatrix("z_est stacked");
+    hStack->printMatrix("H stacked");
 }
 
 

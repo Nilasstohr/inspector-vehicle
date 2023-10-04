@@ -4,8 +4,8 @@
 
 #include "MatrixStackBase.h"
 
-MatrixStackBase::MatrixStackBase(int capacity) :
-capacity(capacity),stackNum(0),index(0){}
+MatrixStackBase::MatrixStackBase(int capacity,int subSetRowsNum) :
+capacity(capacity),stackNum(0),index(0),subSetRowsNum(subSetRowsNum){}
 
 int MatrixStackBase::size() const {
     return stackNum;
@@ -21,9 +21,13 @@ const MatrixXd *const MatrixStackBase::getStack() const{
 }
 
 int MatrixStackBase::mapIndexFirst(int i) const {
-    return 2*i;
+    return subSetRowsNum*i;
 }
 
 int MatrixStackBase::mapIndexSecond(int i) const {
-    return 2*i+1;
+    return subSetRowsNum*i+1;
+}
+
+void MatrixStackBase::printMatrix(char *name) {
+    MatrixHelper::printMatrix(&stack,name);
 }

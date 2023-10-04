@@ -21,6 +21,9 @@ public:
     void setAlfa(double alfa);
     double getR() const;
     void setR(double r);
+
+    void reset();
+
 private:
     // line in normal form from origo.
     double r;
@@ -31,7 +34,6 @@ private:
     //
     std::vector<PointRectForm> points;
     int pointsNum;
-    void reset();
 
     void updateSlopeForm();
     double getXFromPolarForm(double theta, double d);

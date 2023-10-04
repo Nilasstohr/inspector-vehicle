@@ -8,19 +8,22 @@
 #include <vector>
 #include "Line.h"
 #include "../../Sensor/PointPolarForm.h"
+#include "LineStack.h"
 
 class Incremental{
 public:
     explicit Incremental(double d);
     int getLineNum();
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
-    std::vector<Line> * getLines();
+    LineStack * getLineStack();
 private:
-    std::vector<Line> lines;
+    Line * line;
+    LineStack *lines;
     int lineNum;
     int scanPointsNum;
     double esp;
     void reset();
+    void addLine(Line * line);
     void executeAlgoritm(std::vector<PointPolarForm> *scan);
 
     void addPointToLine(Line *line,PointPolarForm point);

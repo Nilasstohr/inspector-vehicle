@@ -236,18 +236,6 @@ int main(int argc, char ** argv)
     sl[25]=38.32; sr[25]=38.30;
     sl[26]=39.99; sr[26]=39.89;
 
-
-    for(int i=0; i<26; i++){
-        differentialDrive->update(sl[i],sr[i],xEst,pEst);
-        measurementPrediction->update(differentialDrive);
-        xEst = *differentialDrive->getXEstLast();
-        pEst = *differentialDrive->getPEstLast();
-        std::cout <<xEst(0);
-        std::cout <<" ";
-        std::cout <<xEst(1);
-        std::cout <<std::endl;
-    }
-
     std::vector<PointPolarForm> scan;
     scan.push_back(PointPolarForm(MathConversions::deg2rad(-179.824+180),0.8380*100));
     scan.push_back(PointPolarForm(MathConversions::deg2rad(-179.258+180),0.8400*100));
@@ -844,17 +832,29 @@ int main(int argc, char ** argv)
     }
     */
 
-    //observations->update(&scan,scan.size());
-
     /*
-    Line * line;
-    for(int i=0; i<observations->size(); i++){
-        line = observations->getLineByIndex(i);
-        line->updateOriginLineNormal();
-        std::cout << line->getAlfa() << " " << line->getR() << std::endl;
-    }
-    */
+    observations->update(&scan,scan.size());
 
+    double alfa;
+    double r;
+    for(int i=0; i<observations->getLineNum(); i++){
+        alfa = observations->getLinesStack()->getAlfaByIndex(i);
+        r = observations->getLinesStack()->getRByIndex(i);
+        std::cout << alfa << " " << r << std::endl;
+    }
+    observations->printLineStack();
+*/
+    for(int i=0; i<26; i++){
+        differentialDrive->update(sl[i],sr[i],xEst,pEst);
+        measurementPrediction->update(differentialDrive);
+        observations->update(&scan,scan.size());
+        xEst = *differentialDrive->getXEstLast();
+        pEst = *differentialDrive->getPEstLast();
+        std::cout <<xEst(0);
+        std::cout <<" ";
+        std::cout <<xEst(1);
+        std::cout <<std::endl;
+    }
 /*
     for(int i=0; i<26; i++){
         differentialDrive->update(sl[i],sr[i],xEst,pEst);

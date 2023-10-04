@@ -12,11 +12,14 @@ void Observations::update(std::vector<PointPolarForm> *scan, int scanPointsNum) 
     incremental->update(scan,scanPointsNum);
 }
 
-Line *Observations::getLineByIndex(int index) {
-    return &incremental->getLines()->at(index);
-}
-
 int Observations::getLineNum() {
     return incremental->getLineNum();
 }
 
+LineStack *Observations::getLinesStack() {
+    return incremental->getLineStack();
+}
+
+void Observations::printLineStack() {
+    getLinesStack()->printMatrix("z");
+}

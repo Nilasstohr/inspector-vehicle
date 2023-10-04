@@ -4,7 +4,7 @@
 
 #include "HStack.h"
 
-HStack::HStack(int capacity) : MatrixStackBase(capacity) {
+HStack::HStack(int capacity) : MatrixStackBase(capacity,2) {
     stack = MatrixXd(this->capacity * 2, 3);
 }
 
