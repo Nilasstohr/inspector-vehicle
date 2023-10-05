@@ -14,8 +14,12 @@ public:
     LineStack(int capacity);
     void   add(Line * line);
     void   add(double alfa,double r);
+    void   add(const MatrixXd* line);
     double getAlfaByIndex(int j) const;
     double getRByIndex(int j) const;
+    const MatrixXd  *getLine();
+private:
+    MatrixXd * line;
 };
 
 

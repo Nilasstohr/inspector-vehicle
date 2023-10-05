@@ -38,12 +38,12 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         H(1,0)=-cos(alfaW);
         H(1,1)=-sin(alfaW);
         H(1,2)=0;
-        printMatrix(&H,"H");
+  //      printMatrix(&H,"H");
         hStack->add(&H);
 
     }
-    z_est->printMatrix("z_est stacked");
-    hStack->printMatrix("H stacked");
+    z_est->printMatrix("----z_est stacked----");
+    hStack->printMatrix("----H stacked----");
 }
 
 

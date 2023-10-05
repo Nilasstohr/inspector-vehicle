@@ -10,6 +10,7 @@ Observations::Observations(double eps, const MatrixXd &r) : esp(eps), R(r) {
 
 void Observations::update(std::vector<PointPolarForm> *scan, int scanPointsNum) {
     incremental->update(scan,scanPointsNum);
+    printLineStack();
 }
 
 int Observations::getLineNum() {
@@ -21,5 +22,5 @@ LineStack *Observations::getLinesStack() {
 }
 
 void Observations::printLineStack() {
-    getLinesStack()->printMatrix("z");
+    getLinesStack()->printMatrix("----z----");
 }
