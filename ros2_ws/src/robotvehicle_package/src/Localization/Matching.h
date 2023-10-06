@@ -19,6 +19,8 @@ public:
                 const Observations *observations);
 private:
     Matches * matches;
+    MatrixXd vIJ;
+    MatrixXd PIJ;
 };
 
 

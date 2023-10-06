@@ -46,4 +46,14 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
     hStack->printMatrix("----H stacked----");
 }
 
+int MeasurementPrediction::size() const {
+    return z_est->size();
+}
 
+const MatrixXd * MeasurementPrediction::zEst(int j) const {
+    return z_est->getLineByIndex(j);
+}
+
+const MatrixXd *MeasurementPrediction::HEst(int j) const {
+    return hStack->getHByIndex(j);
+}

@@ -4,7 +4,7 @@
 
 #include "Observations.h"
 
-Observations::Observations(double eps, const MatrixXd &r) : esp(eps), R(r) {
+Observations::Observations(double eps, const MatrixXd &r) : esp(eps), R_(r) {
     incremental = new Incremental(eps);
 }
 
@@ -13,14 +13,22 @@ void Observations::update(std::vector<PointPolarForm> *scan, int scanPointsNum) 
     printLineStack();
 }
 
-int Observations::getLineNum() {
-    return incremental->getLineNum();
+int Observations::size() const {
+    return incremental->size();
 }
 
-LineStack *Observations::getLinesStack() {
+LineStack * Observations::getLinesStack() const {
     return incremental->getLineStack();
 }
 
 void Observations::printLineStack() {
     getLinesStack()->printMatrix("----z----");
+}
+
+const MatrixXd * Observations::z(int i) const {
+    return getLinesStack()->getLineByIndex(i);
+}
+
+const MatrixXd *Observations::R() const {
+    return &R_;
 }

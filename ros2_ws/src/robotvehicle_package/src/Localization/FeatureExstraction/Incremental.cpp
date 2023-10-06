@@ -7,7 +7,6 @@
 #define ROS_INFO RCUTILS_LOG_INFO
 
 Incremental::Incremental(double esp) :
-        lineNum(0),
         esp(esp),
         currentPointIndex(0),
         scanPointsNum(0)
@@ -16,12 +15,11 @@ Incremental::Incremental(double esp) :
     this->line = new Line();
 }
 
-int Incremental::getLineNum() {
-    return lineNum ;
+int Incremental::size() {
+    return lines->size() ;
 }
 
 void Incremental::reset() {
-    lineNum=0;
     scanPointsNum=0;
     currentPointIndex=0;
 }
@@ -39,7 +37,6 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
     // make sure that there are at least 1 to process to continue
     if(!pointToProcess()){
         addLine(line);
-        lineNum++;
         return;
     }
     PointPolarForm *point;
@@ -49,13 +46,11 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
             addPointToLine(line,*point);
             if(!pointToProcess()){
                 addLine(line);
-                lineNum++;
                 return;
             }
         }
         else{
             addLine(line);
-            lineNum++;
             if(!pointToProcess()){
                 return;
             }

@@ -6,7 +6,7 @@
 
 LineStack::LineStack(int capacity) :MatrixStackBase(capacity,2){
     stack = MatrixXd(this->capacity * 2, 1);
-    line = new MatrixXd(2,1);
+    line = MatrixXd(2,1);
 }
 
 void LineStack::add(Line *line) {
@@ -34,6 +34,8 @@ double LineStack::getRByIndex(int j) const{
     return stack(mapIndexSecond(j), 0);
 }
 
-const MatrixXd *LineStack::getLine() {
-    return line;
+const MatrixXd *LineStack::getLineByIndex(int j) {
+    line(0,0)= getAlfaByIndex(j);
+    line(1,0)= getRByIndex(j);
+    return &line;
 }

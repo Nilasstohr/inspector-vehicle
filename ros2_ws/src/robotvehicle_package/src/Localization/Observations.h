@@ -17,14 +17,16 @@ class Observations{
 public:
     Observations(double eps, const MatrixXd &r);
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
-    LineStack *getLinesStack();
-    int getLineNum();
+    LineStack * getLinesStack() const;
+    const MatrixXd * z(int i) const;
+    const MatrixXd * R() const;
+    int size() const;
     void printLineStack();
 
 private:
     Incremental * incremental;
     double esp;
-    MatrixXd R;
+    MatrixXd R_;
 };
 
 

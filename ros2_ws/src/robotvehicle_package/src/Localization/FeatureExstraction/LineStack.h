@@ -17,9 +17,9 @@ public:
     void   add(const MatrixXd* line);
     double getAlfaByIndex(int j) const;
     double getRByIndex(int j) const;
-    const MatrixXd  *getLine();
+    const MatrixXd  *getLineByIndex(int j);
 private:
-    MatrixXd * line;
+    MatrixXd line;
 };
 
 

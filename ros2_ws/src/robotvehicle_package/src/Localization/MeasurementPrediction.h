@@ -15,7 +15,9 @@ public:
 
     MeasurementPrediction(const LineStack *lines);
     void update(const PredictionDifferentialDrive *  prediction);
-
+    const MatrixXd * zEst(int j) const;
+    const MatrixXd * HEst(int j) const;
+    int size() const;
 private:
     const LineStack *linesW;
     LineStack *z_est;

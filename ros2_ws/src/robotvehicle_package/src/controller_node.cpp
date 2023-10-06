@@ -837,7 +837,7 @@ int main(int argc, char ** argv)
 
     double alfa;
     double r;
-    for(int i=0; i<observations->getLineNum(); i++){
+    for(int i=0; i<observations->size(); i++){
         alfa = observations->getLinesStack()->getAlfaByIndex(i);
         r = observations->getLinesStack()->getRByIndex(i);
         std::cout << alfa << " " << r << std::endl;

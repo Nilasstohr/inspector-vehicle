@@ -13,13 +13,12 @@
 class Incremental{
 public:
     explicit Incremental(double d);
-    int getLineNum();
+    int size();
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
     LineStack * getLineStack();
 private:
     Line * line;
     LineStack *lines;
-    int lineNum;
     int scanPointsNum;
     double esp;
     void reset();
