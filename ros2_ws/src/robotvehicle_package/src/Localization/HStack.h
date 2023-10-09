@@ -11,7 +11,7 @@
 class HStack: public MatrixStackBase{
 public:
     HStack(int capacity);
-    void add(MatrixXd * H);
+    void add(const MatrixXd * H);
     MatrixXd * getHByIndex(int j);
 private:
     MatrixXd H;

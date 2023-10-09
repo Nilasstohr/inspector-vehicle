@@ -16,12 +16,15 @@ public:
     int size();
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
     LineStack * getLineStack();
+
+    void reset();
+
 private:
     Line * line;
     LineStack *lines;
     int scanPointsNum;
     double esp;
-    void reset();
+
     void addLine(Line * line);
     void executeAlgoritm(std::vector<PointPolarForm> *scan);
 

@@ -8,6 +8,7 @@
 #include "FeatureExstraction/Incremental.h"
 #include "FeatureExstraction/LineStack.h"
 #include "../Sensor/PointPolarForm.h"
+#include "RStack.h"
 #include <Eigen/Dense>
 #include <vector>
 
@@ -22,11 +23,12 @@ public:
     const MatrixXd * R() const;
     int size() const;
     void printLineStack();
-
+    void reset();
 private:
     Incremental * incremental;
     double esp;
     MatrixXd R_;
+    RStack *rStack;
 };
 
 

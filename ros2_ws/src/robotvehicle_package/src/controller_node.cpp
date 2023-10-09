@@ -12,6 +12,7 @@
 #include "Utilities/MathConversions.h"
 #include "Localization/MeasurementPrediction.h"
 #include "Localization/TestMap.h"
+#include "Localization/Matching.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -196,6 +197,11 @@ int main(int argc, char ** argv)
     //printMatrix(pEstLast,"pEst");
     //printVector(xEstLast,"xEst");
 
+    // measurement prediction
+    TestMap * testMap = new TestMap();
+    MeasurementPrediction *measurementPrediction = new MeasurementPrediction(testMap->getMap());
+
+
     // for observations step
     double eps = 1;
     MatrixXd R(2, 2);
@@ -203,8 +209,9 @@ int main(int argc, char ** argv)
     R(1, 0)= 0; R(1, 1)= pow(2,2);
     Observations *observations = new Observations(eps,R);
 
-    TestMap * testMap = new TestMap();
-    MeasurementPrediction *measurementPrediction = new MeasurementPrediction(testMap->getMap());
+
+    // matching
+    Matching * matching = new Matching(100);
 
     double sl[27];
     double sr[27];
@@ -848,6 +855,8 @@ int main(int argc, char ** argv)
         differentialDrive->update(sl[i],sr[i],xEst,pEst);
         measurementPrediction->update(differentialDrive);
         observations->update(&scan,scan.size());
+        matching->update(differentialDrive,measurementPrediction,observations);
+
         xEst = *differentialDrive->getXEstLast();
         pEst = *differentialDrive->getPEstLast();
         std::cout <<xEst(0);

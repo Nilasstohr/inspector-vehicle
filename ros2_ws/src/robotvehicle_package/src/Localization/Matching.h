@@ -10,7 +10,7 @@
 #include "Observations.h"
 #include "Matches.h"
 
-class Matching {
+class Matching: MatrixHelper {
 public:
     Matching(int capacity);
 
@@ -21,6 +21,7 @@ private:
     Matches * matches;
     MatrixXd vIJ;
     MatrixXd PIJ;
+    double g;
 };
 
 

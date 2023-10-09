@@ -11,11 +11,20 @@
 class Matches {
 public:
     Matches(int capacity);
+    void add(const MatrixXd * vIJ, const MatrixXd *HIJ);
+    void reset();
+    void addPEst(const MatrixXd *PEst);
+    const MatrixXd * getPEst();
+    const MatrixXd * getHt();
+    const MatrixXd * getVt();
+    void addXEst(const Vector3d *pMatrix);
+
 private:
-    HStack    *hStack;
-    LineStack *z;
-    LineStack *zEst;
-    MatrixXd  *pEst;
+    HStack    *Ht;
+    LineStack *vt;
+    const MatrixXd  *PEst;
+    const Vector3d *xEst;
+    int matchCount;
 };
 
 
