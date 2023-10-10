@@ -16,15 +16,15 @@ class PredictionDifferentialDrive: MatrixHelper{
 public:
     PredictionDifferentialDrive();
     void update(double sl, double sr, Vector3d xt, MatrixXd pt);
-    const Vector3d *getXEstLast() const;
+    const MatrixXd *getXEstLast() const;
     const MatrixXd *getPEstLast() const;
 
 private:
     double slLast;
     double srLast;
-    Vector3d xEstLast;
+    MatrixXd xEstLast;
     MatrixXd pEstLast;
-    void setXEstLast(const Vector3d xEstLast);
+    void setXEstLast(const MatrixXd xEstLast);
     void setPEstLast(const MatrixXd pEstLast);
     void copyMatrix(const MatrixXd copyFrom,MatrixXd &copyTo);
     void copy3dVector(const Vector3d copyFrom,Vector3d copyTo);

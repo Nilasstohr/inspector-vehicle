@@ -6,14 +6,15 @@
 #include "RStack.h"
 
 RStack::RStack(int capacity): indexR(0){
-    Rt = MatrixXd(capacity,capacity);
+    Rt = MatrixXd(2*capacity,2*capacity);
+    init();
 }
 
-void RStack::add(MatrixXd *R) {
-    //MatrixHelper::printMatrix(R,"R");
+void RStack::add(const MatrixXd *R) {
+    //MatrixHelper::printMatrix(Rt,"Rt");
     for(int i=0; i<R->rows(); i++){
         for(int j=0; j<R->cols(); j++){
-      //      cout << R->coeff(i , j) << " " << endl;
+      //      cout << Rt->coeff(i , j) << " " << endl;
             Rt(i+indexR,j+indexR)=R->coeff(i , j);
         }
     }
@@ -29,6 +30,19 @@ void RStack::reset() {
 
 void RStack::printMatrix() {
     MatrixHelper::printMatrix(&Rt,"Rt");
+}
+
+const MatrixXd *RStack::getRt() {
+    return &Rt;
+}
+
+void RStack::init() {
+    for(int i=0; i<Rt.rows(); i++){
+        for(int j=0; j<Rt.cols(); j++){
+            //      cout << Rt->coeff(i , j) << " " << endl;
+            Rt(i,j)=0;
+        }
+    }
 }
 
 

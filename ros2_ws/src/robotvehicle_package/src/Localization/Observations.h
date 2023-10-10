@@ -28,7 +28,6 @@ private:
     Incremental * incremental;
     double esp;
     MatrixXd R_;
-    RStack *rStack;
 };
 
 

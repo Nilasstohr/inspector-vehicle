@@ -13,6 +13,7 @@
 #include "Localization/MeasurementPrediction.h"
 #include "Localization/TestMap.h"
 #include "Localization/Matching.h"
+#include "Localization/Estimation.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -211,7 +212,10 @@ int main(int argc, char ** argv)
 
 
     // matching
-    Matching * matching = new Matching(100);
+    Matching * matching = new Matching(15);
+
+    // Estimation
+    Estimation *estimation = new Estimation();
 
     double sl[27];
     double sr[27];
@@ -856,7 +860,7 @@ int main(int argc, char ** argv)
         measurementPrediction->update(differentialDrive);
         observations->update(&scan,scan.size());
         matching->update(differentialDrive,measurementPrediction,observations);
-
+        estimation->update(matching);
         xEst = *differentialDrive->getXEstLast();
         pEst = *differentialDrive->getPEstLast();
         std::cout <<xEst(0);

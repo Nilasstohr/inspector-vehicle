@@ -17,6 +17,7 @@ public:
     void update(const PredictionDifferentialDrive* prediction,
                 const MeasurementPrediction* measurementPrediction,
                 const Observations *observations);
+    const Matches * getMatches();
 private:
     Matches * matches;
     MatrixXd vIJ;

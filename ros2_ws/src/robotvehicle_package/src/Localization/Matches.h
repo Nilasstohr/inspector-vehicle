@@ -7,24 +7,30 @@
 
 #include "HStack.h"
 #include "FeatureExstraction/LineStack.h"
+#include "RStack.h"
 
-class Matches {
+class Matches: MatrixHelper {
 public:
     Matches(int capacity);
-    void add(const MatrixXd * vIJ, const MatrixXd *HIJ);
+    void add(const MatrixXd *vIJ, const MatrixXd *HIJ, const MatrixXd *R);
     void reset();
     void addPEst(const MatrixXd *PEst);
-    const MatrixXd * getPEst();
-    const MatrixXd * getHt();
-    const MatrixXd * getVt();
-    void addXEst(const Vector3d *pMatrix);
+    const MatrixXd * getPEst() const;
+    const MatrixXd * getXEst() const;
+    const MatrixXd * getHt() const;
+    const MatrixXd * getVt() const;
+    const MatrixXd * getRt() const;
+    void addXEst(const MatrixXd *xEst);
 
 private:
     HStack    *Ht;
     LineStack *vt;
+    RStack *Rt;
     const MatrixXd  *PEst;
-    const Vector3d *xEst;
+    const MatrixXd *xEst;
     int matchCount;
+
+
 };
 
 

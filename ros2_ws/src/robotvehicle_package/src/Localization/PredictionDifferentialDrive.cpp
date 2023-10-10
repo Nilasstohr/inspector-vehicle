@@ -74,7 +74,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, Matr
     xEstLast = xEst;
 }
 
-const Vector3d *PredictionDifferentialDrive::getXEstLast() const {
+const MatrixXd *PredictionDifferentialDrive::getXEstLast() const {
     return &xEstLast;
 }
 
@@ -82,8 +82,8 @@ const MatrixXd * PredictionDifferentialDrive::getPEstLast() const {
     return &pEstLast;
 }
 
-void PredictionDifferentialDrive::setXEstLast(const Vector3d xEstLast) {
-    copy3dVector(xEstLast,this->xEstLast);
+void PredictionDifferentialDrive::setXEstLast(const MatrixXd xEstLast) {
+    copyMatrix(xEstLast,this->xEstLast);
 }
 
 void PredictionDifferentialDrive::setPEstLast( MatrixXd pEstLast) {

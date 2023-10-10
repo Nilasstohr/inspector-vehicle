@@ -2,6 +2,7 @@
 // Created by robot1 on 10/9/23.
 //
 
+#include <iostream>
 #include "Estimation.h"
 
 Estimation::Estimation() {
@@ -9,16 +10,32 @@ Estimation::Estimation() {
     Pt = new MatrixXd(3,3);
 }
 
-void Estimation::update(Matches *matches) {
-    printMatrix(matches->)
+void Estimation::update(Matching *matching) {
+    const MatrixXd *Rt = matching->getMatches()->getRt();
+    const MatrixXd *Ht = matching->getMatches()->getHt();
+    const MatrixXd *vt = matching->getMatches()->getVt();
+    const MatrixXd *PtEst = matching->getMatches()->getPEst();
+    const Vector3d  *xEst  = matching->getMatches()->getXEst();
+
+    printMatrix(Rt,"Rt");
+    printMatrix(Ht,"Ht");
+    printMatrix(vt,"vt");
+    cout << "Rt size " <<  Rt->rows() << " x " << Rt->cols() << endl;
+    cout << "Ht size " <<  Ht->rows() << " x " << Ht->cols() << endl;
+    cout << "vt size " <<  vt->rows() << " x " << vt->cols() << endl;
+
+    MatrixXd PtIN = *Ht * *PtEst * Ht->transpose() + *Rt;
+    MatrixXd Kt   = *PtEst * Ht->transpose() *PtIN.inverse();
+    //xt     = xEst + Kt * *vt;
+    //Pt     = *PtEst - Kt * PtIN * Kt';
+
+
     /*
     xt_est = validated{i}.xt_est;
     Pt_est = validated{i}.Pt_est;
-    Pt_IN  = obj.Ht * Pt_est * obj.Ht' + obj.Rt;
-    MatrixXd Kt     = Pt_est*obj.Ht'*(Pt_IN)^(-1);
+    PtIN  = obj.Ht * Pt_est * obj.Ht' + obj.Rt;
+    MatrixXd Kt     = Pt_est*obj.Ht'*(PtIN)^(-1);
     xt     = xt_est + Kt*(obj.zt - obj.zt_est);
-    Pt     = Pt_est - Kt * Pt_IN * Kt';
+    Pt     = Pt_est - Kt * PtIN * Kt';
     */
- }
-
-
+}

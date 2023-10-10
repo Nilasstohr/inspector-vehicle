@@ -6,15 +6,11 @@
 
 Observations::Observations(double eps, const MatrixXd &r) : esp(eps), R_(r) {
     incremental = new Incremental(eps);
-    rStack = new RStack(10);
+
 }
 
 void Observations::update(std::vector<PointPolarForm> *scan, int scanPointsNum) {
     incremental->update(scan,scanPointsNum);
-    for(int i=0; i<size(); i++){
-        rStack->add(&R_);
-    }
-    rStack->printMatrix();
     //printLineStack();
 }
 
@@ -40,5 +36,4 @@ const MatrixXd *Observations::R() const {
 
 void Observations::reset() {
     incremental->reset();
-    rStack->reset();
 }

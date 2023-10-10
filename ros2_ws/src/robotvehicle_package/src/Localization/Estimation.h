@@ -6,14 +6,12 @@
 #define ROBOTVEHICLE_PACKAGE_ESTIMATION_H
 
 
-#include "Matches.h"
+#include "Matching.h"
 
 class Estimation: public MatrixHelper{
 public:
     Estimation();
-
-private:
-    void update(Matches * matches);
+    void update(Matching * matching);
 private:
     MatrixXd *xt;
     MatrixXd *Pt;

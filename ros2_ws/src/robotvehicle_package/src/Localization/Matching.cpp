@@ -27,14 +27,19 @@ void Matching::update(
                   *prediction->getPEstLast()      *
                   measurementPrediction->HEst(j)->transpose() +
                   * observations->R();
+            // mahalanobis distance
             d = (vIJ.transpose() * PIJ.inverse() * vIJ).coeff(0,0);
             //cout  << d << endl;
             if(d <= pow(g,2)){
-                matches->add(&vIJ,measurementPrediction->HEst(j));
+                matches->add(&vIJ,measurementPrediction->HEst(j),observations->R());
             }
 
         }
     }
     matches->addXEst(prediction->getXEstLast());
     matches->addPEst(prediction->getPEstLast());
+}
+
+const Matches *Matching::getMatches() {
+    return matches;
 }
