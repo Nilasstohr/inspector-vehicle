@@ -31,3 +31,7 @@ int MatrixStackBase::mapIndexSecond(int i) const {
 void MatrixStackBase::printMatrix(char *name) {
     MatrixHelper::printMatrix(&stack,name);
 }
+
+const MatrixXd MatrixStackBase::getStackBlock(int rowSize,int colSize) {
+    return stack.block(0,0,rowSize,colSize );
+}

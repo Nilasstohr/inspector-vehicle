@@ -14,7 +14,7 @@ public:
     void add(const MatrixXd *R);
     void reset();
     void printMatrix();
-    const MatrixXd * getRt();
+    const MatrixXd getRt();
 private:
     MatrixXd Rt;
     int indexR;

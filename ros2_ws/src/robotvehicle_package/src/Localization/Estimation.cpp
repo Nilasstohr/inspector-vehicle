@@ -6,29 +6,33 @@
 #include "Estimation.h"
 
 Estimation::Estimation() {
-    xt = new MatrixXd(3,1);
-    Pt = new MatrixXd(3,3);
+    xt =  MatrixXd(3,1);
+    Pt =  MatrixXd(3,3);
 }
 
 void Estimation::update(Matching *matching) {
-    const MatrixXd *Rt = matching->getMatches()->getRt();
-    const MatrixXd *Ht = matching->getMatches()->getHt();
-    const MatrixXd *vt = matching->getMatches()->getVt();
+    MatrixXd Rt = matching->getMatches()->getRt();
+    const MatrixXd Ht = matching->getMatches()->getHt();
+    const MatrixXd vt = matching->getMatches()->getVt();
     const MatrixXd *PtEst = matching->getMatches()->getPEst();
-    const Vector3d  *xEst  = matching->getMatches()->getXEst();
+    const MatrixXd *xEst  = matching->getMatches()->getXEst();
 
-    printMatrix(Rt,"Rt");
-    printMatrix(Ht,"Ht");
-    printMatrix(vt,"vt");
-    cout << "Rt size " <<  Rt->rows() << " x " << Rt->cols() << endl;
-    cout << "Ht size " <<  Ht->rows() << " x " << Ht->cols() << endl;
-    cout << "vt size " <<  vt->rows() << " x " << vt->cols() << endl;
+    printMatrix(&Rt,"Rt");
+    printMatrix(&Ht,"Ht");
+    printMatrix(&vt,"vt");
+    cout << "Rt size " <<  Rt.rows() << " x " << Rt.cols() << endl;
+    cout << "Ht size " <<  Ht.rows() << " x " << Ht.cols() << endl;
+    cout << "vt size " <<  vt.rows() << " x " << vt.cols() << endl;
 
-    MatrixXd PtIN = *Ht * *PtEst * Ht->transpose() + *Rt;
-    MatrixXd Kt   = *PtEst * Ht->transpose() *PtIN.inverse();
-    //xt     = xEst + Kt * *vt;
-    //Pt     = *PtEst - Kt * PtIN * Kt';
-
+    MatrixXd PtIN = Ht * *PtEst * Ht.transpose() + Rt;
+    printMatrix(&PtIN,"PtIN");
+    printMatrix(PtEst,"PtEst");
+    MatrixXd Kt   = *PtEst * Ht.transpose() *PtIN.inverse();
+    printMatrix(&Kt,"Kt");
+    xt     =  *xEst + Kt * vt;
+    Pt     = *PtEst - Kt * PtIN * Kt.transpose();
+    printMatrix(&xt,"xt");
+    printMatrix(&Pt,"Pt");
 
     /*
     xt_est = validated{i}.xt_est;

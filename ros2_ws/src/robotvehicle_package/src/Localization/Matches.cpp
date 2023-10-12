@@ -38,18 +38,22 @@ void Matches::addXEst(const MatrixXd *xEst) {
     this->xEst = xEst;
 }
 
-const MatrixXd * Matches::getRt() const {
+const MatrixXd  Matches::getRt() const {
     return Rt->getRt();
 }
 
-const MatrixXd * Matches::getHt() const {
-    return Ht->getStack();
+const MatrixXd  Matches::getHt() const {
+    return Ht->getHt();
 }
 
-const MatrixXd * Matches::getVt() const {
-    return vt->getStack();
+const MatrixXd  Matches::getVt() const {
+    return vt->getLines();
 }
 
 const MatrixXd *Matches::getXEst() const {
     return xEst;
+}
+
+int Matches::getMatchCount() const {
+    return matchCount;
 }

@@ -32,9 +32,10 @@ void RStack::printMatrix() {
     MatrixHelper::printMatrix(&Rt,"Rt");
 }
 
-const MatrixXd *RStack::getRt() {
-    return &Rt;
+const MatrixXd RStack::getRt() {
+    return Rt.block(0,0,indexR,indexR);
 }
+
 
 void RStack::init() {
     for(int i=0; i<Rt.rows(); i++){

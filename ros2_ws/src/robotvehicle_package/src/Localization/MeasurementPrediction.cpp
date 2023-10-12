@@ -25,9 +25,9 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         alfaW = linesW->getAlfaByIndex(j);
             rW    = linesW->getRByIndex(j);
 
-        alfaR = alfaW - prediction->getXEstLast()->z();
-        x     = prediction->getXEstLast()->x();
-        y     = prediction->getXEstLast()->y();
+        alfaR = alfaW - prediction->getTheta();
+        x     = prediction->getX();
+        y     = prediction->getY();
         rR    = rW - ( x*cos(alfaW)+y*sin(alfaW) );
         z_est->add(alfaR, rR);
         // row 1
@@ -42,8 +42,8 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         hStack->add(&H);
 
     }
-    z_est->printMatrix("----z_est stacked----");
-    hStack->printMatrix("----H stacked----");
+    //z_est->printMatrix("----z_est stacked----");
+    //hStack->printMatrix("----H stacked----");
 }
 
 int MeasurementPrediction::size() const {

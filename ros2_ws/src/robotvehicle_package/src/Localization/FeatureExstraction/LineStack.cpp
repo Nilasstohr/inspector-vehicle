@@ -39,3 +39,7 @@ const MatrixXd *LineStack::getLineByIndex(int j) {
     line(1,0)= getRByIndex(j);
     return &line;
 }
+
+const MatrixXd LineStack::getLines() {
+    return stack.block(0,0,index,1);
+}

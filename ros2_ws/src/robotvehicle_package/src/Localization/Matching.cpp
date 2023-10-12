@@ -23,10 +23,12 @@ void Matching::update(
     for(int i=0; i< observations->size(); i++){
         for(int j=0; j<measurementPrediction->size(); j++){
             vIJ = *observations->z(i) - *measurementPrediction->zEst(j);
+            //printMatrix(&vIJ,"vIJ");
             PIJ = *measurementPrediction->HEst(j) *
                   *prediction->getPEstLast()      *
                   measurementPrediction->HEst(j)->transpose() +
                   * observations->R();
+            //printMatrix(&PIJ,"PIJ");
             // mahalanobis distance
             d = (vIJ.transpose() * PIJ.inverse() * vIJ).coeff(0,0);
             //cout  << d << endl;
@@ -36,6 +38,7 @@ void Matching::update(
 
         }
     }
+    //printMatrix(matches->getRt(),"R after set");
     matches->addXEst(prediction->getXEstLast());
     matches->addPEst(prediction->getPEstLast());
 }

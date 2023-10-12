@@ -32,3 +32,7 @@ MatrixXd *HStack::getHByIndex(int j) {
     this->H(1,2)=stack(mapIndexSecond(j), 2);
     return &H;
 }
+
+MatrixXd HStack::getHt() {
+    return getStackBlock(index,3);
+}

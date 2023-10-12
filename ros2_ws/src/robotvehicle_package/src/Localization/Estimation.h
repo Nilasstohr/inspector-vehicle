@@ -13,8 +13,8 @@ public:
     Estimation();
     void update(Matching * matching);
 private:
-    MatrixXd *xt;
-    MatrixXd *Pt;
+    MatrixXd xt;
+    MatrixXd Pt;
 };
 
 

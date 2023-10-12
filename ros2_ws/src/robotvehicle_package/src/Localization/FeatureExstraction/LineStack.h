@@ -18,6 +18,7 @@ public:
     double getAlfaByIndex(int j) const;
     double getRByIndex(int j) const;
     const MatrixXd  *getLineByIndex(int j);
+    const MatrixXd getLines();
 private:
     MatrixXd line;
 };

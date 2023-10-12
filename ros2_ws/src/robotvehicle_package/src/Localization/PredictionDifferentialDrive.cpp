@@ -14,7 +14,7 @@ srLast(0),slLast(0)
 }
 
 
-void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, MatrixXd pt) {
+void PredictionDifferentialDrive::update(double sl, double sr, MatrixXd xt, MatrixXd pt) {
 
     xEstLast=xt;
     pEstLast=pt;
@@ -31,7 +31,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, Vector3d xt, Matr
     // distance between wheels in cm
     int b = 27;
     // angle of robot
-    double phi = xEstLast.z();
+    double phi = xEstLast.coeff(3,1);
     // Q covariance constants
     double kl  = 0.10;
     double kr  = 0.10;
@@ -103,4 +103,16 @@ void PredictionDifferentialDrive::copy3dVector(const Vector3d copyFrom, Eigen::V
     for(int i=0; i<3; i++){
         copyTo(i)=copyFrom(i);
     }
+}
+
+double PredictionDifferentialDrive::getX() const {
+    return getXEstLast()->coeff(0,0);
+}
+
+double PredictionDifferentialDrive::getY() const {
+    return getXEstLast()->coeff(1,0);
+}
+
+double PredictionDifferentialDrive::getTheta() const {
+    return getXEstLast()->coeff(2,0);
 }

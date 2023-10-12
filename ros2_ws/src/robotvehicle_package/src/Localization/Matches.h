@@ -17,11 +17,11 @@ public:
     void addPEst(const MatrixXd *PEst);
     const MatrixXd * getPEst() const;
     const MatrixXd * getXEst() const;
-    const MatrixXd * getHt() const;
-    const MatrixXd * getVt() const;
-    const MatrixXd * getRt() const;
+    const MatrixXd  getHt() const;
+    const MatrixXd  getVt() const;
+    const MatrixXd  getRt() const;
     void addXEst(const MatrixXd *xEst);
-
+    int getMatchCount() const;
 private:
     HStack    *Ht;
     LineStack *vt;

@@ -13,6 +13,7 @@ public:
     HStack(int capacity);
     void add(const MatrixXd * H);
     MatrixXd * getHByIndex(int j);
+    MatrixXd getHt();
 private:
     MatrixXd H;
 };
