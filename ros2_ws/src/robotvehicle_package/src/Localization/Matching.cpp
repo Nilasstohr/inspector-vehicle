@@ -25,7 +25,7 @@ void Matching::update(
             vIJ = *observations->z(i) - *measurementPrediction->zEst(j);
             //printMatrix(&vIJ,"vIJ");
             PIJ = *measurementPrediction->HEst(j) *
-                  *prediction->getPEstLast()      *
+                  *prediction->getPEst() *
                   measurementPrediction->HEst(j)->transpose() +
                   * observations->R();
             //printMatrix(&PIJ,"PIJ");
@@ -39,10 +39,14 @@ void Matching::update(
         }
     }
     //printMatrix(matches->getRt(),"R after set");
-    matches->addXEst(prediction->getXEstLast());
-    matches->addPEst(prediction->getPEstLast());
+    matches->addXEst(prediction->getXEst());
+    matches->addPEst(prediction->getPEst());
 }
 
 const Matches *Matching::getMatches() {
     return matches;
+}
+
+void Matching::reset() {
+    matches->reset();
 }

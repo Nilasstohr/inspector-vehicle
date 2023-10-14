@@ -10,8 +10,13 @@
 
 class Estimation: public MatrixHelper{
 public:
-    Estimation();
-    void update(Matching * matching);
+    Estimation(MatrixXd xt, MatrixXd Pt);
+    void update(Matching * matching,const MatrixXd* xEst,const MatrixXd* pEst);
+
+    const MatrixXd * getXt() const;
+
+    const MatrixXd * getPt() const;
+
 private:
     MatrixXd xt;
     MatrixXd Pt;

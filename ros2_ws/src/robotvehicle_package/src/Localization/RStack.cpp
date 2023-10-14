@@ -5,7 +5,7 @@
 #include <iostream>
 #include "RStack.h"
 
-RStack::RStack(int capacity): indexR(0){
+RStack::RStack(int capacity): indexR(0),stackNum(0){
     Rt = MatrixXd(2*capacity,2*capacity);
     init();
 }

@@ -5,35 +5,35 @@
 #include <iostream>
 #include "Estimation.h"
 
-Estimation::Estimation() {
-    xt =  MatrixXd(3,1);
-    Pt =  MatrixXd(3,3);
+
+Estimation::Estimation(MatrixXd xt, MatrixXd Pt) {
+    this->xt =  xt;
+    //printMatrix(&xt,"xt");
+    this->Pt =  Pt;
+    //printMatrix(&Pt,"Pt");
 }
 
-void Estimation::update(Matching *matching) {
+void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd* pEst) {
     MatrixXd Rt = matching->getMatches()->getRt();
     const MatrixXd Ht = matching->getMatches()->getHt();
     const MatrixXd vt = matching->getMatches()->getVt();
-    const MatrixXd *PtEst = matching->getMatches()->getPEst();
-    const MatrixXd *xEst  = matching->getMatches()->getXEst();
 
-    printMatrix(&Rt,"Rt");
-    printMatrix(&Ht,"Ht");
-    printMatrix(&vt,"vt");
-    cout << "Rt size " <<  Rt.rows() << " x " << Rt.cols() << endl;
-    cout << "Ht size " <<  Ht.rows() << " x " << Ht.cols() << endl;
-    cout << "vt size " <<  vt.rows() << " x " << vt.cols() << endl;
+    //printMatrix(&Rt,"--Rt--");
+    //printMatrix(&Ht,"--Ht--");
+    //printMatrix(&vt,"--vt--");
+    //cout << "Rt size " <<  Rt.rows() << " x " << Rt.cols() << endl;
+    //cout << "Ht size " <<  Ht.rows() << " x " << Ht.cols() << endl;
+    //cout << "vt size " <<  vt.rows() << " x " << vt.cols() << endl;
 
-    MatrixXd PtIN = Ht * *PtEst * Ht.transpose() + Rt;
-    printMatrix(&PtIN,"PtIN");
-    printMatrix(PtEst,"PtEst");
-    MatrixXd Kt   = *PtEst * Ht.transpose() *PtIN.inverse();
-    printMatrix(&Kt,"Kt");
-    xt     =  *xEst + Kt * vt;
-    Pt     = *PtEst - Kt * PtIN * Kt.transpose();
-    printMatrix(&xt,"xt");
-    printMatrix(&Pt,"Pt");
-
+    MatrixXd PtIN = Ht * *pEst * Ht.transpose() + Rt;
+    //printMatrix(&PtIN,"--PtIN--");
+    //printMatrix(pEst,"--PtEst--");
+    MatrixXd Kt   = *pEst * Ht.transpose() *PtIN.inverse();
+    //printMatrix(&Kt,"--Kt--");
+    xt     = *xEst + Kt * vt;
+    Pt     = *pEst - Kt * PtIN * Kt.transpose();
+    printMatrix(&xt,"--xt--");
+    printMatrix(&Pt,"--Pt--");
     /*
     xt_est = validated{i}.xt_est;
     Pt_est = validated{i}.Pt_est;
@@ -42,4 +42,12 @@ void Estimation::update(Matching *matching) {
     xt     = xt_est + Kt*(obj.zt - obj.zt_est);
     Pt     = Pt_est - Kt * PtIN * Kt';
     */
+}
+
+const MatrixXd * Estimation::getXt() const {
+    return &xt;
+}
+
+const MatrixXd * Estimation::getPt() const {
+    return &Pt;
 }

@@ -18,6 +18,7 @@ public:
     const MatrixXd * zEst(int j) const;
     const MatrixXd * HEst(int j) const;
     int size() const;
+    void reset();
 private:
     const LineStack *linesW;
     LineStack *z_est;

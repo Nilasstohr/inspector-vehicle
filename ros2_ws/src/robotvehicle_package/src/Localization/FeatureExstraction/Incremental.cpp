@@ -22,6 +22,7 @@ int Incremental::size() {
 void Incremental::reset() {
     scanPointsNum=0;
     currentPointIndex=0;
+    lines->reset();
 }
 
 void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {

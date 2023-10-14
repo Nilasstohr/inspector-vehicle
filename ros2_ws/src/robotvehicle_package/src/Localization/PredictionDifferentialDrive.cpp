@@ -10,18 +10,18 @@
 PredictionDifferentialDrive::PredictionDifferentialDrive():
 srLast(0),slLast(0)
 {
-
+    this->xEst = MatrixXd(3,1);
+    this->pEst = MatrixXd(3,3);
 }
 
-
-void PredictionDifferentialDrive::update(double sl, double sr, MatrixXd xt, MatrixXd pt) {
-
-    xEstLast=xt;
-    pEstLast=pt;
+void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * xt,const MatrixXd * Pt)
+{
     //setXEstLast(xt);
     //setXEstLast(pt);
+    //printMatrix(xt,"drive input --xt--");
+    //printMatrix(Pt,"drive input --Pt--");
 
-    //printVector(&xEstLast,"xEstLast");
+    //printVector(&xEst,"xEst");
 
     double dSl = sl -slLast;
     double dSr = sr -srLast;
@@ -31,7 +31,7 @@ void PredictionDifferentialDrive::update(double sl, double sr, MatrixXd xt, Matr
     // distance between wheels in cm
     int b = 27;
     // angle of robot
-    double phi = xEstLast.coeff(3,1);
+    double phi = xt->coeff(3,1);
     // Q covariance constants
     double kl  = 0.10;
     double kr  = 0.10;
@@ -41,9 +41,9 @@ void PredictionDifferentialDrive::update(double sl, double sr, MatrixXd xt, Matr
     double dS   = (dSr + dSl)/2;
 
     // kinematic model for differential driver page 270
-    Vector3d xEst = xEstLast + Vector3d (dS*cos(phi + dPhi/2),
+    xEst = *xt + Vector3d (dS * cos(phi + dPhi / 2),
                                          dS*sin(phi + dPhi/2),
-                                         dPhi);
+                           dPhi);
 
     //printVector(&xEst,"xEst");
 
@@ -67,27 +67,25 @@ void PredictionDifferentialDrive::update(double sl, double sr, MatrixXd xt, Matr
     Q(0,0)=kr*abs(dSr); Q(0,1)=0;
     Q(1,0)=0;              Q(1,1)=kl*abs(dSl);
 
-    MatrixXd Pest(3,3);
-    Pest = Fx * pEstLast * Fx.transpose() + Fu * Q * Fu.transpose();
+    //printMatrix(Pt,"Pt");
+    pEst = Fx * *Pt * Fx.transpose() + Fu * Q * Fu.transpose();
     //printMatrix(&Pest,"pEst");
-    pEstLast = Pest;
-    xEstLast = xEst;
 }
 
-const MatrixXd *PredictionDifferentialDrive::getXEstLast() const {
-    return &xEstLast;
+const MatrixXd *PredictionDifferentialDrive::getXEst() const {
+    return &xEst;
 }
 
-const MatrixXd * PredictionDifferentialDrive::getPEstLast() const {
-    return &pEstLast;
+const MatrixXd * PredictionDifferentialDrive::getPEst() const {
+    return &pEst;
 }
 
 void PredictionDifferentialDrive::setXEstLast(const MatrixXd xEstLast) {
-    copyMatrix(xEstLast,this->xEstLast);
+    copyMatrix(xEstLast,this->xEst);
 }
 
 void PredictionDifferentialDrive::setPEstLast( MatrixXd pEstLast) {
-    copyMatrix(pEstLast,this->pEstLast);
+    copyMatrix(pEstLast,this->pEst);
 }
 
 void PredictionDifferentialDrive::copyMatrix(const MatrixXd copyFrom, Eigen::MatrixXd &copyTo) {
@@ -106,13 +104,14 @@ void PredictionDifferentialDrive::copy3dVector(const Vector3d copyFrom, Eigen::V
 }
 
 double PredictionDifferentialDrive::getX() const {
-    return getXEstLast()->coeff(0,0);
+    return getXEst()->coeff(0, 0);
 }
 
 double PredictionDifferentialDrive::getY() const {
-    return getXEstLast()->coeff(1,0);
+    return getXEst()->coeff(1, 0);
 }
 
 double PredictionDifferentialDrive::getTheta() const {
-    return getXEstLast()->coeff(2,0);
+    return getXEst()->coeff(2, 0);
 }
+

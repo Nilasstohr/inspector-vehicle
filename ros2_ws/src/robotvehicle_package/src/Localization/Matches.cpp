@@ -16,6 +16,8 @@ Matches::Matches(int capacity) {
 
 void Matches::reset() {
     matchCount=0;
+    vt->reset();
+    Ht->reset();
     Rt->reset();
 }
 

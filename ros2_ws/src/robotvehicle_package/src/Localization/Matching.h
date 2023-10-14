@@ -18,6 +18,7 @@ public:
                 const MeasurementPrediction* measurementPrediction,
                 const Observations *observations);
     const Matches * getMatches();
+    void reset();
 private:
     Matches * matches;
     MatrixXd vIJ;

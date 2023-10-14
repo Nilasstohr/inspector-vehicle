@@ -57,3 +57,8 @@ const MatrixXd * MeasurementPrediction::zEst(int j) const {
 const MatrixXd *MeasurementPrediction::HEst(int j) const {
     return hStack->getHByIndex(j);
 }
+
+void MeasurementPrediction::reset() {
+    z_est->reset();
+    hStack->reset();
+}

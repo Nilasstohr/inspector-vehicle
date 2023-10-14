@@ -15,9 +15,9 @@ using Eigen::Vector3d;
 class PredictionDifferentialDrive: MatrixHelper{
 public:
     PredictionDifferentialDrive();
-    void update(double sl, double sr, MatrixXd xt, MatrixXd pt);
-    const MatrixXd *getXEstLast() const;
-    const MatrixXd *getPEstLast() const;
+    void update(double sl, double sr,const MatrixXd * xt,const MatrixXd * Pt);
+    const MatrixXd *getXEst() const;
+    const MatrixXd *getPEst() const;
 
     double getTheta() const;
 
@@ -28,8 +28,8 @@ public:
 private:
     double slLast;
     double srLast;
-    MatrixXd xEstLast;
-    MatrixXd pEstLast;
+    MatrixXd xEst;
+    MatrixXd pEst;
     void setXEstLast(const MatrixXd xEstLast);
     void setPEstLast(const MatrixXd pEstLast);
     void copyMatrix(const MatrixXd copyFrom,MatrixXd &copyTo);
