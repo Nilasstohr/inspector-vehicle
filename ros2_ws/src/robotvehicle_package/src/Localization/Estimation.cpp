@@ -32,8 +32,9 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     //printMatrix(&Kt,"--Kt--");
     xt     = *xEst + Kt * vt;
     Pt     = *pEst - Kt * PtIN * Kt.transpose();
-    printMatrix(&xt,"--xt--");
-    printMatrix(&Pt,"--Pt--");
+    //printMatrix(&xt,"--xt--");
+    //printMatrix(&Pt,"--Pt--");
+    cout << "x " <<  xt(0,0) << " y " << xt(1,0) << " theta " << xt(2,0) << endl;
     /*
     xt_est = validated{i}.xt_est;
     Pt_est = validated{i}.Pt_est;

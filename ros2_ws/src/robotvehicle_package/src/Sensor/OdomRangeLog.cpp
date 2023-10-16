@@ -7,14 +7,17 @@
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 OdomRangeLog::OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::LaserScan::SharedPtr scan):
-posLeft(posLeft),posRight(posRight){
+        posLeft(posLeft), posRight(posRight), count(0)
+{
     this->scan = new std::vector<PointPolarForm>;
-    int count = scan->scan_time / scan->time_increment;
+    count = scan->scan_time / scan->time_increment;
     float angle;
     float distance;
     for(int i = 0; i < count; i++) {
         angle = RAD2DEG(scan->angle_min + scan->angle_increment * i);
         distance = scan->ranges[i];
+        scanPoints[i].setAngle(angle);
+        scanPoints[i].setDistance(distance);
         this->scan->push_back(PointPolarForm(angle, distance));
         //ROS_INFO(": [% i,%f, %f]",i, degree, scan->ranges[i]);
     }

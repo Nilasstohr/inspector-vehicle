@@ -12,16 +12,14 @@
 class OdomRangeLog {
 public:
     OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::LaserScan::SharedPtr scan);
+    double getPosLeft() const;
+    double getPosRight() const;
 private:
     double posLeft;
-public:
-    double getPosLeft() const;
-
-    double getPosRight() const;
-
-private:
     double posRight;
     std::vector<PointPolarForm> *scan;
+    PointPolarForm scanPoints[1000];
+    int count;
 public:
     std::vector<PointPolarForm> *getScan() const;
 };

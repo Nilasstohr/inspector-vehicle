@@ -9,7 +9,17 @@ PointPolarForm::PointPolarForm(double angle, double distance): angle(angle), dis
 double PointPolarForm::getAngle() const {
     return angle;
 }
+PointPolarForm::PointPolarForm() {}
 
 double PointPolarForm::getDistance() const {
     return distance;
 }
+
+void PointPolarForm::setAngle(double angle) {
+    this->angle = angle;
+}
+
+void PointPolarForm::setDistance(double distance) {
+    this->distance=distance;
+}
+
