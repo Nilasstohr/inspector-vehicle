@@ -15,16 +15,14 @@ using Eigen::Vector3d;
 class PredictionDifferentialDrive: MatrixHelper{
 public:
     PredictionDifferentialDrive();
+    void init(const MatrixXd * xt,const MatrixXd * Pt);
     void update(double sl, double sr,const MatrixXd * xt,const MatrixXd * Pt);
+    void reset();
     const MatrixXd *getXEst() const;
     const MatrixXd *getPEst() const;
-
     double getTheta() const;
-
     double getX() const;
-
     double getY() const;
-
 private:
     double slLast;
     double srLast;

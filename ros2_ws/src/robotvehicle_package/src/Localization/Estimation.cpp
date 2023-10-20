@@ -7,6 +7,10 @@
 
 
 Estimation::Estimation(MatrixXd xt, MatrixXd Pt) {
+    reset(xt,Pt);
+}
+
+void Estimation::reset(MatrixXd xt, MatrixXd Pt) {
     this->xt =  xt;
     //printMatrix(&xt,"xt");
     this->Pt =  Pt;
@@ -17,7 +21,7 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     MatrixXd Rt = matching->getMatches()->getRt();
     const MatrixXd Ht = matching->getMatches()->getHt();
     const MatrixXd vt = matching->getMatches()->getVt();
-
+    //printMatrix(xEst,"--xEst--");
     //printMatrix(&Rt,"--Rt--");
     //printMatrix(&Ht,"--Ht--");
     //printMatrix(&vt,"--vt--");
@@ -30,11 +34,12 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     //printMatrix(pEst,"--PtEst--");
     MatrixXd Kt   = *pEst * Ht.transpose() *PtIN.inverse();
     //printMatrix(&Kt,"--Kt--");
+    //printMatrix(&vt,"--vt--");
     xt     = *xEst + Kt * vt;
     Pt     = *pEst - Kt * PtIN * Kt.transpose();
     //printMatrix(&xt,"--xt--");
     //printMatrix(&Pt,"--Pt--");
-    cout << "x " <<  xt(0,0) << " y " << xt(1,0) << " theta " << xt(2,0) << endl;
+    //cout << "x " <<  xt(0,0) << " y " << xt(1,0) << " theta " << xt(2,0) << endl;
     /*
     xt_est = validated{i}.xt_est;
     Pt_est = validated{i}.Pt_est;
@@ -52,3 +57,18 @@ const MatrixXd * Estimation::getXt() const {
 const MatrixXd * Estimation::getPt() const {
     return &Pt;
 }
+
+double Estimation::getX() {
+    return getXt()->coeff(0,0);
+}
+
+double Estimation::getY() {
+    return getXt()->coeff(1,0);
+}
+
+double Estimation::getTheta() {
+    return getXt()->coeff(2,0);
+}
+
+
+

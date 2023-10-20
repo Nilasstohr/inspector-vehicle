@@ -7,11 +7,21 @@
 #include "rclcpp/rclcpp.hpp"
 #define ROS_INFO RCUTILS_LOG_INFO
 
-PredictionDifferentialDrive::PredictionDifferentialDrive():
-srLast(0),slLast(0)
+PredictionDifferentialDrive::PredictionDifferentialDrive()
 {
     this->xEst = MatrixXd(3,1);
     this->pEst = MatrixXd(3,3);
+    reset();
+}
+
+void PredictionDifferentialDrive::reset() {
+    srLast=0;
+    slLast=0;
+}
+
+void PredictionDifferentialDrive::init(const MatrixXd *xt, const MatrixXd *Pt) {
+    copyMatrix(*xt,xEst);
+    copyMatrix(*Pt,pEst);
 }
 
 void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * xt,const MatrixXd * Pt)
@@ -25,13 +35,14 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
 
     double dSl = sl -slLast;
     double dSr = sr -srLast;
+    //cout << "dSl=" << dSl << " dSr=" << dSr << endl;
     slLast = sl;
     srLast = sr;
 
     // distance between wheels in cm
     int b = 27;
     // angle of robot
-    double phi = xt->coeff(3,1);
+    double phi = xt->coeff(2,0);
     // Q covariance constants
     double kl  = 0.10;
     double kr  = 0.10;
@@ -45,7 +56,7 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
                                          dS*sin(phi + dPhi/2),
                            dPhi);
 
-    //printVector(&xEst,"xEst");
+    //printMatrix(&xEst,"xEst");
 
     MatrixXd Fx(3,3);
     Fx(0,0)= 1; Fx(0,1)= 0; Fx(0,2)= -dS*sin(phi + dPhi/2);
@@ -69,7 +80,7 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
 
     //printMatrix(Pt,"Pt");
     pEst = Fx * *Pt * Fx.transpose() + Fu * Q * Fu.transpose();
-    //printMatrix(&Pest,"pEst");
+    //printMatrix(&pEst,"pEst");
 }
 
 const MatrixXd *PredictionDifferentialDrive::getXEst() const {
@@ -114,4 +125,7 @@ double PredictionDifferentialDrive::getY() const {
 double PredictionDifferentialDrive::getTheta() const {
     return getXEst()->coeff(2, 0);
 }
+
+
+
 

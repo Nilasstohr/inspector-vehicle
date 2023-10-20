@@ -3,11 +3,13 @@
 //
 
 #include "OdomRangeLog.h"
+#include "../Utilities/MathConversions.h"
+
 #define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 OdomRangeLog::OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::LaserScan::SharedPtr scan):
-        posLeft(posLeft), posRight(posRight), count(0)
+        posLeft(posLeft), posRight(posRight), count(0),x(0),y(0),theta(0)
 {
     this->scan = new std::vector<PointPolarForm>;
     count = scan->scan_time / scan->time_increment;
@@ -18,7 +20,7 @@ OdomRangeLog::OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::La
         distance = scan->ranges[i];
         scanPoints[i].setAngle(angle);
         scanPoints[i].setDistance(distance);
-        this->scan->push_back(PointPolarForm(angle, distance));
+        this->scan->push_back(PointPolarForm(MathConversions::deg2rad(angle+180), distance*100));
         //ROS_INFO(": [% i,%f, %f]",i, degree, scan->ranges[i]);
     }
 }
@@ -33,4 +35,20 @@ double OdomRangeLog::getPosRight() const {
 
 std::vector<PointPolarForm> *OdomRangeLog::getScan() const {
     return scan;
+}
+
+void OdomRangeLog::setPose(double x, double y, double theta){
+    this->x=x;
+    this->y=y;
+    this->theta=theta;
+}
+
+double OdomRangeLog::getX() const {
+    return x;
+}
+double OdomRangeLog::getY() const {
+    return y;
+}
+double OdomRangeLog::getTheta() const {
+    return theta;
 }

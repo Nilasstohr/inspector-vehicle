@@ -12,10 +12,12 @@ class Estimation: public MatrixHelper{
 public:
     Estimation(MatrixXd xt, MatrixXd Pt);
     void update(Matching * matching,const MatrixXd* xEst,const MatrixXd* pEst);
-
+    void reset(MatrixXd xt, MatrixXd Pt);
     const MatrixXd * getXt() const;
-
     const MatrixXd * getPt() const;
+    double getX();
+    double getY();
+    double getTheta();
 
 private:
     MatrixXd xt;

@@ -14,6 +14,7 @@
 #include "Localization/TestMap.h"
 #include "Localization/Matching.h"
 #include "Localization/Estimation.h"
+#include "Localization/KalmanFilter.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -35,9 +36,8 @@ public:
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
         output = new std::string();
         odomStr = new std::string();
-
-        initKalman();
-
+        kalmanFilterLive = new KalmanFilter();
+        kalmanFilterPost = new KalmanFilter();
         if (serialInterface->hasResponse()) {
             ROS_INFO(serialInterface->getResponse()->c_str());
         }
@@ -100,17 +100,9 @@ private:
             posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
             sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
 
-            // Kalman
-            prediction->update(posLeft, posRight, estimation->getXt(), estimation->getPt());
-            measurementPrediction->update(prediction);
-            observations->update(sensorLogger[logCount]->getScan(),sensorLogger[logCount]->getScan()->size());
-            matching->update(prediction, measurementPrediction, observations);
-            estimation->update(matching, prediction->getXEst(), prediction->getPEst());
-            // reset filter
-            measurementPrediction->reset();
-            observations->reset();
-            matching->reset();
-
+            kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
+                                      sensorLogger[logCount]->getPosRight(),
+                                      sensorLogger[logCount]->getScan());
             odomStr->clear();
             logCount++;
             //std::cout << n << std::endl;
@@ -121,6 +113,13 @@ private:
                 json->append("\n{").append("\n");
                 json->append("\"data\":[").append("\n");
                 for (int i = 0; i < logCount; i++) {
+                    /*
+                    if(i==1)
+                        bool analyse=true;
+                    kalmanFilterPost->update( sensorLogger[i]->getPosLeft(),
+                                             sensorLogger[i]->getPosRight(),
+                                                  sensorLogger[i]->getScan());
+                    */
                     json->append("{").append("\n");
                     // odom
                     json->append("\"odom\":");
@@ -128,7 +127,13 @@ private:
                     json->append("\"posLeft\":");
                     json->append(std::to_string(sensorLogger[i]->getPosLeft())).append(",\n");
                     json->append("\"posRight\":");
-                    json->append(std::to_string(sensorLogger[i]->getPosRight())).append("\n");
+                    json->append(std::to_string(sensorLogger[i]->getPosRight())).append(",\n");
+                    json->append("\"x\":");
+                    json->append(std::to_string(sensorLogger[i]->getX())).append(",\n");
+                    json->append("\"y\":");
+                    json->append(std::to_string(sensorLogger[i]->getY())).append(",\n");
+                    json->append("\"theta\":");
+                    json->append(std::to_string(sensorLogger[i]->getTheta())).append("\n");
                     json->append("},").append("\n");
                     // laser scan
                     json->append("\"scan\":{").append("\n");
@@ -164,38 +169,9 @@ private:
             }
         }
         n++;
-        std::cout << n << std::endl;
+        //std::cout << n << std::endl;
     }
-    void initKalman(){
 
-        prediction = new PredictionDifferentialDrive();
-
-        pEst = MatrixXd(3,3);
-        double sigmaXY = 2; // cm
-        double sigmaTheta = MathConversions::deg2rad(2); // degrees;
-        pEst(0, 0)= pow(sigmaXY,2); pEst(0, 1)= 0; pEst(0, 2)= 0;
-        pEst(1, 0)= 0; pEst(1, 1)= pow(sigmaXY,2); pEst(1, 2)= 0;
-        pEst(2, 0)= 0; pEst(2, 1)= 0; pEst(2, 2)=  pow(sigmaTheta,2);
-
-        xEst = MatrixXd(3,1);
-        xEst(0,0)=40;
-        xEst(1,0)=40;
-        xEst(2,0)=0;
-
-        TestMap * testMap = new TestMap();
-        measurementPrediction = new MeasurementPrediction(testMap->getMap());
-
-        double eps = 1;
-        MatrixXd R(2, 2);
-        R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
-        R(1, 0)= 0; R(1, 1)= pow(2,2);
-        observations = new Observations(eps,R);
-
-        matching = new Matching(15);
-
-        estimation = new Estimation(xEst,pEst);
-
-    }
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
     rclcpp::TimerBase::SharedPtr timer_;
     SerialInterface * serialInterface;
@@ -212,60 +188,16 @@ private:
     uint64_t logCount =0;
     bool scanReady=false;
     std::string *json = new std::string();
-
-    // kalman
-    PredictionDifferentialDrive * prediction;
-    MatrixXd pEst;
-    MatrixXd xEst;
-    MeasurementPrediction *measurementPrediction;
-    Observations *observations;
-    Matching * matching;
-    Estimation *estimation;
+    KalmanFilter * kalmanFilterLive;
+    KalmanFilter * kalmanFilterPost;
 };
 
 
 int main(int argc, char ** argv)
 {
-
-    PredictionDifferentialDrive * differentialDrive =
-            new PredictionDifferentialDrive();
-
-
-    // for prediction step
-    MatrixXd pEst(3, 3);
-    double sigmaXY = 2; // cm
-    double sigmaTheta = MathConversions::deg2rad(2); // degrees;
-    pEst(0, 0)= pow(sigmaXY,2); pEst(0, 1)= 0; pEst(0, 2)= 0;
-    pEst(1, 0)= 0; pEst(1, 1)= pow(sigmaXY,2); pEst(1, 2)= 0;
-    pEst(2, 0)= 0; pEst(2, 1)= 0; pEst(2, 2)=  pow(sigmaTheta,2);
-    MatrixXd xEst(3,1);
-    xEst(0,0)=40;
-    xEst(1,0)=40;
-    xEst(2,0)=0;
-    //printMatrix(pEst,"pEst");
-    //printVector(xEst,"xEst");
-
-    // measurement prediction
-    TestMap * testMap = new TestMap();
-    MeasurementPrediction *measurementPrediction = new MeasurementPrediction(testMap->getMap());
-
-
-    // for observations step
-    double eps = 1;
-    MatrixXd R(2, 2);
-    R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
-    R(1, 0)= 0; R(1, 1)= pow(2,2);
-    Observations *observations = new Observations(eps,R);
-
-
-    // matching
-    Matching * matching = new Matching(15);
-
-    // Estimation
-    Estimation *estimation = new Estimation(xEst,pEst);
-
-    double sl[27];
-    double sr[27];
+    double sl[28];
+    double sr[28];
+    /*
     sl[0]=0.00; sr[0]=0.00;
     sl[1]=0.02; sr[1]=0.02;
     sl[2]=0.12; sr[2]=0.19;
@@ -293,110 +225,130 @@ int main(int argc, char ** argv)
     sl[24]=36.39; sr[24]=36.46;
     sl[25]=38.32; sr[25]=38.30;
     sl[26]=39.99; sr[26]=39.89;
+    */
+    sl[0]=0.00; sr[0]=0.00;
+    sl[1]=0.05; sr[1]=0.11;
+    sl[2]=0.21; sr[2]=0.35;
+    sl[3]=0.70; sr[3]=0.89;
+    sl[4]=1.43; sr[4]=1.63;
+    sl[5]=2.43; sr[5]=2.62;
+    sl[6]=3.91; sr[6]=4.06;
+    sl[7]=5.37; sr[7]=5.52;
+    sl[8]=6.97; sr[8]=7.14;
+    sl[9]=8.92; sr[9]=9.13;
+    sl[10]=10.66; sr[10]=10.91;
+    sl[11]=12.71; sr[11]=13.02;
+    sl[12]=14.46; sr[12]=14.82;
+    sl[13]=16.26; sr[13]=16.64;
+    sl[14]=18.31; sr[14]=18.68;
+    sl[15]=20.07; sr[15]=20.45;
+    sl[16]=21.85; sr[16]=22.20;
+    sl[17]=23.81; sr[17]=24.10;
+    sl[18]=25.55; sr[18]=25.80;
+    sl[19]=27.22; sr[19]=27.42;
+    sl[20]=29.17; sr[20]=29.31;
+    sl[21]=30.79; sr[21]=30.92;
+    sl[22]=32.37; sr[22]=32.49;
+    sl[23]=34.24; sr[23]=34.39;
+    sl[24]=35.84; sr[24]=36.02;
+    sl[25]=37.72; sr[25]=37.94;
+    sl[26]=39.35; sr[26]=39.61;
+    sl[27]=40.99; sr[27]=41.29;
 
 
     std::vector<PointPolarForm> * scan;
-
-    for(int i=0; i<27; i++){
-        /*
-        scan = &scan0;
-        switch (i) {
-            case 0:
-                scan = &scan0;
-                break;
-            case 1:
-                scan = &scan1;
-                break;
-            case 2:
-                scan = &scan2;
-                break;
-            case 3:
-                scan = &scan3;
-                break;
-            case 4:
-                scan = &scan4;
-                break;
-            case 5:
-                scan = &scan5;
-                break;
-            case 6:
-                scan = &scan6;
-                break;
-            case 7:
-                scan = &scan7;
-                break;
-            case 8:
-                scan = &scan8;
-                break;
-            case 9:
-                scan = &scan9;
-                break;
-            case 10:
-                scan = &scan10;
-                break;
-            case 11:
-                scan = &scan11;
-                break;
-            case 12:
-                scan = &scan12;
-                break;
-            case 13:
-                scan = &scan13;
-                break;
-            case 14:
-                scan = &scan14;
-                break;
-            case 15:
-                scan = &scan15;
-                break;
-            case 16:
-                scan = &scan16;
-                break;
-            case 17:
-                scan = &scan17;
-                break;
-            case 18:
-                scan = &scan18;
-                break;
-            case 19:
-                scan = &scan19;
-                break;
-            case 20:
-                scan = &scan20;
-                break;
-            case 21:
-                scan = &scan21;
-                break;
-            case 22:
-                scan = &scan22;
-                break;
-            case 23:
-                scan = &scan23;
-                break;
-            case 24:
-                scan = &scan24;
-                break;
-            case 25:
-                scan = &scan25;
-                break;
-            case 26:
-                scan = &scan26;
-                break;
-        }
+/*
+    KalmanFilter *kalmanFilter = new KalmanFilter();
+    for(int i=0; i<28; i++){
+       switch (i) {
+           case 0:
+               scan = &scan0;
+               break;
+           case 1:
+               scan = &scan1;
+               break;
+           case 2:
+               scan = &scan2;
+               break;
+           case 3:
+               scan = &scan3;
+               break;
+           case 4:
+               scan = &scan4;
+               break;
+           case 5:
+               scan = &scan5;
+               break;
+           case 6:
+               scan = &scan6;
+               break;
+           case 7:
+               scan = &scan7;
+               break;
+           case 8:
+               scan = &scan8;
+               break;
+           case 9:
+               scan = &scan9;
+               break;
+           case 10:
+               scan = &scan10;
+               break;
+           case 11:
+               scan = &scan11;
+               break;
+           case 12:
+               scan = &scan12;
+               break;
+           case 13:
+               scan = &scan13;
+               break;
+           case 14:
+               scan = &scan14;
+               break;
+           case 15:
+               scan = &scan15;
+               break;
+           case 16:
+               scan = &scan16;
+               break;
+           case 17:
+               scan = &scan17;
+               break;
+           case 18:
+               scan = &scan18;
+               break;
+           case 19:
+               scan = &scan19;
+               break;
+           case 20:
+               scan = &scan20;
+               break;
+           case 21:
+               scan = &scan21;
+               break;
+           case 22:
+               scan = &scan22;
+               break;
+           case 23:
+               scan = &scan23;
+               break;
+           case 24:
+               scan = &scan24;
+               break;
+           case 25:
+               scan = &scan25;
+               break;
+           case 26:
+               scan = &scan26;
+               break;
+           case 27:
+               scan = &scan27;
+               break;
+       }
+       kalmanFilter->update(sl[i],sr[i],scan);
+   }
 */
-        differentialDrive->update(sl[i],sr[i],estimation->getXt(),estimation->getPt());
-        measurementPrediction->update(differentialDrive);
-        observations->update(scan,scan->size());
-        matching->update(differentialDrive,measurementPrediction,observations);
-        cout << "(" << i+1 << ")";
-        estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
-
-        measurementPrediction->reset();
-        observations->reset();
-        matching->reset();
-    }
-
-
     
     /*
     serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
