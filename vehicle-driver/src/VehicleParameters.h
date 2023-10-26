@@ -44,6 +44,7 @@
 
 // serial
 #define VEHICLE_SERIAL_BAUD_RATE 115200
+#define VEHICLE_SERIAL_BAUD_RATE_BT 38400
 
 // manual driving commands
 #define VEHICLE_DRIVING_MODE_MANUAL_FORWARD String("FORWARD")

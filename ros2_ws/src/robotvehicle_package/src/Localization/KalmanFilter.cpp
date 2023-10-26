@@ -81,3 +81,16 @@ void KalmanFilter::print(int index) {
     cout << endl;
 }
 
+double KalmanFilter::getY() {
+    return estimation->getY();
+}
+
+double KalmanFilter::getX() {
+    return estimation->getX();
+}
+
+double KalmanFilter::getTheta() {
+    return estimation->getTheta();
+}
+
+

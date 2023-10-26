@@ -17,6 +17,9 @@ class KalmanFilter: MatrixHelper {
 public:
     KalmanFilter();
     void update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan);
+    double getX();
+    double getY();
+    double getTheta();
 private:
     void print(int index);
     void printPose(int index, const MatrixXd* m, char * text);

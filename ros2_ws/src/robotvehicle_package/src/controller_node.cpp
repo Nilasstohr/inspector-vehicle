@@ -1,19 +1,11 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
 #include "SerialInterface.h"
 #include "AwaitTimer.h"
 #include <Eigen/Dense>
 #include <fstream>
 #include "Sensor/OdomRangeLog.h"
-#include "Localization/PredictionDifferentialDrive.h"
 #include "Sensor/PointRectForm.h"
-#include "Localization/Observations.h"
-#include "Utilities/MathConversions.h"
-#include "Localization/MeasurementPrediction.h"
-#include "Localization/TestMap.h"
-#include "Localization/Matching.h"
-#include "Localization/Estimation.h"
 #include "Localization/KalmanFilter.h"
 
 using Eigen::MatrixXd;
@@ -55,6 +47,7 @@ public:
                                       std::bind(&ReadingLaser::timer_callback, this));
         // drive forward.
         serialInterface->sendRequest("y");
+        //serialInterface->sendRequest("f");
     }
 
 private:
@@ -103,23 +96,18 @@ private:
             kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
                                       sensorLogger[logCount]->getPosRight(),
                                       sensorLogger[logCount]->getScan());
+            sensorLogger[logCount]->setPose(
+                    kalmanFilterLive->getX(),kalmanFilterLive->getY(),kalmanFilterLive->getTheta());
             odomStr->clear();
             logCount++;
             //std::cout << n << std::endl;
-            if (n > 2000) {
+            if (n > 800) {
                 // stop driving
                 serialInterface->sendRequest("s");
                 timer_->cancel();
                 json->append("\n{").append("\n");
                 json->append("\"data\":[").append("\n");
                 for (int i = 0; i < logCount; i++) {
-                    /*
-                    if(i==1)
-                        bool analyse=true;
-                    kalmanFilterPost->update( sensorLogger[i]->getPosLeft(),
-                                             sensorLogger[i]->getPosRight(),
-                                                  sensorLogger[i]->getScan());
-                    */
                     json->append("{").append("\n");
                     // odom
                     json->append("\"odom\":");
