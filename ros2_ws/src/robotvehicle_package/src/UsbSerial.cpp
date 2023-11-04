@@ -13,7 +13,7 @@ void UsbSerial::begin() {
 
     // https://en.wikibooks.org/wiki/Serial_Programming/termios
 
-    m_serial_id = open("/dev/ttyACM0", O_RDWR);
+    m_serial_id = open(serialDevice, O_RDWR);
     fcntl(m_serial_id, F_SETFL, FNDELAY);
 
     struct termios tio;
@@ -38,7 +38,7 @@ void UsbSerial::begin() {
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=5;
 
-    m_serial_id=open("/dev/ttyACM0", O_RDWR | O_NONBLOCK);        // O_NONBLOCK might override VMIN and VTIME, so read() may return immediately.
+    m_serial_id=open(serialDevice, O_RDWR | O_NONBLOCK);        // O_NONBLOCK might override VMIN and VTIME, so read() may return immediately.
     cfsetospeed(&tio,B4000000);            // 115200 baud
     cfsetispeed(&tio,B4000000);            // 115200 baud
 
@@ -68,4 +68,8 @@ void UsbSerial::end() {
 
 void UsbSerial::flush() {
     tcflush(m_serial_id,TCIOFLUSH);
+}
+
+void UsbSerial::setSerialDevice(const char *serialDevice) {
+    this->serialDevice = serialDevice;
 }

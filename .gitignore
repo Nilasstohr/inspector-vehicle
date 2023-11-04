@@ -10,6 +10,17 @@
 /vehicle-driver/.cproject
 /vehicle-driver/.project
 /vehicle-driver/.settings/language.settings.xml
+/vehicle-joy-stick/*.o
+/vehicle-joy-stick/src/*.o
+/vehicle-joy-stick/*.d
+/vehicle-joy-stick/src/*.d
+/vehicle-joy-stick/*.elf
+/vehicle-joy-stick/*.hex
+/vehicle-joy-stick/.setings
+/vehicle-joy-stick/tools
+/vehicle-joy-stick/.cproject
+/vehicle-joy-stick/.project
+/vehicle-joy-stick/.settings/language.settings.xml
 /ros2_ws/build/
 /ros2_ws/install/
 /ros2_ws/log/

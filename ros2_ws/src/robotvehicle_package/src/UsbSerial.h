@@ -17,10 +17,13 @@ public:
 
     void flush();
 
+    void setSerialDevice(const char *string);
+
 private:
     int m_serial_id;
     char m_char_last_read;
     char read_buf [256];
+    const char * serialDevice;
 };
 
 

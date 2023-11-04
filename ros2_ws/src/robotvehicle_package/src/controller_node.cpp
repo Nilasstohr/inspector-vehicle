@@ -4,6 +4,7 @@
 #include "AwaitTimer.h"
 #include <Eigen/Dense>
 #include <fstream>
+#include <std_msgs/msg/string.hpp>
 #include "Sensor/OdomRangeLog.h"
 #include "Sensor/PointRectForm.h"
 #include "Localization/KalmanFilter.h"
@@ -17,6 +18,7 @@ using std::placeholders::_1;
 #define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
 
+// teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 
 
@@ -39,14 +41,17 @@ public:
         serialInterface->sendRequest("1");
 
 
-        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
                 "scan", default_qos,
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
-        timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-                                      std::bind(&ReadingLaser::timer_callback, this));
+        JoyStickSubscription_ = this->create_subscription<std_msgs::msg::String>(
+                "topic_joy_stick", default_qos, std::bind(&ReadingLaser::topic_callback_joy_stick, this, _1));
+
+        //timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
+        //                              std::bind(&ReadingLaser::timer_callback, this));
         // drive forward.
-        serialInterface->sendRequest("y");
+        //serialInterface->sendRequest("y");
         //serialInterface->sendRequest("f");
     }
 
@@ -82,6 +87,11 @@ private:
          */
         //ROS_INFO("----------------------------- end of scan -----------------------------------");
     }
+    void topic_callback_joy_stick(const std_msgs::msg::String::SharedPtr msg) const
+    {
+        RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
+    }
+
     void timer_callback(){
         if(scanReady) {
             scanReady=false;
@@ -160,7 +170,8 @@ private:
         //std::cout << n << std::endl;
     }
 
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
     rclcpp::TimerBase::SharedPtr timer_;
     SerialInterface * serialInterface;
     std::string *output;

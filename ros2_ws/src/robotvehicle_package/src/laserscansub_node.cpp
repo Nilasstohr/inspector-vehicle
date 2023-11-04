@@ -12,7 +12,7 @@ public:
 
   ReadingLaser() : Node("reading_laser") {
       auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
-      subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
             "scan", default_qos,
             std::bind(&ReadingLaser::topic_callback, this, _1));
   }
@@ -29,7 +29,7 @@ private:
         }
   }
 
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
 };
 
 int main(int argc, char ** argv)

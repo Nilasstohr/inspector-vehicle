@@ -74,8 +74,8 @@ extern "C" int main(void){
 			case VehicleMode::DRIVING_MODE:{
 				drivningManual();
 				break;
-
 			}
+
 			case VehicleMode::TRANSIENT_TEST_MODE:{
 				velocityControl(false);
 				break;

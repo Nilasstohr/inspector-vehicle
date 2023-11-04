@@ -12,8 +12,9 @@
 // https://www.linkedin.com/pulse/linux-serial-port-programming-c-mohammad-t-abdoli
 
 SerialInterface::SerialInterface(const char *serialDevice) {
-    m_buffer = new std::string();
     Serial =  UsbSerial();
+    Serial.setSerialDevice(serialDevice);
+    m_buffer = new std::string();
     Serial.begin();
     awaitTimer = new AwaitTimer(5000);
 }

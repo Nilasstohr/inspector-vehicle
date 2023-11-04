@@ -20,6 +20,7 @@ set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -52,8 +53,45 @@ add_executable(
         src/Sensor/PointRectForm.cpp
         src/Sensor/PointRectForm.h
         src/Utilities/MathConversions.cpp
-        src/Utilities/MathConversions.h src/Localization/TestMap.cpp src/Localization/TestMap.h src/Localization/MeasurementPrediction.cpp src/Localization/MeasurementPrediction.h src/Localization/FeatureExstraction/LineStack.cpp src/Localization/FeatureExstraction/LineStack.h src/Localization/HStack.cpp src/Localization/HStack.h src/Utilities/MatrixStackBase.cpp src/Utilities/MatrixStackBase.h src/Utilities/MatrixHelper.cpp src/Utilities/MatrixHelper.h src/Localization/Matching.cpp src/Localization/Matching.h src/Localization/Matches.cpp src/Localization/Matches.h src/Localization/Estimation.cpp src/Localization/Estimation.h src/Localization/RStack.cpp src/Localization/RStack.h src/Localization/KalmanFilter.cpp src/Localization/KalmanFilter.h)
-ament_target_dependencies(controller_node rclcpp sensor_msgs)
+        src/Utilities/MathConversions.h 
+        src/Localization/TestMap.cpp 
+        src/Localization/TestMap.h 
+        src/Localization/MeasurementPrediction.cpp 
+        src/Localization/MeasurementPrediction.h 
+        src/Localization/FeatureExstraction/LineStack.cpp 
+        src/Localization/FeatureExstraction/LineStack.h 
+        src/Localization/HStack.cpp 
+        src/Localization/HStack.h 
+        src/Utilities/MatrixStackBase.cpp 
+        src/Utilities/MatrixStackBase.h 
+        src/Utilities/MatrixHelper.cpp 
+        src/Utilities/MatrixHelper.h 
+        src/Localization/Matching.cpp 
+        src/Localization/Matching.h 
+        src/Localization/Matches.cpp 
+        src/Localization/Matches.h 
+        src/Localization/Estimation.cpp 
+        src/Localization/Estimation.h 
+        src/Localization/RStack.cpp 
+        src/Localization/RStack.h 
+        src/Localization/KalmanFilter.cpp 
+        src/Localization/KalmanFilter.h)
+        
+ament_target_dependencies(
+        controller_node
+        rclcpp
+        sensor_msgs)
+
+add_executable(
+        joystick_node
+        src/SerialInterface.cpp
+        src/SerialInterface.h
+        src/UsbSerial.cpp
+        src/UsbSerial.h
+        src/AwaitTimer.cpp
+        src/AwaitTimer.h
+        src/publisher_joystick_node.cpp)
+ament_target_dependencies(joystick_node rclcpp std_msgs)
 
 # add Feature extraction library
 #add_subdirectory(FeatureExtraction)
@@ -70,6 +108,7 @@ target_link_libraries (controller_node Eigen3::Eigen)
 install(TARGETS
   laserscansub_node
   controller_node
+  joystick_node
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
