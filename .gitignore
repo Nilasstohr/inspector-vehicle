@@ -1,8 +1,10 @@
 /.metadata/
 /vehicle-driver/*.o
 /vehicle-driver/src/*.o
+/vehicle-driver/libraries/RF24/*.o
 /vehicle-driver/*.d
 /vehicle-driver/src/*.d
+/vehicle-driver/libraries/RF24/*.d
 /vehicle-driver/*.elf
 /vehicle-driver/*.hex
 /vehicle-driver/.setings
@@ -12,8 +14,10 @@
 /vehicle-driver/.settings/language.settings.xml
 /vehicle-joy-stick/*.o
 /vehicle-joy-stick/src/*.o
+/vehicle-joy-stick/libraries/RF24/*.o
 /vehicle-joy-stick/*.d
 /vehicle-joy-stick/src/*.d
+/vehicle-joy-stick/libraries/RF24/*.d
 /vehicle-joy-stick/*.elf
 /vehicle-joy-stick/*.hex
 /vehicle-joy-stick/.setings

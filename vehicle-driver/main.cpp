@@ -8,6 +8,8 @@
 #include "src/SerialInterface.h"
 #include "src/VehicleDrivingModeTypes.h"
 #include "src/DualAccelerationControl.h"
+#include "libraries/RF24/printf.h"
+#include "libraries/RF24/RF24.h"
 
 
 #define MAX_COUNTS 35000
@@ -28,6 +30,8 @@ char message[100];
 DualPiVelocityControl * dualVelocityController;
 DualPPositionControl *  dualPositionControl;
 SerialInterface *serial;
+RF24 radio(10, 9);
+
 
 enum VehicleMode
 {

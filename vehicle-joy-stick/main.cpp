@@ -1,9 +1,8 @@
-#include "src/SerialInterface.h"
 #include "src/MovingAverageFilter.h"
 #include "src/QuadJoyStickDriver.h"
 #include <SPI.h>
-#include "src/printf.h"
-#include "src/RF24.h"
+#include "libraries/RF24/printf.h"
+#include "libraries/RF24/RF24.h"
 
 
 RF24 radio(10, 9); // CE, CSN

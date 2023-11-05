@@ -83,6 +83,9 @@ SOURCE = src/
 # path location for the arm-none-eabi compiler
 COMPILERPATH = tools/arm/bin
 
+# libraries
+RF24_LIBRARY = libraries/RF24
+
 #************************************************************************
 # Settings below this point usually do not need to be edited
 #************************************************************************
@@ -114,7 +117,8 @@ SIZE = $(COMPILERPATH)/arm-none-eabi-size
 C_FILES := $(wildcard *.c)
 CPP_FILES := $(wildcard *.cpp)
 CPP_FILES_SOURCE := $(wildcard $(SOURCE)/*.cpp)
-OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(CPP_FILES_SOURCE:.cpp=.o)
+CPP_FILES_RF24_LIBRARY := $(wildcard $(RF24_LIBRARY)/*.cpp)
+OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(CPP_FILES_SOURCE:.cpp=.o) $(CPP_FILES_RF24_LIBRARY:.cpp=.o)
 
 
 # the actual makefile rules (all .o files built by GNU make's default implicit rules)
@@ -136,4 +140,4 @@ endif
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex $(SOURCE)/*.o $(SOURCE)/*.d $(RF24_LIBRARY)/*.o $(RF24_LIBRARY)/*.d
