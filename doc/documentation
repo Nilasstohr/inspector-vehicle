@@ -183,3 +183,9 @@ Rf24
 https://howtomechatronics.com/tutorials/arduino/arduino-wireless-communication-nrf24l01-tutorial/
 https://www.rhydolabz.com/wiki/?p=15956
 
+ros2
+----------------------------------------------
+. install/setup.bash
+source /opt/ros/foxy/setup.bash
+colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
+
