@@ -8,6 +8,7 @@
 #include "src/SerialInterface.h"
 #include "src/VehicleDrivingModeTypes.h"
 #include "src/DualAccelerationControl.h"
+#include <SPI.h>
 #include "libraries/RF24/printf.h"
 #include "libraries/RF24/RF24.h"
 
@@ -30,8 +31,9 @@ char message[100];
 DualPiVelocityControl * dualVelocityController;
 DualPPositionControl *  dualPositionControl;
 SerialInterface *serial;
-RF24 radio(10, 9);
-
+RF24 *radio;
+const byte address[6] = "00001";
+char cmd;
 
 enum VehicleMode
 {
@@ -61,15 +63,17 @@ void drivningManual();
 bool handlePositionRequest();
 
 extern "C" int main(void){
-
+	init();
 	/*
 	while(1){
-		Serial.print("hello world\n");
-		//delay(1000);
-
+		if (radio->available()) {
+			radio->read(&cmd, sizeof(cmd));
+			Serial.println(cmd);
+		}
+		delay(1);
 	}
 	*/
-	init();
+
 	//velocityControl(true);
 	Serial.println("entered vehicle mode options (enter mode 1-6)");
 	while(1){
@@ -412,6 +416,12 @@ void init(){
 	VehicleTestToolBox *toolBox = new VehicleTestToolBox();
 
 	serial = new SerialInterface();
+    radio = new RF24(VEHICLE_PIN_RF24_CE, VEHICLE_PIN_RF24_CSN);
+	radio->begin();
+	radio->openReadingPipe(0, address);
+	radio->setPALevel(RF24_PA_MIN);
+	radio->startListening();
+
 	toolBox->buildMotorDrivers();
 	toolBox->buildQuadratureEncoders();
 	toolBox->buildControlEssentials();
