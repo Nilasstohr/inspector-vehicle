@@ -100,6 +100,7 @@ COMPILERPATH = tools/arm/bin
 
 # libraries
 RF24_LIBRARY = libraries/RF24
+
 #************************************************************************
 # Settings below this point usually do not need to be edited
 #************************************************************************
@@ -153,4 +154,4 @@ endif
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -f *.o *.d $(TARGET).elf $(TARGET).hex $(SOURCE)/*.o $(SOURCE)/*.d $(RF24_LIBRARY)/*.o $(RF24_LIBRARY)/*.d
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex $(SOURCE)/*.o $(SOURCE)/*.d $(RF24_LIBRARY)/*.o $(RF24_LIBRARY)/*.d 

@@ -16,17 +16,15 @@
 class QuadJoyStickDriver {
 	public:
 		QuadJoyStickDriver(
-		    MovingAverageFilter * pMovingAverageFilter,
 			uint16_t iResolution,
-			uint8_t iChannel1,
-			uint8_t iChannel2,
+			uint8_t iChannel,
 			uint8_t iVoltageMin,
 			uint8_t iVoltageMax
 		);
 
 		void init();
 		float GetThrotleVoltage();
-		float GetThrotleVoltageFilter();
+		float GetVerticalVoltageFilter();
 
 		uint16_t GetVoltageMax();
 		uint16_t GetVoltageMin();
@@ -43,6 +41,7 @@ class QuadJoyStickDriver {
 		}JoyStick;
 
 		JoyStick  *m_JS_1;
+		JoyStick  *m_JS_2;
 		MovingAverageFilter * m_pMovingAverageFilter;
 		uint16_t m_iResolution;
 		float    m_fConv;

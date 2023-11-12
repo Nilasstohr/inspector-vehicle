@@ -3,6 +3,9 @@
 #include <SPI.h>
 #include "libraries/RF24/printf.h"
 #include "libraries/RF24/RF24.h"
+#include "src/JoyStickController.h"
+#include "src/JoyStickPins.h"
+#include "src/JoyStickParams.h"
 
 
 RF24 radio(10, 9); // CE, CSN
@@ -10,23 +13,21 @@ RF24 radio(10, 9); // CE, CSN
 const byte address[6] = "00001";
 char cmd;
 
-MovingAverageFilter *m_pMovingAverageFilter = new MovingAverageFilter(100,4);
-
-QuadJoyStickDriver *m_pQuadJoyStick        = new QuadJoyStickDriver(
-    m_pMovingAverageFilter,
-    16,
-    A8,
-    0,
-    0,
-    4
-  );
+JoyStickController * joyStickController;
 
 IntervalTimer *sampleTimer;
 void sample_timer_event();
-volatile float voltage;
+volatile float voltageVertical;
+volatile float voltageHorisontal;
 
 extern "C" int main(void)
 {
+	joyStickController = new JoyStickController(
+			JOYSTICK_ANALOG_RESOLUTION_BIT,
+			JOYSTICK_PIN_RIGHT_ANALOG_VERTICAL,
+			JOYSTICK_PIN_RIGHT_ANALOG_HORSONTAL,
+			JOYSTICK_MIN_VOLTAGE,
+			JOYSTICK_MAX_VOLTAGE);
 
 	Serial.begin(9600);
 	radio.begin();
@@ -42,29 +43,43 @@ extern "C" int main(void)
     }
 	sampleTimer = new IntervalTimer;
 	sampleTimer->begin(sample_timer_event,1000);
-	m_pQuadJoyStick->init();
 	char cmd = 's';
 	char cmdLast = 's';
-	float voltageRead;
+	float voltageReadVertical;
+	float voltageReadHorisontal;
 	while (1) {
-		voltageRead = voltage;
-		if(voltageRead >= 4){
+
+		voltageReadVertical = voltageVertical;
+		voltageReadHorisontal = voltageHorisontal;
+		//Serial.print("vertical=");
+		//Serial.print(voltageReadVertical);
+		//Serial.print(" horisontal=");
+		//Serial.println(voltageReadHorisontal);
+
+		if(voltageReadVertical >= 4){
+			cmd = 'y';
+		}else if(voltageReadVertical <= 1){
 			cmd = 'h';
-		}else if(voltageRead <= 1){
-			cmd = 'd';
+		}else if(voltageReadHorisontal >= 4){
+			cmd = 'd'; // spin left
+		}else if(voltageReadHorisontal <=1){
+			cmd = 'f';
 		}else{
 			cmd = 's';
 		}
 		if(cmd!=cmdLast){
-			Serial.print(cmd);
+			//Serial.print(cmd);
 			radio.write(&cmd, sizeof(cmd));
 			cmdLast=cmd;
 		}
 		delay(1);
 	}
+
 }
 
 void sample_timer_event(){
-	voltage = m_pQuadJoyStick->GetThrotleVoltageFilter();
+	//voltageVertical = m_pQuadJoyStick->GetVerticalVoltageFilter();
+	voltageVertical = joyStickController->getVerticalControl()->GetVerticalVoltageFilter();
+	voltageHorisontal = joyStickController->getHorisontalControl()->GetVerticalVoltageFilter();
 }
 

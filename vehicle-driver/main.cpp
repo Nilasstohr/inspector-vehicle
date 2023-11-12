@@ -9,9 +9,7 @@
 #include "src/VehicleDrivingModeTypes.h"
 #include "src/DualAccelerationControl.h"
 #include <SPI.h>
-#include "libraries/RF24/printf.h"
 #include "libraries/RF24/RF24.h"
-
 
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
@@ -31,7 +29,8 @@ char message[100];
 DualPiVelocityControl * dualVelocityController;
 DualPPositionControl *  dualPositionControl;
 SerialInterface *serial;
-RF24 *radio;
+
+RF24 * radio;
 const byte address[6] = "00001";
 char cmd;
 
@@ -57,6 +56,7 @@ void reset();
 void init();
 VehicleMode getVehicleMode();
 DrivingDirection getDrivingModeManual();
+DrivingDirection getDrivingModeManualRadio();
 bool modeEscapeRequest();
 void drivingMode();
 void drivningManual();
@@ -64,6 +64,7 @@ bool handlePositionRequest();
 
 extern "C" int main(void){
 	init();
+
 	/*
 	while(1){
 		if (radio->available()) {
@@ -73,17 +74,16 @@ extern "C" int main(void){
 		delay(1);
 	}
 	*/
-
 	//velocityControl(true);
 	Serial.println("entered vehicle mode options (enter mode 1-6)");
 	while(1){
+
 		VehicleMode mode = getVehicleMode();
 		switch(mode){
 			case VehicleMode::DRIVING_MODE:{
 				drivningManual();
 				break;
 			}
-
 			case VehicleMode::TRANSIENT_TEST_MODE:{
 				velocityControl(false);
 				break;
@@ -147,12 +147,42 @@ DrivingDirection getDrivingModeManual(){
 		 serial->sendAck();
 		 return DrivingDirection::TURN_LEFT;
 	 }else if(cmd->equals("j")){
+
 		 //Serial.println("turn right");
 		 serial->sendAck();
 		 return DrivingDirection::TURN_RIGHT;
 	 } else if(cmd->equals("s")){
 		 //Serial.println("stopping");
 		 serial->sendAck();
+		 return DrivingDirection::STOP;
+	 }else{
+		 return DrivingDirection::UNKNOWN;
+	 }
+}
+
+DrivingDirection getDrivingModeManualRadio(){
+  	 radio->read(&cmd, sizeof(cmd));
+	 Serial.println(cmd);
+	 if(cmd=='y'){
+		 //Serial.println("going forward");
+		 return DrivingDirection::FORWARD;
+	 }else if(cmd=='h'){
+		 //Serial.println("going backward");
+		 return DrivingDirection::BACKWARD;
+	 }else if(cmd=='d'){
+		 //Serial.println("spin left");
+		 return DrivingDirection::SPIN_LEFT;
+	 }else if(cmd=='f'){
+		 //Serial.println("spin right");
+		 return DrivingDirection::SPIN_RIGHT;
+	 }else if(cmd=='g'){
+		 //Serial.println("turn left");
+		 return DrivingDirection::TURN_LEFT;
+	 }else if(cmd=='j'){
+		 //Serial.println("turn right");
+		 return DrivingDirection::TURN_RIGHT;
+	 } else if(cmd=='s'){
+		 //Serial.println("stopping");
 		 return DrivingDirection::STOP;
 	 }else{
 		 return DrivingDirection::UNKNOWN;
@@ -170,6 +200,8 @@ void drivningManual(){
 				return;
 			else if(!handlePositionRequest())
 				mode = getDrivingModeManual();
+		}else if(radio->available()){
+			mode = getDrivingModeManualRadio();
 		}
 		if(mode==DrivingDirection::STOP){
 			reset();
@@ -417,7 +449,7 @@ void init(){
 
 	serial = new SerialInterface();
     radio = new RF24(VEHICLE_PIN_RF24_CE, VEHICLE_PIN_RF24_CSN);
-	radio->begin();
+    radio->begin();
 	radio->openReadingPipe(0, address);
 	radio->setPALevel(RF24_PA_MIN);
 	radio->startListening();
