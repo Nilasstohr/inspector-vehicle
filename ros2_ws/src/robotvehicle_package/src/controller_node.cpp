@@ -38,18 +38,19 @@ public:
         // return to main menu
         serialInterface->sendRequest("0");
         // enter manual driving mode
-        serialInterface->sendRequest("1");
+        //serialInterface->sendRequest("1");
 
 
-        laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
                 "scan", default_qos,
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
-        JoyStickSubscription_ = this->create_subscription<std_msgs::msg::String>(
-                "topic_joy_stick", default_qos, std::bind(&ReadingLaser::topic_callback_joy_stick, this, _1));
+        //JoyStickSubscription_ = this->create_subscription<std_msgs::msg::String>(
+        //        "topic_joy_stick", default_qos, std::bind(&ReadingLaser::topic_callback_joy_stick, this, _1));
 
-        //timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-        //                              std::bind(&ReadingLaser::timer_callback, this));
+        timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
+                                      std::bind(&ReadingLaser::timer_callback, this));
+
         // drive forward.
         //serialInterface->sendRequest("y");
         //serialInterface->sendRequest("f");
@@ -103,15 +104,16 @@ private:
             posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
             sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
 
+
             kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
                                       sensorLogger[logCount]->getPosRight(),
                                       sensorLogger[logCount]->getScan());
-            sensorLogger[logCount]->setPose(
+             sensorLogger[logCount]->setPose(
                     kalmanFilterLive->getX(),kalmanFilterLive->getY(),kalmanFilterLive->getTheta());
-            odomStr->clear();
+             odomStr->clear();
             logCount++;
             //std::cout << n << std::endl;
-            if (n > 800) {
+            if (n > 5000) {
                 // stop driving
                 serialInterface->sendRequest("s");
                 timer_->cancel();
@@ -178,7 +180,7 @@ private:
     uint64_t time_cur=0;
     uint64_t time_diff=0;
     uint64_t time_last=0;
-    OdomRangeLog  * sensorLogger[5000];
+    OdomRangeLog  * sensorLogger[50000];
     std::string *odomStr;
     double posLeft;
     double posRight;

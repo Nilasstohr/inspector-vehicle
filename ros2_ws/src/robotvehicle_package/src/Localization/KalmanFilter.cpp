@@ -46,7 +46,7 @@ KalmanFilter::KalmanFilter():xtCount(0) {
     estimation = new Estimation(xEst,pEst);
 }
 
-void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan) {
+void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan,bool doLogging) {
     differentialDriveNoKalman->update(odomLeft,odomRight,
                       differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     differentialDrive->update(odomLeft,odomRight,estimation->getXt(),estimation->getPt());

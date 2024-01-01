@@ -16,7 +16,7 @@
 class KalmanFilter: MatrixHelper {
 public:
     KalmanFilter();
-    void update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan);
+    void update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan,bool doLogging);
     double getX();
     double getY();
     double getTheta();
@@ -32,8 +32,8 @@ private:
     Estimation *estimation;
 
     int xtCount;
-    MatrixXd xEstBuffer[50];
-    MatrixXd xtBuffer[50];
+    MatrixXd xEstBuffer[150];
+    MatrixXd xtBuffer[150];
 };
 
 

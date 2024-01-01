@@ -11,7 +11,7 @@ Incremental::Incremental(double esp) :
         currentPointIndex(0),
         scanPointsNum(0)
 {
-    this->lines = new LineStack(50);
+    this->lines = new LineStack(700);
     this->line = new Line();
 }
 
@@ -51,7 +51,8 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
             }
         }
         else{
-            addLine(line);
+            if(!isinf(point->getDistance()))
+                addLine(line);
             if(!pointToProcess()){
                 return;
             }

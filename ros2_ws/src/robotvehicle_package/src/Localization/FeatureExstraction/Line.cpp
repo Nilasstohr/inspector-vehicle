@@ -6,7 +6,7 @@
 #include "Line.h"
 
 Line::Line() {
-    std::vector<PointRectForm> points(300);
+    std::vector<PointRectForm> points(700);
     this->points = points;
     reset();
 }

@@ -31,23 +31,27 @@ Terminal 1. ( source underlay "source /opt/ros/foxy/setup.bash" )
 
 Terminal 2. ( source underlay "source /opt/ros/foxy/setup.bash" )
 -----------------------------------------------------------------
--Source overlay (from your workspace ". install/local_setup.bash")
--Modify overlay (then from Terminal 1 Build workspace)
+* Source overlay (from your workspace ". install/local_setup.bash")
+* Modify overlay (then from Terminal 1 Build workspace)
 
 Clion
-	1. Create ros workspace e.g dev_ws and create package e.g my_package and perform 		   build with with 
+	1. Create ros workspace e.g dev_ws and create package e.g my_package and perform build with
 	   "colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja" 
-	2. Open terminal, source overlay in worspace, then navigatet to CLion-XXX.X.X/bin execute 
+	2. Open a terminal, source overlay (se above *) in worspace, then navigatet to CLion-XXX.X.X/bin execute 
            "./clion.sh" to run CLion.
-	3. if previously project is open, close it from file -> close project
-	4. From here a welcome will popnu, choose "open" and point to ros target package (e.g 
+	3. if previously clion project is open, close it from file -> close project
+	4. From here a welcome will popup will be seen, choose "open" and point to ros2 target package (e.g 
 	   my_package) created in step1.
-	5. A project wizard will popup with a suggested debug profile, in "Build directory" point 		   to target package in ros build directory e.g from "dev_ws/build/my_pacakge" and click 
-	   OK.
-	   Now you have a target package project with run/debug configuration. 
-	stop here...
-	6. To build ros workspace from within Clion before run/debug open "Run/Debug 	   	      Configurations" and remove default "Build" task in "Before launch" then a new task
-	   to "External Tools" Called e.g "Colcon Build" in the tool insert "colcon" as program 
+	5. A project wizard will popup with a default "debug profile". In toolchain field make sure "use default system" is chosen.
+	   if not present add it from "manage toolchain"
+	6. In "Build directory" point to ros2 target package build directory e.g from "dev_ws/build/my_pacakge" and click 
+	   OK. Now you will have all target nodes from package project as run/debug configurations. 
+	
+	dont do step 6!!!! 
+	6. To build ros workspace from within Clion first open "Run/Debug Configurations" 
+	   and remove default "Build" task under "Before launch" 
+           then press the + sign (still under Before launch) this will popup some add options, 
+           choose "External Tools" Called e.g "Colcon Build" in the tool insert "colcon" as program 
 	   "build" as argument and working directory to ros workspace. 
 
 

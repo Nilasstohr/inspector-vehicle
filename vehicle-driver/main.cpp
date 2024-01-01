@@ -34,6 +34,11 @@ RF24 * radio;
 const byte address[6] = "00001";
 char cmd;
 
+// velocity control of each wheel
+double wr=0;
+double wl=0;
+
+
 enum VehicleMode
 {
 	IDLE,
@@ -61,6 +66,7 @@ bool modeEscapeRequest();
 void drivingMode();
 void drivningManual();
 bool handlePositionRequest();
+bool handleVelocityRequest();
 
 extern "C" int main(void){
 	init();
@@ -77,8 +83,7 @@ extern "C" int main(void){
 	//velocityControl(true);
 	Serial.println("entered vehicle mode options (enter mode 1-6)");
 	while(1){
-
-		VehicleMode mode = getVehicleMode();
+		VehicleMode mode = VehicleMode::DRIVING_MODE;//getVehicleMode();
 		switch(mode){
 			case VehicleMode::DRIVING_MODE:{
 				drivningManual();
@@ -106,8 +111,7 @@ extern "C" int main(void){
 			}
 
 		}
-
-		delay(100);
+		delay(1);
 	}
 
 }
@@ -162,7 +166,7 @@ DrivingDirection getDrivingModeManual(){
 
 DrivingDirection getDrivingModeManualRadio(){
   	 radio->read(&cmd, sizeof(cmd));
-	 Serial.println(cmd);
+	 //Serial.println(cmd);
 	 if(cmd=='y'){
 		 //Serial.println("going forward");
 		 return DrivingDirection::FORWARD;
@@ -190,16 +194,22 @@ DrivingDirection getDrivingModeManualRadio(){
 }
 
 void drivningManual(){
-	//Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
-	serial->sendAck();
+	Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
+	//serial->sendAck();
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
+
 	while(1){
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())
 				return;
-			else if(!handlePositionRequest())
+			else if(handleVelocityRequest())
+				mode=DrivingDirection::FORWARD;
+			else if(!handlePositionRequest()){
 				mode = getDrivingModeManual();
+				wr=VELOC_REF;
+				wl=VELOC_REF;
+			}
 		}else if(radio->available()){
 			mode = getDrivingModeManualRadio();
 		}
@@ -207,16 +217,17 @@ void drivningManual(){
 			reset();
 			mode=DrivingDirection::UNKNOWN;
 		}else if(mode==DrivingDirection::UNKNOWN){
-			// do noting
+			// do nothing
 		}else{
 			//Serial.println(mode);
 			if(mode==DrivingDirection::TURN_LEFT){
-				dualVelocityController->update(VELOC_REF,VELOC_REF+4,DrivingDirection::FORWARD);
+				dualVelocityController->update(wl,wr+4,DrivingDirection::FORWARD);
 			}else if(mode==DrivingDirection::TURN_RIGHT){
-				dualVelocityController->update(VELOC_REF+4,VELOC_REF,DrivingDirection::FORWARD);
+				dualVelocityController->update(wl+4,wr,DrivingDirection::FORWARD);
 			}else{
-				dualVelocityController->update(VELOC_REF,mode);
+				dualVelocityController->update(wl,wr,mode);
 			}
+
 		}
 		delayMicroseconds(1);
 	}
@@ -380,6 +391,21 @@ bool handlePositionRequest(){
 	}
 	return false;
 }
+
+bool handleVelocityRequest(){
+	if(serial->validateCommandWithArgs(1, 'v')){
+		wl = serial->getArg(0);
+		wr = serial->getArg(1);
+		Serial.print("velocity: ");
+		Serial.print(wl);
+		Serial.print(" ");
+		Serial.println(wr);
+		serial->sendAck();
+		return true;
+	}
+	return false;
+}
+
 
 double radPrSekFromDeltaT(uint32_t deltaT) {
 	double s;

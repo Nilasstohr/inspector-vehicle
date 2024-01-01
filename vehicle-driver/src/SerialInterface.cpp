@@ -98,6 +98,43 @@ bool SerialInterface::validateCommand(uint8_t size, char id) {
 	return getMessageSize()==size && getMessageBuf()[0]==id;
 }
 
+bool SerialInterface::validateCommandWithArgs(uint8_t argsSize, char id) {
+	argsSize = 0;
+	// requires at least 3 char id space and at least 1 arg.
+	int size = getMessageSize();
+	if(getMessageSize()<3 || getMessageBuf()[0]!=id || getMessageBuf()[size-1] != ';'){
+		return false;
+	}
+	int j=0;
+	for(int i=2; i<getMessageSize(); i++){
+		char c = getMessageBuf()[i];
+		if(c!=' ' && c!=';'){
+			arg[j]=c;
+			j++;
+		}else{
+			args[argsSize]=atofn(arg,j);
+			//Serial.println(args[argsSize]);
+			argsSize++;
+			j=0;
+		}
+	}
+	return true;
+}
+
+
+double SerialInterface::getArg(int index) {
+	return args[index];
+}
+
+
+double SerialInterface::atofn(char *src, int n) {
+  char tmp[20]; // big enough to fit any double
+  strncpy (tmp, src, n);
+  tmp[n] = 0;
+  return atof(tmp);
+}
+
+
 int SerialInterface::available() {
 	if(serialType==SerialType::usb){
 		return Serial.available();
@@ -151,4 +188,3 @@ void SerialInterface::changeSerialType(SerialType type) {
 void SerialInterface::restoreSerialType() {
 	serialType=serialTypeTemp;
 }
-
