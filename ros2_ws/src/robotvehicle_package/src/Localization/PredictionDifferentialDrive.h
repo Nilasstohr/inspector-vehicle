@@ -7,6 +7,7 @@
 
 #include <Eigen/Dense>
 #include "../Utilities/MatrixHelper.h"
+#include "FeatureExstraction/Line.h"
 
 using Eigen::MatrixXd;
 using Eigen::Matrix;

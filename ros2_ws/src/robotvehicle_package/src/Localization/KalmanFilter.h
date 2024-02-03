@@ -32,8 +32,8 @@ private:
     Estimation *estimation;
 
     int xtCount;
-    MatrixXd xEstBuffer[150];
-    MatrixXd xtBuffer[150];
+    MatrixXd xEstBuffer[4000];
+    MatrixXd xtBuffer[4000];
 };
 
 

@@ -98,10 +98,14 @@ void DualPiVelocityControl::reset() {
 	controlFilters->right()->reset();
 }
 
+void DualPiVelocityControl::stop() {
+	motors->stop();
+}
+
+
 bool DualPiVelocityControl::wasSensorReady() {
 	return sensorReady;
 }
 DualPiVelocityControl::~DualPiVelocityControl() {
 	// TODO Auto-generated destructor stub
 }
-

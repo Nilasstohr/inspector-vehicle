@@ -21,7 +21,8 @@ public:
     void setAlfa(double alfa);
     double getR() const;
     void setR(double r);
-
+    static void limitAngle(double &angle);
+    static void correctPolarCoordinates(double &alfa, double &r);
     void reset();
 
 private:

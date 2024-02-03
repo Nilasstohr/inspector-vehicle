@@ -55,7 +55,7 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
     xEst = *xt + Vector3d (dS * cos(phi + dPhi / 2),
                                          dS*sin(phi + dPhi/2),
                            dPhi);
-
+    //Line::limitAngle(xEst(2));
     //printMatrix(&xEst,"xEst");
 
     MatrixXd Fx(3,3);

@@ -42,6 +42,7 @@ void Line::updateOriginLineNormal() {
     else
         alfa = fi+M_PI/2;
     r    = b*sin(alfa);
+    //correctPolarCoordinates(alfa,r);
 }
 
 void Line::updateSlopeForm() {
@@ -76,5 +77,25 @@ double Line::getR() const {
 void Line::setR(double r) {
     Line::r = r;
 }
+
+void Line::limitAngle(double &angle) {
+    if(angle < -M_PI)
+        angle += M_PI;
+    else if(angle>M_PI)
+        angle -= M_PI;
+}
+
+void Line::correctPolarCoordinates(double &alfa, double &r) {
+    if( r < 0){
+        r=-r;
+        alfa-=M_PI;
+    }
+    limitAngle(alfa);
+}
+
+
+
+
+
 
 

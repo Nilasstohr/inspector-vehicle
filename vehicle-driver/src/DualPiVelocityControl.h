@@ -35,6 +35,7 @@ public:
 	}
 	bool wasSensorReady();
 	void reset();
+	void stop();
 
 private:
 	MotorDrivers* motors;

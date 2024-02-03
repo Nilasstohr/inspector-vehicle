@@ -29,6 +29,7 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         x     = prediction->getX();
         y     = prediction->getY();
         rR    = rW - ( x*cos(alfaW)+y*sin(alfaW) );
+        //Line::correctPolarCoordinates(alfaR,rR);
         z_est->add(alfaR, rR);
         // row 1
         H(0,0)=0;

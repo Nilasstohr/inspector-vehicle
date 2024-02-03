@@ -14,7 +14,7 @@
 #define MAX_COUNTS 35000
 #define COUNTS_PR_REV 3200
 
-#define VELOC_REF 5
+#define VELOC_REF 2
 
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
 
@@ -67,7 +67,7 @@ void drivingMode();
 void drivningManual();
 bool handlePositionRequest();
 bool handleVelocityRequest();
-
+bool handleResetRequest();
 extern "C" int main(void){
 	init();
 
@@ -167,6 +167,7 @@ DrivingDirection getDrivingModeManual(){
 DrivingDirection getDrivingModeManualRadio(){
   	 radio->read(&cmd, sizeof(cmd));
 	 //Serial.println(cmd);
+
 	 if(cmd=='y'){
 		 //Serial.println("going forward");
 		 return DrivingDirection::FORWARD;
@@ -178,6 +179,7 @@ DrivingDirection getDrivingModeManualRadio(){
 		 return DrivingDirection::SPIN_LEFT;
 	 }else if(cmd=='f'){
 		 //Serial.println("spin right");
+
 		 return DrivingDirection::SPIN_RIGHT;
 	 }else if(cmd=='g'){
 		 //Serial.println("turn left");
@@ -199,22 +201,26 @@ void drivningManual(){
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 
+
 	while(1){
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())
 				return;
 			else if(handleVelocityRequest())
 				mode=DrivingDirection::FORWARD;
-			else if(!handlePositionRequest()){
+			else if(handleResetRequest())
+				mode=DrivingDirection::UNKNOWN;
+			else if(!handlePositionRequest())
 				mode = getDrivingModeManual();
-				wr=VELOC_REF;
-				wl=VELOC_REF;
-			}
 		}else if(radio->available()){
 			mode = getDrivingModeManualRadio();
+			wr=VELOC_REF;
+			wl=VELOC_REF;
+
+
 		}
 		if(mode==DrivingDirection::STOP){
-			reset();
+			dualVelocityController->stop();
 			mode=DrivingDirection::UNKNOWN;
 		}else if(mode==DrivingDirection::UNKNOWN){
 			// do nothing
@@ -400,6 +406,16 @@ bool handleVelocityRequest(){
 		Serial.print(wl);
 		Serial.print(" ");
 		Serial.println(wr);
+		serial->sendAck();
+		return true;
+	}
+	return false;
+}
+
+
+bool handleResetRequest(){
+	if(serial->validateCommand(1, 'r')){
+		reset();
 		serial->sendAck();
 		return true;
 	}
