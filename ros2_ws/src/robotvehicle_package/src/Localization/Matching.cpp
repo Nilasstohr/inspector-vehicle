@@ -39,6 +39,7 @@ void Matching::update(
         }
     }
     //printMatrix(matches->getRt(),"R after set");
+    //cout << "matches=" << matches->getMatchCount() << endl;
     matches->addXEst(prediction->getXEst());
     matches->addPEst(prediction->getPEst());
 }

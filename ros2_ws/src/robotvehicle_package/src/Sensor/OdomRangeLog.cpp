@@ -25,6 +25,15 @@ OdomRangeLog::OdomRangeLog(double posLeft, double posRight, sensor_msgs::msg::La
     }
 }
 
+OdomRangeLog::OdomRangeLog(double posLeft, double posRight, std::vector<PointPolarForm> *scan):
+    posLeft(posLeft), posRight(posRight) {
+    this->scan = new std::vector<PointPolarForm>;
+    for(int i=0;i<scan->size();i++){
+        this->scan->push_back(PointPolarForm(scan->at(i).getAngle(),scan->at(i).getDistance()));
+    }
+    //copy(this->scan->begin(),this->scan->end(), back_inserter(*scan));
+}
+
 double OdomRangeLog::getPosLeft() const {
     return posLeft;
 }

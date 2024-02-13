@@ -52,6 +52,10 @@ const MatrixXd  Matches::getVt() const {
     return vt->getLines();
 }
 
+const MatrixXd  Matches::getVtUnstacked() const {
+    return vt->unstackLines();
+}
+
 const MatrixXd *Matches::getXEst() const {
     return xEst;
 }

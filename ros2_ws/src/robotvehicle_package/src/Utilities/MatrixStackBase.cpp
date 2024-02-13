@@ -29,8 +29,13 @@ int MatrixStackBase::mapIndexSecond(int i) const {
 }
 
 void MatrixStackBase::printMatrix(char *name) {
-    MatrixHelper::printMatrix(&stack,name);
+    printMatrix(name,stack.rows());
 }
+
+void MatrixStackBase::printMatrix(char *name,int maxRows) {
+    MatrixHelper::printMatrix(&stack,name,maxRows);
+}
+
 
 const MatrixXd MatrixStackBase::getStackBlock(int rowSize,int colSize) {
     return stack.block(0,0,rowSize,colSize );

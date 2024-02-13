@@ -75,7 +75,9 @@ add_executable(
         src/Localization/RStack.cpp 
         src/Localization/RStack.h 
         src/Localization/KalmanFilter.cpp 
-        src/Localization/KalmanFilter.h)
+        src/Localization/KalmanFilter.h
+        src/TestKalmanFilterOffLine.cpp
+        src/TestKalmanFilterOffLine.h)
         
 ament_target_dependencies(
         controller_node

@@ -17,6 +17,7 @@ public:
     int mapIndexFirst(int i) const;
     int mapIndexSecond(int i) const;
     void printMatrix(char *name);
+    void printMatrix(char *name,int maxRows);
 protected:
     int stackNum;
     int index;

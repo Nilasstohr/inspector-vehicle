@@ -8,6 +8,7 @@
 #include "Sensor/OdomRangeLog.h"
 #include "Sensor/PointRectForm.h"
 #include "Localization/KalmanFilter.h"
+#include "TestKalmanFilterOffLine.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -19,6 +20,7 @@ using std::placeholders::_1;
 #define RAD2DEG(x) ((x)*180./M_PI)
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
+
 
 class ReadingLaser : public rclcpp::Node {
 
@@ -71,7 +73,7 @@ private:
             posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
             sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
 
-            kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
+           kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
                                       sensorLogger[logCount]->getPosRight(),
                                       sensorLogger[logCount]->getScan(),true);
              sensorLogger[logCount]->setPose(
@@ -155,11 +157,15 @@ private:
 
 };
 
+
 int main(int argc, char ** argv)
 {
+    new TestKalmanFilterOffLine();
+    /*
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
     rclcpp::shutdown();
+    */
     return 0;
 }

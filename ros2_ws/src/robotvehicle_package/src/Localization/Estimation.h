@@ -18,10 +18,16 @@ public:
     double getX();
     double getY();
     double getTheta();
+    void printDebugData(Matching *matching);
 
 private:
     MatrixXd xt;
     MatrixXd Pt;
+    MatrixXd ktGain;
+    const MatrixXd vt;
+
+
+
 };
 
 

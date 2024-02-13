@@ -19,6 +19,7 @@ public:
     const MatrixXd * getXEst() const;
     const MatrixXd  getHt() const;
     const MatrixXd  getVt() const;
+    const MatrixXd getVtUnstacked() const;
     const MatrixXd  getRt() const;
     void addXEst(const MatrixXd *xEst);
     int getMatchCount() const;
@@ -29,6 +30,7 @@ private:
     const MatrixXd  *PEst;
     const MatrixXd *xEst;
     int matchCount;
+
 
 
 };

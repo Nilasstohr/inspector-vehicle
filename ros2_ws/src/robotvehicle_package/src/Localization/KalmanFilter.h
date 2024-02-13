@@ -20,6 +20,9 @@ public:
     double getX();
     double getY();
     double getTheta();
+
+    void build(vector<PointPolarForm> *scan);
+
 private:
     void print(int index);
     void printPose(int index, const MatrixXd* m, char * text);
