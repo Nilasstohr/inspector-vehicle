@@ -6,6 +6,8 @@ from numpy import loadtxt
 from scipy import signal
 from scipy.signal import savgol_filter, lfilter, butter
 
+from Localization import Localization
+
 
 def butter_lowpass(cutoff, fs, order=1):
     return butter(order, cutoff, fs=fs, btype='low', analog=False)
@@ -100,17 +102,19 @@ def velocity_controller_design():
 
 
 if __name__ == '__main__':
-    # velocity_controller_design()
+     #velocity_controller_design()
 
-    omega_0 = 15
-    r = 4.5
-    d_end = 50
-    d_start = 30
-    fi_end = d_end / r  # end distance
-    fi_start = d_start / r  # start deaccelerate at distance
-    alfa = -pow(omega_0, 2) / (2 * (fi_end - fi_start))
-    print(alfa)
-    d = np.arange(start=30, stop=50 + 0.1, step=0.1)
-    w = np.sqrt(pow(omega_0, 2) + 2 * alfa * (d/r - fi_start))
-    print(d)
-    print(w)
+     a = Localization()
+
+#    omega_0 = 15
+#    r = 4.5
+#    d_end = 50
+#    d_start = 30
+#    fi_end = d_end / r  # end distance
+#    fi_start = d_start / r  # start deaccelerate at distance
+#    alfa = -pow(omega_0, 2) / (2 * (fi_end - fi_start))
+#    print(alfa)
+#    d = np.arange(start=30, stop=50 + 0.1, step=0.1)
+#    w = np.sqrt(pow(omega_0, 2) + 2 * alfa * (d/r - fi_start))
+#    print(d)
+#    print(w)

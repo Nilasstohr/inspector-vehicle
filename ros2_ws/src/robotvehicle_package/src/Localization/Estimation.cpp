@@ -21,7 +21,6 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     MatrixXd Rt = matching->getMatches()->getRt();
     const MatrixXd Ht = matching->getMatches()->getHt();
     const MatrixXd vt = matching->getMatches()->getVt();
-
     //printMatrix(xEst,"--xEst--");
     //printMatrix(&Rt,"--Rt--");
     //printMatrix(&Ht,"--Ht--");
@@ -30,7 +29,6 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     //cout << "Rt size " <<  Rt.rows() << " x " << Rt.cols() << endl;
     //cout << "Ht size " <<  Ht.rows() << " x " << Ht.cols() << endl;
     //cout << "vt size " <<  vt.rows() << " x " << vt.cols() << endl;
-
     MatrixXd PtIN = Ht * *pEst * Ht.transpose() + Rt;
     //printMatrix(&PtIN,"--PtIN--");
     //printMatrix(pEst,"--PtEst--");
@@ -51,7 +49,7 @@ void Estimation::update(Matching * matching,const MatrixXd* xEst,const MatrixXd*
     xt     = xt_est + Kt*(obj.zt - obj.zt_est);
     Pt     = Pt_est - Kt * PtIN * Kt';
     */
-    printDebugData(matching);
+    //printDebugData(matching);
 }
 
 

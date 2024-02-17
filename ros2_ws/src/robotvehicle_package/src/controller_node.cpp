@@ -64,7 +64,7 @@ private:
     }
     void timer_callback(){
         if(scanReady) {
-            scanReady=false;
+            scanReady = false;
             //ROS_INFO("scan found");
             serialInterface->sendRequest("p");
             odomStr->append(serialInterface->getResponse()->c_str());
@@ -73,7 +73,13 @@ private:
             posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
             sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
 
-           kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
+            if (!hasMapBeenBuild) {
+                kalmanFilterLive->build(sensorLogger[logCount]->getScan());
+                hasMapBeenBuild=true;
+                return;
+            }
+
+            kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
                                       sensorLogger[logCount]->getPosRight(),
                                       sensorLogger[logCount]->getScan(),true);
              sensorLogger[logCount]->setPose(
@@ -154,18 +160,18 @@ private:
     bool scanReady=false;
     std::string *json = new std::string();
     KalmanFilter * kalmanFilterLive;
-
+    bool hasMapBeenBuild=false;
 };
 
 
 int main(int argc, char ** argv)
 {
-    new TestKalmanFilterOffLine();
-    /*
+    //new TestKalmanFilterOffLine();
+
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
     rclcpp::shutdown();
-    */
+
     return 0;
 }

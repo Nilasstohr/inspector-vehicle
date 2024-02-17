@@ -64,7 +64,7 @@ void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPo
     // store
     xtBuffer[xtCount]  = *estimation->getXt();
     xEstBuffer[xtCount]= *differentialDriveNoKalman->getXEst();
-    //print(xtCount);
+    print(xtCount);
     xtCount++;
 }
 
