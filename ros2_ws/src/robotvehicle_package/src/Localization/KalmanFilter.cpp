@@ -71,17 +71,21 @@ void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPo
 
 void KalmanFilter::printPose(int index, const MatrixXd* m, char * text) {
     //printMatrix(m,"m");
-    cout
-         << m->coeffRef(0,0) << " "
+    cout << m->coeffRef(0,0) << " "
          << m->coeffRef(1,0) << " "
          << m->coeffRef(2,0);
 }
 
 void KalmanFilter::print(int index) {
     //cout << "(" << index+1 << ") ";
-    printPose(xtCount, &xtBuffer[xtCount], "xt");
+    printPose(xtCount, &xtBuffer[index], "xt");
     //printPose(xtCount, &xEstBuffer[xtCount], "xEst");
     cout << endl;
+}
+void KalmanFilter::printPoseStorage(){
+    for(int i=0; i<xtCount; i++){
+        print(i);
+    }
 }
 
 double KalmanFilter::getY() {
@@ -98,6 +102,10 @@ double KalmanFilter::getTheta() {
 
 void KalmanFilter::build(vector<PointPolarForm> *scan) {
     measurementPrediction->buildMap(scan);
+}
+
+bool KalmanFilter::reachedMaxPoseStorage() {
+    return xtCount >= POSE_STORAGE_SIZE - 1;
 }
 
 

@@ -2,7 +2,7 @@
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "SerialInterface.h"
+#include "Utilities/SerialInterface.h"
 
 // teensy 3.2
 #define SERIAL_DEVICE_NAME "/dev/ttyACM1"

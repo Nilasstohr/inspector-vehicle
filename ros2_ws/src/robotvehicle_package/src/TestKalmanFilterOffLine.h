@@ -16,6 +16,7 @@ public:
     TestKalmanFilterOffLine();
     void getValuesFromLine(string line, float &val1,float &val2);
 
+    float getValueFromString(string s);
 };
 
 

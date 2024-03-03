@@ -1,12 +1,13 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
-#include "SerialInterface.h"
-#include "AwaitTimer.h"
+#include "Utilities/SerialInterface.h"
+#include "Utilities/AwaitTimer.h"
 #include <Eigen/Dense>
 #include <fstream>
 #include <std_msgs/msg/string.hpp>
 #include "Sensor/OdomRangeLog.h"
 #include "Sensor/PointRectForm.h"
+#include "Sensor/SensorRecorder.h"
 #include "Localization/KalmanFilter.h"
 #include "TestKalmanFilterOffLine.h"
 
@@ -20,17 +21,18 @@ using std::placeholders::_1;
 #define RAD2DEG(x) ((x)*180./M_PI)
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
+#define RECORD_DURATION_SECONDS 10
 
 
 class ReadingLaser : public rclcpp::Node {
-
 public:
-
     ReadingLaser() : Node("reading_laser") {
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
         odomStr = new std::string();
         kalmanFilterLive = new KalmanFilter();
+        recorder->startRecord(RECORD_DURATION_SECONDS);
+        cout << "starting run" << endl;
         if (serialInterface->hasResponse()) {
             ROS_INFO(serialInterface->getResponse()->c_str());
         }
@@ -48,21 +50,98 @@ public:
         // reset
         serialInterface->sendRequest("r");
     }
-
 private:
-    uint64_t getSystemMillis() {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    }
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
         currentScan = scan;
         scanReady=true;
-
     }
+    void timer_callback(){
+        if(scanReady) {
+            scanReady = false;
+            serialInterface->sendRequest("p");
+            odomStr->append(serialInterface->getResponse()->c_str());
+            //cout << "wheel dis: " << odomStr->c_str() << endl;
+            posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
+            posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
+            //cout << "wd: "<< posLeft  << " " << posRight << endl;
+            //timer->reset();
+            recorder->writeNewRecord(posLeft,posRight);
+            odomStr->clear();
+            int scanPointsNum = currentScan->scan_time / currentScan->time_increment;
+            for(int i = 0; i < scanPointsNum; i++) {
+                angle = (currentScan->angle_min + currentScan->angle_increment * i)+M_PI;
+                distance = currentScan->ranges[i]*100;
+                if(!isinf(distance)){
+                    //scanPolarForm->push_back(PointPolarForm(angle,distance));
+                    recorder->writeScanPoint(angle,distance);
+                }
+            }
+            if(recorder->hasRecordTimeExceeded()){
+                timer_->cancel();
+                laserScanSubscription_.reset();
+                recorder->endRecord();
+                timer_->cancel();
+                cout << "ending run" << endl;
+                rclcpp::shutdown();
+                return;
+            }
+            //timer->printElapsedTime();
+            /*
+            if (!hasMapBeenBuild) {
+                kalmanFilterLive->build(scanPolarForm);
+                hasMapBeenBuild = true;
+            }
+
+            kalmanFilterLive->update(posLeft,posRight,scanPolarForm, true);
+            scanPolarForm->clear();
+            if(kalmanFilterLive->reachedMaxPoseStorage()){
+                kalmanFilterLive->printPoseStorage();
+                timer_->cancel();
+            }
+            */
+        }
+    }
+
     void topic_callback_joy_stick(const std_msgs::msg::String::SharedPtr msg) const
     {
         RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
     }
-    void timer_callback(){
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    SerialInterface * serialInterface;
+    OdomRangeLog  * sensorLogger[160000];
+    std::vector<PointPolarForm> * scanPolarForm = new std::vector<PointPolarForm>;
+    float angle;
+    float distance;
+    std::string *odomStr;
+    double posLeft;
+    double posRight;
+    sensor_msgs::msg::LaserScan::SharedPtr currentScan;
+    uint64_t n=0;
+    uint64_t logCount =0;
+    bool scanReady=false;
+    std::string *json = new std::string();
+    KalmanFilter * kalmanFilterLive;
+    bool hasMapBeenBuild=false;
+    AwaitTimer *timer = new AwaitTimer();
+    SensorRecorder * recorder = new SensorRecorder();
+};
+
+
+int main(int argc, char ** argv)
+{
+   //new TestKalmanFilterOffLine();
+
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<ReadingLaser>();
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
+}
+
+/*
+  void timer_callback(){
         if(scanReady) {
             scanReady = false;
             //ROS_INFO("scan found");
@@ -145,33 +224,4 @@ private:
         n++;
         //std::cout << n << std::endl;
     }
-
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
-    rclcpp::TimerBase::SharedPtr timer_;
-    SerialInterface * serialInterface;
-    OdomRangeLog  * sensorLogger[160000];
-    std::string *odomStr;
-    double posLeft;
-    double posRight;
-    sensor_msgs::msg::LaserScan::SharedPtr currentScan;
-    uint64_t n=0;
-    uint64_t logCount =0;
-    bool scanReady=false;
-    std::string *json = new std::string();
-    KalmanFilter * kalmanFilterLive;
-    bool hasMapBeenBuild=false;
-};
-
-
-int main(int argc, char ** argv)
-{
-    //new TestKalmanFilterOffLine();
-
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<ReadingLaser>();
-    rclcpp::spin(node);
-    rclcpp::shutdown();
-
-    return 0;
-}
+ */

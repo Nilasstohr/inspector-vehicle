@@ -13,6 +13,8 @@
 #include "Matching.h"
 #include "Estimation.h"
 
+#define POSE_STORAGE_SIZE 4000
+
 class KalmanFilter: MatrixHelper {
 public:
     KalmanFilter();
@@ -20,7 +22,8 @@ public:
     double getX();
     double getY();
     double getTheta();
-
+    void printPoseStorage();
+    bool reachedMaxPoseStorage();
     void build(vector<PointPolarForm> *scan);
 
 private:
@@ -35,8 +38,8 @@ private:
     Estimation *estimation;
 
     int xtCount;
-    MatrixXd xEstBuffer[4000];
-    MatrixXd xtBuffer[4000];
+    MatrixXd xEstBuffer[POSE_STORAGE_SIZE];
+    MatrixXd xtBuffer[POSE_STORAGE_SIZE];
 };
 
 

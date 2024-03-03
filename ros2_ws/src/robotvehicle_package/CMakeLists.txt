@@ -32,12 +32,12 @@ ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 add_executable(
         controller_node
         src/controller_node.cpp
-        src/SerialInterface.cpp
-        src/SerialInterface.h
-        src/UsbSerial.cpp
-        src/UsbSerial.h
-        src/AwaitTimer.cpp
-        src/AwaitTimer.h
+        src/Utilities/SerialInterface.cpp
+        src/Utilities/SerialInterface.h
+        src/Utilities/UsbSerial.cpp
+        src/Utilities/UsbSerial.h
+        src/Utilities/AwaitTimer.cpp
+        src/Utilities/AwaitTimer.h
         src/Sensor/OdomRangeLog.cpp
         src/Sensor/OdomRangeLog.h
         src/Sensor/PointPolarForm.cpp
@@ -77,7 +77,7 @@ add_executable(
         src/Localization/KalmanFilter.cpp 
         src/Localization/KalmanFilter.h
         src/TestKalmanFilterOffLine.cpp
-        src/TestKalmanFilterOffLine.h)
+        src/TestKalmanFilterOffLine.h src/Navigation/MotionController.cpp src/Navigation/MotionController.h src/Navigation/NavigationPath.cpp src/Navigation/NavigationPath.h src/Navigation/NavigationPoint.cpp src/Navigation/NavigationPoint.h src/Host/DriverInterface.cpp src/Host/DriverInterface.h src/Sensor/SensorRecorder.cpp src/Sensor/SensorRecorder.h)
         
 ament_target_dependencies(
         controller_node
@@ -86,12 +86,12 @@ ament_target_dependencies(
 
 add_executable(
         joystick_node
-        src/SerialInterface.cpp
-        src/SerialInterface.h
-        src/UsbSerial.cpp
-        src/UsbSerial.h
-        src/AwaitTimer.cpp
-        src/AwaitTimer.h
+        src/Utilities/SerialInterface.cpp
+        src/Utilities/SerialInterface.h
+        src/Utilities/UsbSerial.cpp
+        src/Utilities/UsbSerial.h
+        src/Utilities/AwaitTimer.cpp
+        src/Utilities/AwaitTimer.h
         src/publisher_joystick_node.cpp)
 ament_target_dependencies(joystick_node rclcpp std_msgs)
 
