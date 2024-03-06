@@ -64,7 +64,7 @@ void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPo
     // store
     xtBuffer[xtCount]  = *estimation->getXt();
     xEstBuffer[xtCount]= *differentialDriveNoKalman->getXEst();
-    print(xtCount);
+    //print(xtCount);
     xtCount++;
 }
 
@@ -83,6 +83,7 @@ void KalmanFilter::print(int index) {
     cout << endl;
 }
 void KalmanFilter::printPoseStorage(){
+    cout << "count: "<< xtCount << endl;
     for(int i=0; i<xtCount; i++){
         print(i);
     }
@@ -107,5 +108,3 @@ void KalmanFilter::build(vector<PointPolarForm> *scan) {
 bool KalmanFilter::reachedMaxPoseStorage() {
     return xtCount >= POSE_STORAGE_SIZE - 1;
 }
-
-

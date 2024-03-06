@@ -21,7 +21,7 @@ using std::placeholders::_1;
 #define RAD2DEG(x) ((x)*180./M_PI)
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
-#define RECORD_DURATION_SECONDS 10
+#define RECORD_DURATION_SECONDS 80
 
 
 class ReadingLaser : public rclcpp::Node {
@@ -72,33 +72,27 @@ private:
                 angle = (currentScan->angle_min + currentScan->angle_increment * i)+M_PI;
                 distance = currentScan->ranges[i]*100;
                 if(!isinf(distance)){
-                    //scanPolarForm->push_back(PointPolarForm(angle,distance));
+                    scanPolarForm->push_back(PointPolarForm(angle,distance));
                     recorder->writeScanPoint(angle,distance);
                 }
             }
-            if(recorder->hasRecordTimeExceeded()){
+            if (!hasMapBeenBuild) {
+                kalmanFilterLive->build(scanPolarForm);
+                hasMapBeenBuild = true;
+            }
+            kalmanFilterLive->update(posLeft,posRight,scanPolarForm, true);
+            scanPolarForm->clear();
+            if(recorder->hasRecordTimeExceeded() || kalmanFilterLive->reachedMaxPoseStorage()){
                 timer_->cancel();
                 laserScanSubscription_.reset();
                 recorder->endRecord();
-                timer_->cancel();
+                kalmanFilterLive->printPoseStorage();
                 cout << "ending run" << endl;
                 rclcpp::shutdown();
                 return;
             }
             //timer->printElapsedTime();
-            /*
-            if (!hasMapBeenBuild) {
-                kalmanFilterLive->build(scanPolarForm);
-                hasMapBeenBuild = true;
-            }
 
-            kalmanFilterLive->update(posLeft,posRight,scanPolarForm, true);
-            scanPolarForm->clear();
-            if(kalmanFilterLive->reachedMaxPoseStorage()){
-                kalmanFilterLive->printPoseStorage();
-                timer_->cancel();
-            }
-            */
         }
     }
 
@@ -138,6 +132,7 @@ int main(int argc, char ** argv)
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
+
 }
 
 /*

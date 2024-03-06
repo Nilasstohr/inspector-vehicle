@@ -10,7 +10,7 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     OdomRangeLog  * sensorLogger[160000];
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
-    file.open("/home/robot1/devrepo/inspector-vehicle/ros2_ws/build/robotvehicle_package/record2.txt");
+    file.open("../../../doc/Measurements/realtime/record_cp_live1.txt");
     float angle;
     float distance;
     float posLeft;

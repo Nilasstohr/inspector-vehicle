@@ -13,7 +13,7 @@
 #include "Matching.h"
 #include "Estimation.h"
 
-#define POSE_STORAGE_SIZE 4000
+#define POSE_STORAGE_SIZE 1300
 
 class KalmanFilter: MatrixHelper {
 public:

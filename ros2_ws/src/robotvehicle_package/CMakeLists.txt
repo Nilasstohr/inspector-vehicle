@@ -77,7 +77,17 @@ add_executable(
         src/Localization/KalmanFilter.cpp 
         src/Localization/KalmanFilter.h
         src/TestKalmanFilterOffLine.cpp
-        src/TestKalmanFilterOffLine.h src/Navigation/MotionController.cpp src/Navigation/MotionController.h src/Navigation/NavigationPath.cpp src/Navigation/NavigationPath.h src/Navigation/NavigationPoint.cpp src/Navigation/NavigationPoint.h src/Host/DriverInterface.cpp src/Host/DriverInterface.h src/Sensor/SensorRecorder.cpp src/Sensor/SensorRecorder.h)
+        src/TestKalmanFilterOffLine.h
+        src/Navigation/MotionController.cpp
+        src/Navigation/MotionController.h
+        src/Navigation/NavigationPath.cpp
+        src/Navigation/NavigationPath.h
+        src/Navigation/NavigationPoint.cpp
+        src/Navigation/NavigationPoint.h
+        src/Host/DriverInterface.cpp
+        src/Host/DriverInterface.h
+        src/Sensor/SensorRecorder.cpp
+        src/Sensor/SensorRecorder.h)
         
 ament_target_dependencies(
         controller_node
@@ -93,7 +103,11 @@ add_executable(
         src/Utilities/AwaitTimer.cpp
         src/Utilities/AwaitTimer.h
         src/publisher_joystick_node.cpp)
-ament_target_dependencies(joystick_node rclcpp std_msgs)
+
+ament_target_dependencies(
+        joystick_node
+        rclcpp
+        std_msgs)
 
 # add Feature extraction library
 #add_subdirectory(FeatureExtraction)
