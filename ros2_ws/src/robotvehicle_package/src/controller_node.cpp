@@ -41,6 +41,9 @@ public:
                 "scan", default_qos,
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
+        posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
+
+
         //JoyStickSubscription_ = this->create_subscription<std_msgs::msg::String>(
         //        "topic_joy_stick", default_qos, std::bind(&ReadingLaser::topic_callback_joy_stick, this, _1));
 
@@ -56,6 +59,8 @@ private:
         scanReady=true;
     }
     void timer_callback(){
+
+
         if(scanReady) {
             scanReady = false;
             serialInterface->sendRequest("p");
@@ -86,9 +91,11 @@ private:
                 timer_->cancel();
                 laserScanSubscription_.reset();
                 recorder->endRecord();
-                kalmanFilterLive->printPoseStorage();
+                //kalmanFilterLive->printPoseStorage();
                 cout << "ending run" << endl;
-                rclcpp::shutdown();
+                cout << "publishing data" << endl;
+                publishPoseStorage(kalmanFilterLive);
+                 rclcpp::shutdown();
                 return;
             }
             //timer->printElapsedTime();
@@ -96,12 +103,28 @@ private:
         }
     }
 
+    void publishPoseStorage(KalmanFilter * kalmanFilter){
+        auto message = std_msgs::msg::String();
+        int size = kalmanFilter->getLoggedNum()-1;
+        for(int i=0; i<size; i++){
+            cout << i << endl;
+            message.data = kalmanFilter->getPoseStringByIndex(i)->c_str();
+            posePublisher_->publish(message);
+            this_thread::sleep_for(std::chrono::milliseconds (20));
+        }
+        message.data = "end";
+        posePublisher_->publish(message);
+    }
+
     void topic_callback_joy_stick(const std_msgs::msg::String::SharedPtr msg) const
     {
         RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
     }
+
+
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::TimerBase::SharedPtr timer_;
     SerialInterface * serialInterface;
     OdomRangeLog  * sensorLogger[160000];
@@ -134,89 +157,3 @@ int main(int argc, char ** argv)
     return 0;
 
 }
-
-/*
-  void timer_callback(){
-        if(scanReady) {
-            scanReady = false;
-            //ROS_INFO("scan found");
-            serialInterface->sendRequest("p");
-            odomStr->append(serialInterface->getResponse()->c_str());
-            //ROS_INFO(odomStr->c_str());
-            posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
-            posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
-            sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, currentScan);
-
-            if (!hasMapBeenBuild) {
-                kalmanFilterLive->build(sensorLogger[logCount]->getScan());
-                hasMapBeenBuild=true;
-                return;
-            }
-
-            kalmanFilterLive->update( sensorLogger[logCount]->getPosLeft(),
-                                      sensorLogger[logCount]->getPosRight(),
-                                      sensorLogger[logCount]->getScan(),true);
-             sensorLogger[logCount]->setPose(
-                    kalmanFilterLive->getX(),kalmanFilterLive->getY(),kalmanFilterLive->getTheta());
-             odomStr->clear();
-            logCount++;
-            //std::cout << n << std::endl;
-            if (n > 140000) {
-                // stop driving
-                serialInterface->sendRequest("r");
-                timer_->cancel();
-                json->append("\n{").append("\n");
-                json->append("\"data\":[").append("\n");
-                for (int i = 0; i < logCount; i++) {
-                    json->append("{").append("\n");
-                    // odom
-                    json->append("\"odom\":");
-                    json->append("{").append("\n");
-                    json->append("\"posLeft\":");
-                    json->append(std::to_string(sensorLogger[i]->getPosLeft())).append(",\n");
-                    json->append("\"posRight\":");
-                    json->append(std::to_string(sensorLogger[i]->getPosRight())).append(",\n");
-                    json->append("\"x\":");
-                    json->append(std::to_string(sensorLogger[i]->getX())).append(",\n");
-                    json->append("\"y\":");
-                    json->append(std::to_string(sensorLogger[i]->getY())).append(",\n");
-                    json->append("\"theta\":");
-                    json->append(std::to_string(sensorLogger[i]->getTheta())).append("\n");
-                    json->append("},").append("\n");
-                    // laser scan
-                    json->append("\"scan\":{").append("\n");
-                    json->append("\"points\":[").append("\n");
-                    int lenScans = sensorLogger[i]->getScan()->size() - 1;
-                    for (int j = 0; j < lenScans; j++) {
-                        json->append("{").append("\n");
-                        json->append("\"angle\":");
-                        json->append(std::to_string(sensorLogger[i]->getScan()->at(j).getAngle())).append(",\n");
-                        json->append("\"distance\":");
-                        json->append(std::to_string(sensorLogger[i]->getScan()->at(j).getDistance())).append("\n");
-                        json->append("}");
-                        if (j < lenScans - 1) {
-                            json->append(",");
-                        }
-                        json->append("\n");
-                    }
-                    json->append("]").append("\n");
-                    json->append("}").append("\n");
-                    json->append("}");
-                    if (i < logCount - 1) {
-                        json->append(",");
-                    }
-                    json->append("\n");
-                }
-                json->append("]").append("\n");
-                json->append("}");
-                //ROS_INFO(json->c_str());
-                std::ofstream out("log.json");
-                out << json->c_str();
-                out.close();
-                json->clear();
-            }
-        }
-        n++;
-        //std::cout << n << std::endl;
-    }
- */

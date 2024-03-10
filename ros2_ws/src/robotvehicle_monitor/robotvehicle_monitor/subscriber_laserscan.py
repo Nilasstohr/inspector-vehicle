@@ -23,15 +23,25 @@ class MinimalLaserScan(Node):
 
     def __init__(self):
         super().__init__('minimal_laserscan')
+        # self.subscription = self.create_subscription(
+        #    LaserScan,
+        #    'scan',
+        #    self.listener_callback,
+        #    10)
+
         self.subscription = self.create_subscription(
-            LaserScan,
-            'scan',
-            self.listener_callback,
+            String,
+            'topic_pose_string',
+            self.listener_callback_post_string,
             10)
+
         self.subscription  # prevent unused variable warning
 
-    def listener_callback(self, msg):
-        self.get_logger().info('I------------ "%d"' % msg.ranges[0])
+    # def listener_callback(self, msg):
+    #    self.get_logger().info('I------------ "%d"' % msg.ranges[0])
+
+    def listener_callback_post_string(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
 
 
 def main(args=None):

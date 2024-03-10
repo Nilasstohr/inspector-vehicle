@@ -25,6 +25,9 @@ public:
     void printPoseStorage();
     bool reachedMaxPoseStorage();
     void build(vector<PointPolarForm> *scan);
+    int getLoggedNum();
+
+    string * getPoseStringByIndex(int i);
 
 private:
     void print(int index);
@@ -40,6 +43,7 @@ private:
     int xtCount;
     MatrixXd xEstBuffer[POSE_STORAGE_SIZE];
     MatrixXd xtBuffer[POSE_STORAGE_SIZE];
+    string poseString;
 };
 
 

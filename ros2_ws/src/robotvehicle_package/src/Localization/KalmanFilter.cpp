@@ -108,3 +108,15 @@ void KalmanFilter::build(vector<PointPolarForm> *scan) {
 bool KalmanFilter::reachedMaxPoseStorage() {
     return xtCount >= POSE_STORAGE_SIZE - 1;
 }
+
+int KalmanFilter::getLoggedNum() {
+    return xtCount;
+}
+
+string *KalmanFilter::getPoseStringByIndex(int i) {
+    poseString.clear();
+    poseString.append(to_string(xtBuffer[i].coeffRef(0,0))).append(" ");
+    poseString.append(to_string(xtBuffer[i].coeffRef(1,0))).append(" ");
+    poseString.append(to_string(xtBuffer[i].coeffRef(2,0)));
+    return &poseString;
+}
