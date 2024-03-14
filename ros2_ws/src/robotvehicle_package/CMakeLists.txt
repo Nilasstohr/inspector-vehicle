@@ -87,7 +87,7 @@ add_executable(
         src/Host/DriverInterface.cpp
         src/Host/DriverInterface.h
         src/Sensor/SensorRecorder.cpp
-        src/Sensor/SensorRecorder.h)
+        src/Sensor/SensorRecorder.h src/Sensor/SensorData.cpp src/Sensor/SensorData.h)
         
 ament_target_dependencies(
         controller_node

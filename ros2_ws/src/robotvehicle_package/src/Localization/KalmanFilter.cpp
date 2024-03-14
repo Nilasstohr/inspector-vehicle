@@ -6,7 +6,17 @@
 #include "KalmanFilter.h"
 
 
-KalmanFilter::KalmanFilter():xtCount(0) {
+KalmanFilter::KalmanFilter(SerialInterface *serialInterface){
+    sensorData = new SensorData(serialInterface);
+    init();
+}
+
+KalmanFilter::KalmanFilter() {
+    init();
+}
+
+void KalmanFilter::init(){
+    xtCount = 0;
     differentialDrive =
             new PredictionDifferentialDrive();
 
@@ -47,13 +57,19 @@ KalmanFilter::KalmanFilter():xtCount(0) {
     estimation = new Estimation(xEst,pEst);
 }
 
-void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPolarForm> *scan,bool doLogging) {
-    differentialDriveNoKalman->update(odomLeft,odomRight,
-                      differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
+void KalmanFilter::update(sensor_msgs::msg::LaserScan::SharedPtr scan) {
+    sensorData->update(scan);
+    update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
+}
+void KalmanFilter::update(SensorData * sensorData) {
+    update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
+}
+void KalmanFilter::update(std::vector<PointPolarForm> *scan, double posLeft, double posRight) {
+    differentialDriveNoKalman->update(posLeft,posRight,
+                          differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
     //printMatrix(differentialDriveNoKalman->getPEst(),"---P_est (no kalman)--");
-
-    differentialDrive->update(odomLeft,odomRight,estimation->getXt(),estimation->getPt());
+    differentialDrive->update(posLeft,posRight,estimation->getXt(),estimation->getPt());
     observations->update(scan,scan->size());
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);
@@ -67,7 +83,6 @@ void KalmanFilter::update(double odomLeft, double odomRight, std::vector<PointPo
     //print(xtCount);
     xtCount++;
 }
-
 
 void KalmanFilter::printPose(int index, const MatrixXd* m, char * text) {
     //printMatrix(m,"m");
@@ -101,8 +116,9 @@ double KalmanFilter::getTheta() {
     return estimation->getTheta();
 }
 
-void KalmanFilter::build(vector<PointPolarForm> *scan) {
-    measurementPrediction->buildMap(scan);
+void KalmanFilter::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
+    sensorData->update(scan);
+    measurementPrediction->buildMap(sensorData->getScanPolarForm());
 }
 
 bool KalmanFilter::reachedMaxPoseStorage() {
@@ -120,3 +136,5 @@ string *KalmanFilter::getPoseStringByIndex(int i) {
     poseString.append(to_string(xtBuffer[i].coeffRef(2,0)));
     return &poseString;
 }
+
+

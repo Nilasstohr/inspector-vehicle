@@ -46,8 +46,8 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     file.close();
 
     // kalman filter
-    KalmanFilter *kalmanFilter = new KalmanFilter();
-    kalmanFilter->build(sensorLogger[0]->getScan());
+    KalmanFilter *kalmanFilter = new KalmanFilter(nullptr);
+    //kalmanFilter->build(sensorLogger[0]->getScan());
     int i=0;
     //AwaitTimer *awaitTimer = new AwaitTimer();
     while(sensorLogger[i]!=NULL && i<sizeof(sensorLogger)){
@@ -55,9 +55,9 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
         //if(i+1==26)
         //    cout << "stop at: " << i+1 << endl;
         //awaitTimer->reset();
-        kalmanFilter->update(
-                sensorLogger[i]->getPosLeft(),
-                sensorLogger[i]->getPosRight(),sensorLogger[i]->getScan(),true);
+        //kalmanFilter->update(
+        //        sensorLogger[i]->getPosLeft(),
+        //        sensorLogger[i]->getPosRight(),sensorLogger[i]->getScan(),true);
         //cout << "update time kalman: " << awaitTimer->getElapsedTimeMillis() << <<endl;
         i++;
 

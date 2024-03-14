@@ -1,13 +1,12 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 #include "Utilities/SerialInterface.h"
-#include "Utilities/AwaitTimer.h"
 #include <Eigen/Dense>
 #include <fstream>
 #include <std_msgs/msg/string.hpp>
 #include "Sensor/OdomRangeLog.h"
-#include "Sensor/PointRectForm.h"
 #include "Sensor/SensorRecorder.h"
+#include "Sensor/SensorData.h"
 #include "Localization/KalmanFilter.h"
 #include "TestKalmanFilterOffLine.h"
 
@@ -29,8 +28,7 @@ public:
     ReadingLaser() : Node("reading_laser") {
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
-        odomStr = new std::string();
-        kalmanFilterLive = new KalmanFilter();
+        kalmanFilterLive = new KalmanFilter(serialInterface);
         recorder->startRecord(RECORD_DURATION_SECONDS);
         cout << "starting run" << endl;
         if (serialInterface->hasResponse()) {
@@ -59,34 +57,13 @@ private:
         scanReady=true;
     }
     void timer_callback(){
-
-
         if(scanReady) {
             scanReady = false;
-            serialInterface->sendRequest("p");
-            odomStr->append(serialInterface->getResponse()->c_str());
-            //cout << "wheel dis: " << odomStr->c_str() << endl;
-            posLeft = std::stod(odomStr->substr(0, odomStr->find(" ")));
-            posRight = std::stod(odomStr->substr(odomStr->find(" "), odomStr->size()));
-            //cout << "wd: "<< posLeft  << " " << posRight << endl;
-            //timer->reset();
-            recorder->writeNewRecord(posLeft,posRight);
-            odomStr->clear();
-            int scanPointsNum = currentScan->scan_time / currentScan->time_increment;
-            for(int i = 0; i < scanPointsNum; i++) {
-                angle = (currentScan->angle_min + currentScan->angle_increment * i)+M_PI;
-                distance = currentScan->ranges[i]*100;
-                if(!isinf(distance)){
-                    scanPolarForm->push_back(PointPolarForm(angle,distance));
-                    recorder->writeScanPoint(angle,distance);
-                }
-            }
             if (!hasMapBeenBuild) {
-                kalmanFilterLive->build(scanPolarForm);
+                kalmanFilterLive->build(currentScan);
                 hasMapBeenBuild = true;
             }
-            kalmanFilterLive->update(posLeft,posRight,scanPolarForm, true);
-            scanPolarForm->clear();
+            kalmanFilterLive->update(currentScan);
             if(recorder->hasRecordTimeExceeded() || kalmanFilterLive->reachedMaxPoseStorage()){
                 timer_->cancel();
                 laserScanSubscription_.reset();
@@ -121,34 +98,22 @@ private:
         RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
     }
 
-
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::TimerBase::SharedPtr timer_;
     SerialInterface * serialInterface;
-    OdomRangeLog  * sensorLogger[160000];
-    std::vector<PointPolarForm> * scanPolarForm = new std::vector<PointPolarForm>;
-    float angle;
-    float distance;
-    std::string *odomStr;
-    double posLeft;
-    double posRight;
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
-    uint64_t n=0;
-    uint64_t logCount =0;
     bool scanReady=false;
-    std::string *json = new std::string();
     KalmanFilter * kalmanFilterLive;
     bool hasMapBeenBuild=false;
-    AwaitTimer *timer = new AwaitTimer();
     SensorRecorder * recorder = new SensorRecorder();
 };
 
 
 int main(int argc, char ** argv)
 {
-   //new TestKalmanFilterOffLine();
+   new TestKalmanFilterOffLine();
 
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
