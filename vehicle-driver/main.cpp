@@ -201,7 +201,6 @@ void drivningManual(){
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 
-
 	while(1){
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())

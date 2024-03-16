@@ -20,7 +20,7 @@ using std::placeholders::_1;
 #define RAD2DEG(x) ((x)*180./M_PI)
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
-#define RECORD_DURATION_SECONDS 80
+#define RECORD_DURATION_SECONDS 5
 
 
 class ReadingLaser : public rclcpp::Node {
@@ -64,6 +64,11 @@ private:
                 hasMapBeenBuild = true;
             }
             kalmanFilterLive->update(currentScan);
+
+            //auto message = std_msgs::msg::String();
+            //message.data = kalmanFilterLive->getPoseLastString()->c_str();
+            //posePublisher_->publish(message);
+
             if(recorder->hasRecordTimeExceeded() || kalmanFilterLive->reachedMaxPoseStorage()){
                 timer_->cancel();
                 laserScanSubscription_.reset();

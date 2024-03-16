@@ -29,8 +29,8 @@ public:
     bool reachedMaxPoseStorage();
     void build(sensor_msgs::msg::LaserScan::SharedPtr scan);
     int getLoggedNum();
-
     string * getPoseStringByIndex(int i);
+    string *getPoseLastString();
 
 private:
     void print(int index);
@@ -50,9 +50,6 @@ private:
     MatrixXd xEstBuffer[POSE_STORAGE_SIZE];
     MatrixXd xtBuffer[POSE_STORAGE_SIZE];
     string poseString;
-
-
-
 
 };
 

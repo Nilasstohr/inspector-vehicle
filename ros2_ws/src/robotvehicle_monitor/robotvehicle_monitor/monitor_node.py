@@ -61,7 +61,7 @@ class MonitorNode(Node):
             y = self.poses[0:self.index, 1]
             xm = np.array([40, 202, 119])
             ym = np.array([40, 54, 90.5])
-            plt.scatter(xm, ym)
+            plt.scatter(xm, ym, s=50, color='green')
             plt.plot(x, y)
             plt.axis([0, 250, 0, 150])
             plt.grid()

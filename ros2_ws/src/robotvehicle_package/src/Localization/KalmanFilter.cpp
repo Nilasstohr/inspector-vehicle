@@ -137,4 +137,7 @@ string *KalmanFilter::getPoseStringByIndex(int i) {
     return &poseString;
 }
 
+string *KalmanFilter::getPoseLastString() {
+    return getPoseStringByIndex(xtCount-1);
+}
 
