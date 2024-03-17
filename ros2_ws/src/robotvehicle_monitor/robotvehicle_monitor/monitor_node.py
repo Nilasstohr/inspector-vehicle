@@ -47,7 +47,7 @@ class MonitorNode(Node):
     #    self.get_logger().info('I------------ "%d"' % msg.ranges[0])
 
     def listener_callback_pose_string(self, msg):
-        #self.get_logger().info('I heard: "%s"' % msg.data)
+        # self.get_logger().info('I heard: "%s"' % msg.data)
         if msg.data != "end":
             pose = msg.data.split()
             x = float(pose[0])
@@ -68,6 +68,7 @@ class MonitorNode(Node):
             plt.ylabel('some numbers')
             plt.show()
             self.index = 0
+
 
 def main(args=None):
     rclpy.init(args=args)

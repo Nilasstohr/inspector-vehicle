@@ -196,10 +196,11 @@ DrivingDirection getDrivingModeManualRadio(){
 }
 
 void drivningManual(){
-	Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
+	//Serial.println("entered manual driving mode (default stopped, send y(forward),h(reverse),g(turn left),j(turn right), or s(stop)");
 	//serial->sendAck();
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
+
 
 	while(1){
 		if(serial->hasMessage()){

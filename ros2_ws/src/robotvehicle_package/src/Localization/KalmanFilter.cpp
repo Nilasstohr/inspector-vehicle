@@ -16,7 +16,6 @@ KalmanFilter::KalmanFilter() {
 }
 
 void KalmanFilter::init(){
-    xtCount = 0;
     differentialDrive =
             new PredictionDifferentialDrive();
 
@@ -47,7 +46,6 @@ void KalmanFilter::init(){
     observations = new Observations(eps,R);
     //printMatrix(&R,"----R init----");
     // measurement prediction
-    testMap = new TestMap();
     measurementPrediction = new MeasurementPrediction(eps,R);
 
     // matching
@@ -77,31 +75,6 @@ void KalmanFilter::update(std::vector<PointPolarForm> *scan, double posLeft, dou
     measurementPrediction->reset();
     observations->reset();
     matching->reset();
-    // store
-    xtBuffer[xtCount]  = *estimation->getXt();
-    xEstBuffer[xtCount]= *differentialDriveNoKalman->getXEst();
-    //print(xtCount);
-    xtCount++;
-}
-
-void KalmanFilter::printPose(int index, const MatrixXd* m, char * text) {
-    //printMatrix(m,"m");
-    cout << m->coeffRef(0,0) << " "
-         << m->coeffRef(1,0) << " "
-         << m->coeffRef(2,0);
-}
-
-void KalmanFilter::print(int index) {
-    //cout << "(" << index+1 << ") ";
-    printPose(xtCount, &xtBuffer[index], "xt");
-    //printPose(xtCount, &xEstBuffer[xtCount], "xEst");
-    cout << endl;
-}
-void KalmanFilter::printPoseStorage(){
-    cout << "count: "<< xtCount << endl;
-    for(int i=0; i<xtCount; i++){
-        print(i);
-    }
 }
 
 double KalmanFilter::getY() {
@@ -112,32 +85,17 @@ double KalmanFilter::getX() {
     return estimation->getX();
 }
 
-double KalmanFilter::getTheta() {
-    return estimation->getTheta();
-}
 
 void KalmanFilter::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
     sensorData->update(scan);
     measurementPrediction->buildMap(sensorData->getScanPolarForm());
 }
 
-bool KalmanFilter::reachedMaxPoseStorage() {
-    return xtCount >= POSE_STORAGE_SIZE - 1;
-}
-
-int KalmanFilter::getLoggedNum() {
-    return xtCount;
-}
-
-string *KalmanFilter::getPoseStringByIndex(int i) {
-    poseString.clear();
-    poseString.append(to_string(xtBuffer[i].coeffRef(0,0))).append(" ");
-    poseString.append(to_string(xtBuffer[i].coeffRef(1,0))).append(" ");
-    poseString.append(to_string(xtBuffer[i].coeffRef(2,0)));
-    return &poseString;
-}
-
 string *KalmanFilter::getPoseLastString() {
-    return getPoseStringByIndex(xtCount-1);
+    poseString.clear();
+    poseString.append(to_string(estimation->getXt()->coeffRef(0,0))).append(" ");
+    poseString.append(to_string(estimation->getXt()->coeffRef(1,0))).append(" ");
+    poseString.append(to_string(estimation->getXt()->coeffRef(2,0)));
+    return &poseString;
 }
 

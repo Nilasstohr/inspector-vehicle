@@ -20,7 +20,7 @@ using std::placeholders::_1;
 #define RAD2DEG(x) ((x)*180./M_PI)
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
-#define RECORD_DURATION_SECONDS 5
+#define RECORD_DURATION_SECONDS 80
 
 
 class ReadingLaser : public rclcpp::Node {
@@ -40,10 +40,6 @@ public:
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
         posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
-
-
-        //JoyStickSubscription_ = this->create_subscription<std_msgs::msg::String>(
-        //        "topic_joy_stick", default_qos, std::bind(&ReadingLaser::topic_callback_joy_stick, this, _1));
 
         timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
                                       std::bind(&ReadingLaser::timer_callback, this));
@@ -65,19 +61,18 @@ private:
             }
             kalmanFilterLive->update(currentScan);
 
-            //auto message = std_msgs::msg::String();
-            //message.data = kalmanFilterLive->getPoseLastString()->c_str();
-            //posePublisher_->publish(message);
+            auto message = std_msgs::msg::String();
+            message.data = kalmanFilterLive->getPoseLastString()->c_str();
+            posePublisher_->publish(message);
 
-            if(recorder->hasRecordTimeExceeded() || kalmanFilterLive->reachedMaxPoseStorage()){
+            if(recorder->hasRecordTimeExceeded()){
                 timer_->cancel();
                 laserScanSubscription_.reset();
                 recorder->endRecord();
-                //kalmanFilterLive->printPoseStorage();
+                message.data = "end";
+                posePublisher_->publish(message);
                 cout << "ending run" << endl;
-                cout << "publishing data" << endl;
-                publishPoseStorage(kalmanFilterLive);
-                 rclcpp::shutdown();
+                rclcpp::shutdown();
                 return;
             }
             //timer->printElapsedTime();
@@ -85,18 +80,7 @@ private:
         }
     }
 
-    void publishPoseStorage(KalmanFilter * kalmanFilter){
-        auto message = std_msgs::msg::String();
-        int size = kalmanFilter->getLoggedNum()-1;
-        for(int i=0; i<size; i++){
-            cout << i << endl;
-            message.data = kalmanFilter->getPoseStringByIndex(i)->c_str();
-            posePublisher_->publish(message);
-            this_thread::sleep_for(std::chrono::milliseconds (20));
-        }
-        message.data = "end";
-        posePublisher_->publish(message);
-    }
+
 
     void topic_callback_joy_stick(const std_msgs::msg::String::SharedPtr msg) const
     {
