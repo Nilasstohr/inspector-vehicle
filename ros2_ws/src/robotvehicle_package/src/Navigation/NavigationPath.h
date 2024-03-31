@@ -7,18 +7,14 @@
 
 #include <vector>
 #include "NavigationPoint.h"
-#include "../Localization/KalmanFilter.h"
-#include "../Utilities/SerialInterface.h"
 
 class NavigationPath {
 public:
-    NavigationPath(SerialInterface* serialInterface,KalmanFilter* localization);
+    NavigationPath();
     void addPathPoint(double x, double y, double theta);
-    void update();
+    std::vector<NavigationPoint> *getPath() const;
 private:
     std::vector<NavigationPoint> *path;
-    SerialInterface* serialInterface;
-    KalmanFilter * localization;
 
 };
 

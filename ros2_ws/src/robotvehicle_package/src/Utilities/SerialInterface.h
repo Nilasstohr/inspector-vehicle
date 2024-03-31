@@ -15,7 +15,8 @@ public:
     SerialInterface(const char *serialDevice);
     bool hasResponse();
     std::string * getResponse();
-    void sendRequest(char * text);
+    void sendRequest(char *text);
+    void sendRequest(std::string *text);
     virtual ~SerialInterface();
     void close();
 
@@ -29,6 +30,7 @@ private:
     AwaitTimer *awaitTimer;
     void validateResponse(std::string *response);
     void stripAck(std::string *str);
+    void send();
 };
 
 

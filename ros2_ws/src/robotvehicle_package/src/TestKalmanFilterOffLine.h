@@ -5,9 +5,8 @@
 #ifndef ROBOTVEHICLE_PACKAGE_TESTKALMANFILTEROFFLINE_H
 #define ROBOTVEHICLE_PACKAGE_TESTKALMANFILTEROFFLINE_H
 
-#include "Sensor/OdomRangeLog.h"
 #include "Sensor/PointRectForm.h"
-#include "Localization/KalmanFilter.h"
+#include "Localization/KalmanLocalization.h"
 #include <fstream>
 using namespace std;
 

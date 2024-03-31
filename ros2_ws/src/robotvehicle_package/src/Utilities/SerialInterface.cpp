@@ -51,6 +51,16 @@ void SerialInterface::stripAck(std::string *str) {
 void SerialInterface::sendRequest(char *text) {
     m_buffer->clear();
     m_buffer->append(text);
+    send();
+ }
+
+void SerialInterface::sendRequest(std::string *text) {
+    m_buffer->clear();
+    m_buffer->append(text->c_str());
+    send();
+}
+
+void SerialInterface::send(){
     m_buffer->push_back('\n');
     Serial.writeString(m_buffer);
     awaitTimer->start();
@@ -62,7 +72,7 @@ void SerialInterface::sendRequest(char *text) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     throw std::runtime_error("no response from device within accepted time");
- }
+}
 
 void SerialInterface::validateResponse(std::string *response) {
     if (response->find(ACK) == std::string::npos) {

@@ -10,12 +10,17 @@
 class DriverInterface {
 public:
     DriverInterface(SerialInterface* serialInterface);
-    void getWheelDisplacement(double &left, double &right);
+    void getWheelsTravled(double &left, double &right);
     void reset();
+
+    void setAngularVelocity(double wl, double wr);
+
+    void stop();
+
 private:
     SerialInterface* serialInterface;
-    std::string *serialResponse;
-
+    std::string *response;
+    std::string request;
 
 };
 

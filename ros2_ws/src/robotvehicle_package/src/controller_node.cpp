@@ -4,11 +4,12 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <std_msgs/msg/string.hpp>
-#include "Sensor/OdomRangeLog.h"
 #include "Sensor/SensorRecorder.h"
 #include "Sensor/SensorData.h"
-#include "Localization/KalmanFilter.h"
+#include "Localization/KalmanLocalization.h"
 #include "TestKalmanFilterOffLine.h"
+#include "Host/DriverInterface.h"
+#include "Navigation/Navigator.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -22,21 +23,39 @@ using std::placeholders::_1;
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 #define RECORD_DURATION_SECONDS 80
 
-
 class ReadingLaser : public rclcpp::Node {
 public:
     ReadingLaser() : Node("reading_laser") {
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
-        kalmanFilterLive = new KalmanFilter(serialInterface);
+        driverInterface = new DriverInterface(serialInterface);
+        localization = new KalmanLocalization(driverInterface);
+        navigator = new Navigator(driverInterface);
+        navigationPath = new NavigationPath();
+        navigationPath->addPathPoint(50,40,0);
+        navigationPath->addPathPoint(60,40,0);
+        navigationPath->addPathPoint(70,40,0);
+        navigationPath->addPathPoint(80,40,0);
+        navigationPath->addPathPoint(90,40,0);
+        navigationPath->addPathPoint(100,40,0);
+        navigationPath->addPathPoint(110,40,0);
+        navigationPath->addPathPoint(120,40,0);
+        navigationPath->addPathPoint(130,40,0);
+        navigationPath->addPathPoint(140,40,0);
+        navigationPath->addPathPoint(150,40,0);
+        navigationPath->addPathPoint(160,40,0);
+        navigationPath->addPathPoint(170,40,0);
+        navigationPath->addPathPoint(180,45,0);
+        navigationPath->addPathPoint(190,50,0);
+        navigationPath->addPathPoint(200,54,0);
+        navigator->setNavigationPath(navigationPath);
         recorder->startRecord(RECORD_DURATION_SECONDS);
         cout << "starting run" << endl;
         if (serialInterface->hasResponse()) {
             ROS_INFO(serialInterface->getResponse()->c_str());
         }
 
-      laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-                "scan", default_qos,
+        laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
         posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
@@ -56,16 +75,17 @@ private:
         if(scanReady) {
             scanReady = false;
             if (!hasMapBeenBuild) {
-                kalmanFilterLive->build(currentScan);
+                localization->build(currentScan);
                 hasMapBeenBuild = true;
             }
-            kalmanFilterLive->update(currentScan);
+            localization->update(currentScan);
+            navigator->update(localization);
 
             auto message = std_msgs::msg::String();
-            message.data = kalmanFilterLive->getPoseLastString()->c_str();
+            message.data = localization->getPoseLastString()->c_str();
             posePublisher_->publish(message);
 
-            if(recorder->hasRecordTimeExceeded()){
+            if(recorder->hasRecordTimeExceeded() || navigator->isDistinationReached()){
                 timer_->cancel();
                 laserScanSubscription_.reset();
                 recorder->endRecord();
@@ -91,10 +111,15 @@ private:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::TimerBase::SharedPtr timer_;
-    SerialInterface * serialInterface;
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
+
+    SerialInterface * serialInterface;
+    DriverInterface * driverInterface;
+    KalmanLocalization * localization;
+    Navigator * navigator;
+    NavigationPath * navigationPath;
+
     bool scanReady=false;
-    KalmanFilter * kalmanFilterLive;
     bool hasMapBeenBuild=false;
     SensorRecorder * recorder = new SensorRecorder();
 };
@@ -102,12 +127,15 @@ private:
 
 int main(int argc, char ** argv)
 {
-   new TestKalmanFilterOffLine();
+
+    //new TestKalmanFilterOffLine();
+    //SerialInterface * serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
+    //DriverInterface * driverInterface = new DriverInterface(serialInterface);
+    //driverInterface->setAngulaelocity(4,4);
 
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
-
 }

@@ -38,8 +38,6 @@ add_executable(
         src/Utilities/UsbSerial.h
         src/Utilities/AwaitTimer.cpp
         src/Utilities/AwaitTimer.h
-        src/Sensor/OdomRangeLog.cpp
-        src/Sensor/OdomRangeLog.h
         src/Sensor/PointPolarForm.cpp
         src/Sensor/PointPolarForm.h
         src/Localization/PredictionDifferentialDrive.cpp
@@ -73,13 +71,11 @@ add_executable(
         src/Localization/Estimation.cpp 
         src/Localization/Estimation.h 
         src/Localization/RStack.cpp 
-        src/Localization/RStack.h 
-        src/Localization/KalmanFilter.cpp 
-        src/Localization/KalmanFilter.h
+        src/Localization/RStack.h
+        src/Localization/KalmanLocalization.cpp
+        src/Localization/KalmanLocalization.h
         src/TestKalmanFilterOffLine.cpp
         src/TestKalmanFilterOffLine.h
-        src/Navigation/MotionController.cpp
-        src/Navigation/MotionController.h
         src/Navigation/NavigationPath.cpp
         src/Navigation/NavigationPath.h
         src/Navigation/NavigationPoint.cpp
@@ -87,7 +83,7 @@ add_executable(
         src/Host/DriverInterface.cpp
         src/Host/DriverInterface.h
         src/Sensor/SensorRecorder.cpp
-        src/Sensor/SensorRecorder.h src/Sensor/SensorData.cpp src/Sensor/SensorData.h)
+        src/Sensor/SensorRecorder.h src/Sensor/SensorData.cpp src/Sensor/SensorData.h src/Localization/Pose.cpp src/Localization/Pose.h src/Navigation/Navigator.cpp src/Navigation/Navigator.h)
         
 ament_target_dependencies(
         controller_node

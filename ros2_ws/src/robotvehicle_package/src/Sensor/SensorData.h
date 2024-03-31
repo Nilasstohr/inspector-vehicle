@@ -8,11 +8,11 @@
 
 #include "PointPolarForm.h"
 #include <cmath>
-#include "../Utilities/SerialInterface.h"
+#include "../Host/DriverInterface.h"
 
 class SensorData {
 public:
-    SensorData(SerialInterface *serialInterface);
+    SensorData(DriverInterface *driverInterface);
 
     void update(sensor_msgs::msg::LaserScan::SharedPtr currentScan);
 
@@ -23,13 +23,12 @@ public:
     double getPosRight() const;
 
 private:
-    SerialInterface * serialInterface;
+    DriverInterface * driverInterface;
     std::vector<PointPolarForm> * scanPolarForm;
     double posLeft;
     double posRight;
     float angle;
     float distance;
-    std::string *response;
 };
 
 

@@ -13,6 +13,12 @@ private:
     double x;
     double y;
     double theta;
+public:
+    double getX() const;
+
+    double getY() const;
+
+    double getTheta() const;
 };
 
 

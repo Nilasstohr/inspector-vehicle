@@ -3,19 +3,20 @@
 //
 
 #include <iostream>
-#include "KalmanFilter.h"
+#include "KalmanLocalization.h"
 
 
-KalmanFilter::KalmanFilter(SerialInterface *serialInterface){
-    sensorData = new SensorData(serialInterface);
+
+KalmanLocalization::KalmanLocalization(DriverInterface *driverInterface) {
+    sensorData = new SensorData(driverInterface);
     init();
 }
 
-KalmanFilter::KalmanFilter() {
+KalmanLocalization::KalmanLocalization() {
     init();
 }
 
-void KalmanFilter::init(){
+void KalmanLocalization::init(){
     differentialDrive =
             new PredictionDifferentialDrive();
 
@@ -53,16 +54,18 @@ void KalmanFilter::init(){
 
     // Estimation
     estimation = new Estimation(xEst,pEst);
+
+    pose = new Pose();
 }
 
-void KalmanFilter::update(sensor_msgs::msg::LaserScan::SharedPtr scan) {
+void KalmanLocalization::update(sensor_msgs::msg::LaserScan::SharedPtr scan) {
     sensorData->update(scan);
     update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
 }
-void KalmanFilter::update(SensorData * sensorData) {
+void KalmanLocalization::update(SensorData * sensorData) {
     update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
 }
-void KalmanFilter::update(std::vector<PointPolarForm> *scan, double posLeft, double posRight) {
+void KalmanLocalization::update(std::vector<PointPolarForm> *scan, double posLeft, double posRight) {
     differentialDriveNoKalman->update(posLeft,posRight,
                           differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
@@ -77,25 +80,22 @@ void KalmanFilter::update(std::vector<PointPolarForm> *scan, double posLeft, dou
     matching->reset();
 }
 
-double KalmanFilter::getY() {
-    return estimation->getY();
+
+Pose * KalmanLocalization::getPose() const{
+    pose->update(estimation->getX(),estimation->getY(),estimation->getTheta());
 }
 
-double KalmanFilter::getX() {
-    return estimation->getX();
-}
-
-
-void KalmanFilter::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
+void KalmanLocalization::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
     sensorData->update(scan);
     measurementPrediction->buildMap(sensorData->getScanPolarForm());
 }
 
-string *KalmanFilter::getPoseLastString() {
+string *KalmanLocalization::getPoseLastString() {
     poseString.clear();
     poseString.append(to_string(estimation->getXt()->coeffRef(0,0))).append(" ");
     poseString.append(to_string(estimation->getXt()->coeffRef(1,0))).append(" ");
     poseString.append(to_string(estimation->getXt()->coeffRef(2,0)));
     return &poseString;
 }
+
 

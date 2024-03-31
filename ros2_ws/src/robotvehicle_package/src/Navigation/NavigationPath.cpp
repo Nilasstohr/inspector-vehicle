@@ -4,12 +4,15 @@
 
 #include "NavigationPath.h"
 
-NavigationPath::NavigationPath(SerialInterface *serialInterface, KalmanFilter *localization):
-        serialInterface(serialInterface), localization(localization){
+NavigationPath::NavigationPath(){
     path = new std::vector<NavigationPoint>;
 }
 
 void NavigationPath::addPathPoint(double x, double y, double theta) {
     path->push_back(NavigationPoint(x,y,theta));
+}
+
+std::vector<NavigationPoint> *NavigationPath::getPath() const {
+    return path;
 }
 

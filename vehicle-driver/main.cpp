@@ -68,7 +68,9 @@ void drivningManual();
 bool handlePositionRequest();
 bool handleVelocityRequest();
 bool handleResetRequest();
+
 extern "C" int main(void){
+
 	init();
 
 	/*
@@ -79,9 +81,11 @@ extern "C" int main(void){
 		}
 		delay(1);
 	}
+
+
 	*/
 	//velocityControl(true);
-	Serial.println("entered vehicle mode options (enter mode 1-6)");
+	//Serial.println("entered vehicle mode options (enter mode 1-6)");
 	while(1){
 		VehicleMode mode = VehicleMode::DRIVING_MODE;//getVehicleMode();
 		switch(mode){
@@ -201,7 +205,6 @@ void drivningManual(){
 	DrivingDirection mode=DrivingDirection::UNKNOWN;
 	reset();
 
-
 	while(1){
 		if(serial->hasMessage()){
 			if(modeEscapeRequest())
@@ -216,8 +219,6 @@ void drivningManual(){
 			mode = getDrivingModeManualRadio();
 			wr=VELOC_REF;
 			wl=VELOC_REF;
-
-
 		}
 		if(mode==DrivingDirection::STOP){
 			dualVelocityController->stop();
@@ -402,10 +403,10 @@ bool handleVelocityRequest(){
 	if(serial->validateCommandWithArgs(1, 'v')){
 		wl = serial->getArg(0);
 		wr = serial->getArg(1);
-		Serial.print("velocity: ");
-		Serial.print(wl);
-		Serial.print(" ");
-		Serial.println(wr);
+		//Serial.print("velocity: ");
+		//Serial.print(wl);
+		//Serial.print(" ");
+		//Serial.println(wr);
 		serial->sendAck();
 		return true;
 	}

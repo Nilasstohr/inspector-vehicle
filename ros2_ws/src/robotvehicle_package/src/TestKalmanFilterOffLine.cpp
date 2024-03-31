@@ -7,7 +7,7 @@
 #include "Utilities/AwaitTimer.h"
 
 TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
-    OdomRangeLog  * sensorLogger[160000];
+    //OdomRangeLog  * sensorLogger[160000];
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
     file.open("../../../doc/Measurements/realtime/record_cp_live1.txt");
@@ -24,7 +24,7 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
             if(line.find('new') != std::string::npos){
                 newMeasurement=true;
                 if(!scan->empty()){
-                    sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, scan);
+                    //sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, scan);
                     scan->clear();
                     logCount++;
                 }
@@ -46,11 +46,11 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     file.close();
 
     // kalman filter
-    KalmanFilter *kalmanFilter = new KalmanFilter(nullptr);
+    KalmanLocalization *kalmanFilter = new KalmanLocalization(nullptr);
     //kalmanFilter->build(sensorLogger[0]->getScan());
     int i=0;
     //AwaitTimer *awaitTimer = new AwaitTimer();
-    while(sensorLogger[i]!=NULL && i<sizeof(sensorLogger)){
+    //while(sensorLogger[i]!=NULL && i<sizeof(sensorLogger)){
         //cout << "\n*********************" << i+1 << "***************************\n";
         //if(i+1==26)
         //    cout << "stop at: " << i+1 << endl;
@@ -62,7 +62,7 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
         i++;
 
 
-    }
+    //}
 }
 
 void TestKalmanFilterOffLine::getValuesFromLine(string line, float &val1,float &val2){
