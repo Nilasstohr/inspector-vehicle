@@ -13,27 +13,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Host/DriverInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Host/DriverInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Host/DriverInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Host/DriverInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanFilter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanLocalization.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanFilter.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanLocalization.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/MotionController.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/MotionController.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPath.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPath.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPath.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPath.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPoint.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPoint.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPoint.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/NavigationPoint.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/OdomRangeLog.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/OdomRangeLog.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/SensorData.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/SensorData.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/SensorData.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Sensor/SensorData.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/TestKalmanFilterOffLine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/TestKalmanFilterOffLine.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/TestKalmanFilterOffLine.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/TestKalmanFilterOffLine.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/SerialInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/SerialInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/SerialInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/SerialInterface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" afterDir="false" />
     </list>

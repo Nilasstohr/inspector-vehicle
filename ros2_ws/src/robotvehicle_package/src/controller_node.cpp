@@ -48,6 +48,7 @@ public:
         navigationPath->addPathPoint(180,45,0);
         navigationPath->addPathPoint(190,50,0);
         navigationPath->addPathPoint(200,54,0);
+        //navigationPath = getTestPath();
         navigator->setNavigationPath(navigationPath);
         recorder->startRecord(RECORD_DURATION_SECONDS);
         cout << "starting run" << endl;
@@ -67,6 +68,26 @@ public:
         serialInterface->sendRequest("r");
     }
 private:
+    NavigationPath * getTestPath(){
+        NavigationPath *navigationPath = new NavigationPath();
+        navigationPath->addPathPoint(60,40,0);   //1
+        navigationPath->addPathPoint(77,34,0);   //2
+        navigationPath->addPathPoint(93,29,0);   //3
+        navigationPath->addPathPoint(110,27,0);  //4
+        navigationPath->addPathPoint(125,27,0);  //5
+        navigationPath->addPathPoint(140,27,0);  //6
+        navigationPath->addPathPoint(156,27,0);  //7
+        navigationPath->addPathPoint(174,26,0);  //8
+        navigationPath->addPathPoint(189,29,0);  //9
+        navigationPath->addPathPoint(200,39,0);  //10
+        navigationPath->addPathPoint(205,52,0);  //11
+        navigationPath->addPathPoint(205,65,0);  //12
+        navigationPath->addPathPoint(201,79,0);  //13
+        navigationPath->addPathPoint(190,89,0);  //14
+        navigationPath->addPathPoint(176,93,0);  //15
+        navigationPath->addPathPoint(163,96,0);  //16
+        return navigationPath;
+    }
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
         currentScan = scan;
         scanReady=true;

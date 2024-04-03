@@ -15,7 +15,7 @@ Navigator::Navigator(DriverInterface *driverInterface):
     v=0;
     int G=3;
     K_ro = 0.35*G;
-    K_alfa = 0.5*G;
+    K_alfa = 0.5*2;
     K_beta = -0.325;
     //K_beta = -0.325*G
 }
@@ -36,6 +36,7 @@ void Navigator::update(KalmanLocalization * localization) {
             driverInterface->stop();
             return;
         }
+        cout << navigationPointIndex << " out of " << navigationPath->getPath()->size()-1 << endl;
         navigationPointIndex++;
         return;
     }
@@ -62,8 +63,12 @@ void Navigator::update(KalmanLocalization * localization) {
     wr = double(v+w*l)/r;
     if(wl<1)
         wl=1;
+    else if(wl>3)
+        wl=3;
     if(wr<1)
         wr=1;
+    else if(wr>3)
+        wr=3;
     //cout << "out: " << wl << " " << wr << endl;
     driverInterface->setAngularVelocity(wl,wr);
 }
