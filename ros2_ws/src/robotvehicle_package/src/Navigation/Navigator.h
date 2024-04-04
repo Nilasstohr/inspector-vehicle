@@ -17,7 +17,7 @@ public:
     void update();
     void setNavigationPath(NavigationPath * navigationPath);
 
-    bool isDistinationReached();
+    bool isDestinationReached();
 
 private:
     DriverInterface* driverInterface;
@@ -38,7 +38,7 @@ private:
     double wr;
     double l; // distance between wheels
     double r; // radius of wheel
-    bool distinationReached;
+    bool destinationReached;
     double K_beta;
 };
 

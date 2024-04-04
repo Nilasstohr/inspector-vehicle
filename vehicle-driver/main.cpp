@@ -225,7 +225,9 @@ void drivningManual(){
 			mode=DrivingDirection::UNKNOWN;
 		}else if(mode==DrivingDirection::UNKNOWN){
 			// do nothing
+
 		}else{
+
 			//Serial.println(mode);
 			if(mode==DrivingDirection::TURN_LEFT){
 				dualVelocityController->update(wl,wr+4,DrivingDirection::FORWARD);

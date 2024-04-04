@@ -31,6 +31,7 @@ public:
         driverInterface = new DriverInterface(serialInterface);
         localization = new KalmanLocalization(driverInterface);
         navigator = new Navigator(driverInterface);
+        /*
         navigationPath = new NavigationPath();
         navigationPath->addPathPoint(50,40,0);
         navigationPath->addPathPoint(60,40,0);
@@ -48,7 +49,8 @@ public:
         navigationPath->addPathPoint(180,45,0);
         navigationPath->addPathPoint(190,50,0);
         navigationPath->addPathPoint(200,54,0);
-        //navigationPath = getTestPath();
+         */
+        navigationPath = getTestPath();
         navigator->setNavigationPath(navigationPath);
         recorder->startRecord(RECORD_DURATION_SECONDS);
         cout << "starting run" << endl;
@@ -106,7 +108,7 @@ private:
             message.data = localization->getPoseLastString()->c_str();
             posePublisher_->publish(message);
 
-            if(recorder->hasRecordTimeExceeded() || navigator->isDistinationReached()){
+            if(recorder->hasRecordTimeExceeded() || navigator->isDestinationReached()){
                 timer_->cancel();
                 laserScanSubscription_.reset();
                 recorder->endRecord();
