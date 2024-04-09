@@ -28,7 +28,7 @@ void Navigator::update(KalmanLocalization * localization) {
     }
     xt = localization->getPose();
     xtGoal = &navigationPath->getPath()->at(navigationPointIndex);
-    cout << "in: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
+    //cout << "in: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
     dx = xtGoal->getX() - xt->getX();
     dy = xtGoal->getY() - xt->getY();
 
@@ -46,13 +46,16 @@ void Navigator::update(KalmanLocalization * localization) {
     ro = sqrt(pow(dx,2)+pow(dy,2));
     alfa = -xt->getTheta() + atan2(dy,dx);
 
-
-    beta = -xt->getTheta() - alfa;
     v= K_ro * ro;
+
+    if(dx < 0 && dy < 0){
+        alfa+=2*M_PI;
+        //v=-v;
+    }
+
     w= K_alfa * alfa; //+ beta*K_beta;
     wl = double(v-w*l)/r;
     wr = double(v+w*l)/r;
-
     if(wl<MIN_W)
         wl=MIN_W;
     else if(wl>MAX_W)
@@ -62,8 +65,7 @@ void Navigator::update(KalmanLocalization * localization) {
         wr=MIN_W;
     else if(wr>MAX_W)
         wr=MAX_W;
-
-    //cout << "out: " << wl << " " << wr << endl;
+    cout << "wl= "<< wl << " wr= " << wr  << endl;
     driverInterface->setAngularVelocity(wl,wr);
 }
 
