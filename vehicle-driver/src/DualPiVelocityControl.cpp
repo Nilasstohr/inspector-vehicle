@@ -31,6 +31,18 @@ void DualPiVelocityControl::update(double referenceVelocity,DrivingDirection dir
 
 void DualPiVelocityControl::update(double referenceVelocityLeft,
 		double referenceVelocityRight, DrivingDirection dir) {
+	if(referenceVelocityLeft < 0 && referenceVelocityRight < 0){
+		dir = DrivingDirection::BACKWARD;
+		referenceVelocityLeft = abs(referenceVelocityLeft);
+		referenceVelocityRight= abs(referenceVelocityRight);
+	}else if(referenceVelocityLeft<0){
+		dir = DrivingDirection::SPIN_LEFT;
+		referenceVelocityLeft = abs(referenceVelocityLeft);
+	}else if(referenceVelocityRight<0){
+		dir = DrivingDirection::SPIN_RIGHT;
+		referenceVelocityRight= abs(referenceVelocityRight);
+	}
+
 	motors->setDir(dir);
 	sensorReady = sensors->isSampleReady();
 	if(sensorReady){

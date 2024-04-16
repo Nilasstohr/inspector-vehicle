@@ -73,12 +73,14 @@ void MotorDrivers::setDir(DrivingDirection dir) {
 			setSpinLeft();
 			break;
 		}
+
 		case DrivingDirection::SPIN_RIGHT:{
 			setSpinRight();
 			break;
 		}
 	}
 }
+
 
 void MotorDrivers::setSpinLeft() {
 	this->left()->setReverse();

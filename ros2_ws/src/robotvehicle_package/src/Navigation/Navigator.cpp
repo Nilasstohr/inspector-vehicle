@@ -6,8 +6,11 @@
 #include "Navigator.h"
 
 #define GOAL_ACCEPTANCE_TRESHOLD_CM 10
-#define MIN_W 1
-#define MAX_W 4
+#define MIN_W_NORMAL 1
+#define MAX_W_NORMAL 4
+#define MIN_W_TURN -4
+
+#define DEG2RAD(x) ((x)*M_PI/180)
 
 Navigator::Navigator(DriverInterface *driverInterface):
         driverInterface(driverInterface){
@@ -18,8 +21,6 @@ Navigator::Navigator(DriverInterface *driverInterface):
     int G=2;
     K_ro = 0.35*G;
     K_alfa = 0.5*3;
-    K_beta = -0.325;
-    //K_beta = -0.325*G
 }
 
 void Navigator::update(KalmanLocalization * localization) {
@@ -45,26 +46,31 @@ void Navigator::update(KalmanLocalization * localization) {
 
     ro = sqrt(pow(dx,2)+pow(dy,2));
     alfa = -xt->getTheta() + atan2(dy,dx);
-
-    v= K_ro * ro;
-
     if(dx < 0 && dy < 0){
         alfa+=2*M_PI;
-        //v=-v;
     }
 
-    w= K_alfa * alfa; //+ beta*K_beta;
+    if(abs(alfa) > DEG2RAD(50)){
+        v=0;
+        setLowerVelocityLimit(MIN_W_TURN);
+    }else{
+        v= K_ro * ro;
+        setLowerVelocityLimit(MIN_W_NORMAL);
+    }
+
+    w= K_alfa * alfa;
     wl = double(v-w*l)/r;
     wr = double(v+w*l)/r;
-    if(wl<MIN_W)
-        wl=MIN_W;
-    else if(wl>MAX_W)
-        wl=MAX_W;
 
-    if(wr<MIN_W)
-        wr=MIN_W;
-    else if(wr>MAX_W)
-        wr=MAX_W;
+    if(wl < wMin)
+        wl=wMin;
+    else if(wl > MAX_W_NORMAL)
+        wl=MAX_W_NORMAL;
+
+    if(wr < wMin)
+        wr=wMin;
+    else if(wr > MAX_W_NORMAL)
+        wr=MAX_W_NORMAL;
     cout << "wl= "<< wl << " wr= " << wr  << endl;
     driverInterface->setAngularVelocity(wl,wr);
 }
@@ -101,7 +107,6 @@ void Navigator::update() {
         }
     //}
     //  40.156 40.244 0.000284356
-    beta = -xt->getTheta() - alfa;
     v= K_ro * ro;
     w= K_alfa * alfa;
     wl = double(v-w*l)/r;
@@ -122,4 +127,8 @@ void Navigator::setNavigationPath(NavigationPath *navigationPath) {
 
 bool Navigator::isDestinationReached() {
     return destinationReached;
+}
+
+void Navigator::setLowerVelocityLimit(double wMin) {
+    this->wMin = wMin;
 }

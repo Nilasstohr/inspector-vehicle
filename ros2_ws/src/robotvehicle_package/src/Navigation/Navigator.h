@@ -20,6 +20,7 @@ public:
     bool isDestinationReached();
 
 private:
+    void setLowerVelocityLimit(double wMin);
     DriverInterface* driverInterface;
     Pose *xt;
     NavigationPath * navigationPath;
@@ -29,7 +30,6 @@ private:
     double dy;
     double ro;
     double alfa;
-    double beta;
     double K_ro;
     double v;
     double K_alfa;
@@ -39,7 +39,7 @@ private:
     double l; // distance between wheels
     double r; // radius of wheel
     bool destinationReached;
-    double K_beta;
+    double wMin;
 };
 
 

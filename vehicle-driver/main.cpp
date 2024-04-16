@@ -219,6 +219,7 @@ void drivningManual(){
 			mode = getDrivingModeManualRadio();
 			wr=VELOC_REF;
 			wl=VELOC_REF;
+
 		}
 		if(mode==DrivingDirection::STOP){
 			dualVelocityController->stop();
@@ -227,7 +228,6 @@ void drivningManual(){
 			// do nothing
 
 		}else{
-
 			//Serial.println(mode);
 			if(mode==DrivingDirection::TURN_LEFT){
 				dualVelocityController->update(wl,wr+4,DrivingDirection::FORWARD);

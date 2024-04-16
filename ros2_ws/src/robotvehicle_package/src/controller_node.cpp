@@ -19,6 +19,7 @@ using std::placeholders::_1;
 #define ROS_INFO RCUTILS_LOG_INFO
 #define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
+
 // teensy 4.1
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 #define RECORD_DURATION_SECONDS 70
@@ -54,26 +55,6 @@ private:
     NavigationPath * getTestPath(){
         NavigationPath *navigationPath = new NavigationPath();
         /*
-        navigationPath->addPathPoint(60,40,0);   //1
-        navigationPath->addPathPoint(77,34,0);   //2
-        navigationPath->addPathPoint(93,29,0);   //3
-        navigationPath->addPathPoint(110,27,0);  //4
-        navigationPath->addPathPoint(125,27,0);  //5
-        navigationPath->addPathPoint(140,27,0);  //6
-        navigationPath->addPathPoint(156,27,0);  //7
-        navigationPath->addPathPoint(174,26,0);  //8
-        navigationPath->addPathPoint(189,29,0);  //9
-        navigationPath->addPathPoint(200,39,0);  //10
-        navigationPath->addPathPoint(205,52,0);  //11
-        navigationPath->addPathPoint(205,65,0);  //12
-        navigationPath->addPathPoint(201,79,0);  //13
-        navigationPath->addPathPoint(190,89,0);  //14
-        navigationPath->addPathPoint(176,93,0);  //15
-        navigationPath->addPathPoint(163,96,0);  //16
-        navigationPath->addPathPoint(153,95,0);
-        navigationPath->addPathPoint(143,96,0);
-        navigationPath->addPathPoint(131,95,0);
-*/
         navigationPath->addPathPoint(60,40,0);
         navigationPath->addPathPoint(77,34,0);
         navigationPath->addPathPoint(93,29,0);
@@ -101,6 +82,18 @@ private:
         navigationPath->addPathPoint(59,50,0);
         navigationPath->addPathPoint(50,45,0);
         navigationPath->addPathPoint(40,40,0);
+        */
+        navigationPath->addPathPoint(40,50,0);
+        navigationPath->addPathPoint(40,60,0);
+        navigationPath->addPathPoint(40,70,0);
+        navigationPath->addPathPoint(40,80,0);
+        navigationPath->addPathPoint(40,90,0);
+        navigationPath->addPathPoint(50,90,0);
+        navigationPath->addPathPoint(60,90,0);
+        navigationPath->addPathPoint(70,90,0);
+        navigationPath->addPathPoint(80,90,0);
+        navigationPath->addPathPoint(90,90,0);
+        navigationPath->addPathPoint(90,100,0);
         return navigationPath;
     }
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
@@ -163,12 +156,6 @@ private:
 
 int main(int argc, char ** argv)
 {
-
-    //new TestKalmanFilterOffLine();
-    //SerialInterface * serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
-    //DriverInterface * driverInterface = new DriverInterface(serialInterface);
-    //driverInterface->setAngulaelocity(4,4);
-
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);

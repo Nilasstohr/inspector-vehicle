@@ -24,7 +24,6 @@ public:
     void drive(uint16_t pwmLeft,uint16_t pwmRight);
     void stop();
     float getCurrent(Side side);
-
 private:
 	MotorDriver *motorDriverLeft;
 	MotorDriver *motorDriverRight;
