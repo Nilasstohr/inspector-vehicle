@@ -1,0 +1,14 @@
+Path Planning
+
+Graph Search:
+
+	construction (making all possible roads as threads/lines in free space)
+		-visibility graph
+		-voronoi
+		Decomposion
+		- exact ceel decomposion
+		- approx cell decomposion
+			fixed size decompositon
+		
+	search
+

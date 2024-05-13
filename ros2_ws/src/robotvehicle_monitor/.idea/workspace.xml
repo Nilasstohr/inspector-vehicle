@@ -12,16 +12,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Navigation/Navigator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/DualPiVelocityControl.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/DualPiVelocityControl.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/MotorDrivers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/MotorDrivers.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../vehicle-driver/src/MotorDrivers.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../vehicle-driver/src/MotorDrivers.h" afterDir="false" />
-    </list>
+    <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
