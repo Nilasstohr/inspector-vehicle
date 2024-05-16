@@ -10,6 +10,7 @@
 #include "TestKalmanFilterOffLine.h"
 #include "Host/DriverInterface.h"
 #include "Navigation/Navigator.h"
+#include "PathPlanning/Node.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -156,6 +157,8 @@ private:
 
 int main(int argc, char ** argv)
 {
+    Node n = Node();
+
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
