@@ -12,7 +12,7 @@
 
 class Dijkstra: public MatrixHelper {
 public:
-    Dijkstra(Pose * currentPose,PathPoint endPoint, MatrixXd *gridMap);
+    Dijkstra(Pose * currentPose,PathPoint *endPoint, MatrixXd *gridMap);
 private:
     NodeQueue nodeQueue;
 };

@@ -12,7 +12,20 @@
 class Node: MatrixHelper {
 public:
     Node();
-    void update(PathPoint point,PathPoint *path,int pathSize,const MatrixXd *graph,MatrixXd *visited);
+    void update(PathPoint *point,PathPoint *path,int pathSize,const MatrixXd *graph,MatrixXd *visited);
+
+    PathPoint *getPoint();
+
+    int getAdjacentSize();
+
+    PathPoint *getAdjacents();
+
+    PathPoint *getPathWithGoal(PathPoint *point);
+
+    PathPoint *getPath();
+
+    int getPathSize();
+
 private:
     PathPoint path[1000];
     PathPoint  point;

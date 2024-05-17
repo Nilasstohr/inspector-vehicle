@@ -4,9 +4,9 @@
 
 #include "PathPoint.h"
 
-void PathPoint::set(int x, int y) {
-    this->x =x;
-    this->y =y;
+void PathPoint::set(PathPoint * point) {
+    x =point->getX();
+    y =point->getY();
 }
 
 int PathPoint::getY() {
@@ -15,4 +15,9 @@ int PathPoint::getY() {
 
 int PathPoint::getX() {
     return x;
+}
+
+void PathPoint::set(int x, int y) {
+    this->x=x;
+    this->y=y;
 }

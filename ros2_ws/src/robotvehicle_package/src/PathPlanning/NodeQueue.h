@@ -11,13 +11,15 @@
 class NodeQueue {
 public:
     NodeQueue();
-    void enQueue();
+    void enQueue(PathPoint *point,PathPoint *path,int pathSize,const MatrixXd *graph,MatrixXd *visited);
     bool isEmpty();
     Node * pop();
 private:
     int currentNode;
     int lastNode;
     Node nodeQueue[10000];
+
+    void reset();
 };
 
 

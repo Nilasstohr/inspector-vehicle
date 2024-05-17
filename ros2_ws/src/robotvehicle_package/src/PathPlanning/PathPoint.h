@@ -8,7 +8,9 @@
 
 class PathPoint {
 public:
-    void set(int x,int y);
+    void set(PathPoint* point);
+    void set(int x, int y);
+
     int getX();
     int getY();
 private:
