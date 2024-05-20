@@ -2,6 +2,7 @@
 // Created by robot1 on 5/14/24.
 //
 
+#include <iostream>
 #include "NodeQueue.h"
 
 NodeQueue::NodeQueue() {
@@ -14,7 +15,8 @@ void NodeQueue::reset() {
 }
 
 void NodeQueue::enQueue(PathPoint *point, PathPoint *path, int pathSize, const MatrixXd *graph, MatrixXd *visited) {
-    nodeQueue[++lastNode].update(point,path,pathSize,graph,visited);
+    //std::cout << "last node: " << lastNode << endl;
+    nodeQueue[lastNode++].update(point,path,pathSize,graph,visited);
 }
 
 Node *NodeQueue::pop() {

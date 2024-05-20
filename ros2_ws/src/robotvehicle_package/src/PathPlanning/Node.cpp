@@ -2,27 +2,29 @@
 // Created by robot1 on 5/14/24.
 //
 
+#include <iostream>
 #include "Node.h"
 
 Node::Node() {
     reset();
 }
 
-void Node::update(PathPoint *point, PathPoint *path, int pathSize,const MatrixXd *graph, MatrixXd *visited) {
+void Node::update(PathPoint *point, PathPoint *path, int pathSize, const MatrixXd *gridMap, MatrixXd *visited) {
     reset();
     this->point.set(point);
     int xAd;
     int yAd;
     updatePath(path,pathSize);
     xLim[0]=0;
-    xLim[1]=graph->cols();
+    xLim[1]=gridMap->cols();
     yLim[0]=0;
-    yLim[1]=graph->rows();
-    for(int i=0; i<sizeof(xAd) / sizeof(int);i++){
+    yLim[1]=gridMap->rows();
+    int n = sizeof(vX) / sizeof(int);
+    for(int i=0; i<n;i++){
         xAd = this->point.getX()+vX[i];
         yAd = this->point.getY()+vY[i];
         if(isPointWithinGraph(xAd,yAd) && !visited->coeff(xAd,yAd)){
-            if(graph->coeff(xAd,yAd)>200){
+            if(gridMap->coeff(xAd, yAd) < 10){
                 adjacents[adjacentsCounter++].set(xAd,yAd);
             }
         }
@@ -52,6 +54,7 @@ void Node::updatePath(PathPoint *path, int pathSize) {
     for(int i=0; i<pathSize; i++){
         this->path[i].set(&path[i]);
     }
+    this->path[this->pathSize++].set(&this->point);
 }
 
 PathPoint *Node::getPoint() {
@@ -67,7 +70,8 @@ PathPoint *Node::getAdjacents() {
 }
 
 PathPoint *Node::getPathWithGoal(PathPoint *point) {
-    path[pathSize].set(point);
+    path[pathSize++].set(point);
+    printNode();
     return path;
 }
 
@@ -78,3 +82,15 @@ PathPoint *Node::getPath() {
 int Node::getPathSize() {
     return pathSize;
 }
+
+void Node::printNode() {
+    std::cout <<"Node (" << point.getX() << ","<< point.getY() << ") and path ";
+    for(int i=0; i<pathSize; i++){
+        std::cout <<"(" << path[i].getX() << ","
+                        << path[i].getY()<<")"<< "->";
+    }
+    std::cout << std::endl;
+}
+
+
+

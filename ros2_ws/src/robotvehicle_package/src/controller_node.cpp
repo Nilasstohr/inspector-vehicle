@@ -7,10 +7,9 @@
 #include "Sensor/SensorRecorder.h"
 #include "Sensor/SensorData.h"
 #include "Localization/KalmanLocalization.h"
-#include "TestKalmanFilterOffLine.h"
 #include "Host/DriverInterface.h"
 #include "Navigation/Navigator.h"
-#include "PathPlanning/Node.h"
+#include "PathPlanning/TestDijkstra.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -157,7 +156,7 @@ private:
 
 int main(int argc, char ** argv)
 {
-    Node n = Node();
+    TestDijkstra testDijkstra = TestDijkstra();
 
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();

@@ -12,7 +12,7 @@
 class Node: MatrixHelper {
 public:
     Node();
-    void update(PathPoint *point,PathPoint *path,int pathSize,const MatrixXd *graph,MatrixXd *visited);
+    void update(PathPoint *point, PathPoint *path, int pathSize, const MatrixXd *gridMap, MatrixXd *visited);
 
     PathPoint *getPoint();
 
@@ -25,6 +25,8 @@ public:
     PathPoint *getPath();
 
     int getPathSize();
+
+    void printNode();
 
 private:
     PathPoint path[1000];
@@ -40,7 +42,6 @@ private:
 
     bool isPointWithinGraph(int x, int y);
     void reset();
-
     void updatePath(PathPoint *path, int pathSize);
 };
 

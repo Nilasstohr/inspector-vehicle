@@ -13,7 +13,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Dijkstra.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Dijkstra.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Node.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Node.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/Node.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/NodeQueue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/NodeQueue.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/NodeQueue.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/NodeQueue.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/TestDijkstra.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/PathPlanning/TestDijkstra.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

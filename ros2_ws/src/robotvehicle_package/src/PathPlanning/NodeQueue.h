@@ -17,7 +17,7 @@ public:
 private:
     int currentNode;
     int lastNode;
-    Node nodeQueue[10000];
+    Node nodeQueue[1000000];
 
     void reset();
 };
