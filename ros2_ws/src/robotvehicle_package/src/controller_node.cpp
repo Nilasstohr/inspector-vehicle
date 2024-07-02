@@ -9,7 +9,7 @@
 #include "Localization/KalmanLocalization.h"
 #include "Host/DriverInterface.h"
 #include "Navigation/Navigator.h"
-#include "PathPlanning/TestDijkstra.h"
+#include "PathPlanning/TestSearchAlgoritms.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -156,11 +156,12 @@ private:
 
 int main(int argc, char ** argv)
 {
-    TestDijkstra testDijkstra = TestDijkstra();
-
+    TestSearchAlgoritms testDijkstra = TestSearchAlgoritms();
+/*
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
     rclcpp::shutdown();
+*/
     return 0;
 }

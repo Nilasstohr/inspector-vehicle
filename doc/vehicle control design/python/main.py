@@ -102,9 +102,9 @@ def velocity_controller_design():
 
 
 if __name__ == '__main__':
-     #velocity_controller_design()
+     velocity_controller_design()
 
-     a = Localization()
+     #a = Localization()
 
 #    omega_0 = 15
 #    r = 4.5

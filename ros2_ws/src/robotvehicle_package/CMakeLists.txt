@@ -83,7 +83,20 @@ add_executable(
         src/Host/DriverInterface.cpp
         src/Host/DriverInterface.h
         src/Sensor/SensorRecorder.cpp
-        src/Sensor/SensorRecorder.h src/Sensor/SensorData.cpp src/Sensor/SensorData.h src/Localization/Pose.cpp src/Localization/Pose.h src/Navigation/Navigator.cpp src/Navigation/Navigator.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/Dijkstra.cpp src/PathPlanning/Dijkstra.h src/PathPlanning/NodeQueue.cpp src/PathPlanning/NodeQueue.h src/PathPlanning/Node.cpp src/PathPlanning/Node.h src/PathPlanning/PathPoint.cpp src/PathPlanning/PathPoint.h src/PathPlanning/TestDijkstra.cpp src/PathPlanning/TestDijkstra.h)
+        src/Sensor/SensorRecorder.h
+        src/Sensor/SensorData.cpp
+        src/Sensor/SensorData.h
+        src/Localization/Pose.cpp
+        src/Localization/Pose.h
+        src/Navigation/Navigator.cpp
+        src/Navigation/Navigator.h
+        src/PathPlanning/PathPoint.cpp
+        src/PathPlanning/PathPoint.h
+        src/PathPlanning/TestSearchAlgoritms.cpp
+        src/PathPlanning/TestSearchAlgoritms.h
+        src/PathPlanning/AStar.cpp
+        src/PathPlanning/AStar.h
+        src/PathPlanning/PathPlanningConstants.h)
         
 ament_target_dependencies(
         controller_node
