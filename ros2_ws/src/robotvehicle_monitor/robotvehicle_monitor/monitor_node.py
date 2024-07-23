@@ -17,9 +17,9 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import String
+from nav_msgs.msg import OccupancyGrid
 from matplotlib import pyplot as plt
 from sensor_msgs.msg import LaserScan
-
 
 class MonitorNode(Node):
     poses = None
@@ -45,6 +45,8 @@ class MonitorNode(Node):
 
     # def listener_callback(self, msg):
     #    self.get_logger().info('I------------ "%d"' % msg.ranges[0])
+
+    #def listener_callback_OccupancyGrid
 
     def listener_callback_pose_string(self, msg):
         # self.get_logger().info('I heard: "%s"' % msg.data)

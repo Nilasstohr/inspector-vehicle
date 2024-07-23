@@ -13,7 +13,7 @@ TestSearchAlgoritms::TestSearchAlgoritms() {
     endPoint.set(249,249);
 
     //MatrixXd gridMap(10,10);
-    MatrixXd gridMap =  MatrixXd::Ones(GRID_ROW_SIZE,GRID_COL_SIZE);
+    MatrixXd gridMap =  MatrixXd::Ones(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE);
     //gridMap.coeffRef(1,1)=255;
     //printMatrix(&gridMap,"gridMap");
     /*

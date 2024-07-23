@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_NAVIGATOR_H
 
 #include "../Localization/KalmanLocalization.h"
-#include "../Localization/Pose.h"
+#include "../Utilities/Pose.h"
 #include "../Host/DriverInterface.h"
 #include "NavigationPath.h"
 

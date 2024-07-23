@@ -4,12 +4,18 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <std_msgs/msg/string.hpp>
+#include "nav_msgs/msg/occupancy_grid.hpp"
 #include "Sensor/SensorRecorder.h"
 #include "Sensor/SensorData.h"
 #include "Localization/KalmanLocalization.h"
 #include "Host/DriverInterface.h"
 #include "Navigation/Navigator.h"
 #include "PathPlanning/TestSearchAlgoritms.h"
+#include "PathPlanning/GridMap.h"
+#include "Configurations.h"
+#include "TestKalmanFilterOffLine.h"
+#include "tutorial_interfaces/msg/num.hpp"
+#include "custom_interfaces/msg/occupancy_grid.hpp"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -31,6 +37,10 @@ public:
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
         driverInterface = new DriverInterface(serialInterface);
         localization = new KalmanLocalization(driverInterface);
+        //testKalmanFilterOffLine = new TestKalmanFilterOffLine();
+        gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
+                              CONFIG_GRID_VALUE_FULL_OCCUPIED,
+                              CONFIG_GRID_VALUE_UPDATE_INTERVAL);
         navigator = new Navigator(driverInterface);
         navigationPath = getTestPath();
         navigator->setNavigationPath(navigationPath);
@@ -44,9 +54,24 @@ public:
                 std::bind(&ReadingLaser::topic_callback, this, _1));
 
         posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
+        gridMapPublisher_ = this->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
+        // preparing for sending gridMap data to python for plotting.
+
+        //gridMapPublisher_ =  this->create_publisher<custom_interfaces::msg::OccupancyGrid>("grid_map", 10);
+        //auto gridMapMessage = custom_interfaces::msg::OccupancyGrid();
+        //gridMapMessage.width = 250;
+        //gridMapMessage.height =250;
+        //gridMapPublisher_->publish(gridMapMessage);
+        //cout << "published gridMa" << endl;
+        //gridMapMessage.info.height=250;
+        //gridMapMessage.info.width=250;
+        //std::vector<int8_t> n;
+        //gridMapMessage.data = n;
+
+
 
         timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-                                      std::bind(&ReadingLaser::timer_callback, this));
+                                    std::bind(&ReadingLaser::timer_callback, this));
 
         // reset
         serialInterface->sendRequest("r");
@@ -101,13 +126,17 @@ private:
         scanReady=true;
     }
     void timer_callback(){
+        //auto gridMapMessage = std_msgs::msg::String();
+        //gridMapMessage.data = testKalmanFilterOffLine->getGripMap()->mapAsString()->c_str();
+        //gridMapPublisher_->publish(gridMapMessage);
+
         if(scanReady) {
             scanReady = false;
             if (!hasMapBeenBuild) {
                 localization->build(currentScan);
-                hasMapBeenBuild = true;
-            }
+                hasMapBeenBuild = true;            }
             localization->update(currentScan);
+            //gripMap->update(localization->getSensorDate()->getScanPolarForm(),localization->getPose());
             navigator->update(localization);
 
             auto message = std_msgs::msg::String();
@@ -120,12 +149,16 @@ private:
                 recorder->endRecord();
                 message.data = "end";
                 posePublisher_->publish(message);
+                // public grid map
+                //auto gridMapMessage = std_msgs::msg::String();
+                //gridMapMessage.data = gripMap->mapAsString()->c_str();
+                //gridMapPublisher_->publish(gridMapMessage);
+
                 cout << "ending run" << endl;
                 rclcpp::shutdown();
                 return;
             }
             //timer->printElapsedTime();
-
         }
     }
 
@@ -139,14 +172,18 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr JoyStickSubscription_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
+
     rclcpp::TimerBase::SharedPtr timer_;
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
 
     SerialInterface * serialInterface;
     DriverInterface * driverInterface;
     KalmanLocalization * localization;
+    TestKalmanFilterOffLine * testKalmanFilterOffLine;
     Navigator * navigator;
     NavigationPath * navigationPath;
+    GridMap * gripMap;
 
     bool scanReady=false;
     bool hasMapBeenBuild=false;
@@ -156,12 +193,11 @@ private:
 
 int main(int argc, char ** argv)
 {
-    TestSearchAlgoritms testDijkstra = TestSearchAlgoritms();
-/*
+    //TestSearchAlgoritms();
+    //TestKalmanFilterOffLine();
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ReadingLaser>();
     rclcpp::spin(node);
     rclcpp::shutdown();
-*/
     return 0;
 }

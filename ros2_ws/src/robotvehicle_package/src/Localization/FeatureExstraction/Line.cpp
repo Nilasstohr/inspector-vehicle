@@ -93,6 +93,24 @@ void Line::correctPolarCoordinates(double &alfa, double &r) {
     limitAngle(alfa);
 }
 
+double Line::getM() {
+    return m;
+}
+
+double Line::getB() {
+    return b;
+}
+
+PointRectForm *Line::getFirstPoint() {
+    return &points.at(0);
+}
+
+PointRectForm *Line::getLastPoint() {
+    return &points.at(pointsNum-1);
+}
+
+
+
 
 
 

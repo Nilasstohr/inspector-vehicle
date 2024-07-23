@@ -12,7 +12,7 @@
 #include "Observations.h"
 #include "Matching.h"
 #include "Estimation.h"
-#include "Pose.h"
+#include "../Utilities/Pose.h"
 #include "../Sensor/SensorData.h"
 #include "../Host/DriverInterface.h"
 
@@ -26,6 +26,7 @@ public:
     void build(sensor_msgs::msg::LaserScan::SharedPtr scan);
     string *getPoseLastString();
     Pose * getPose() const;
+    SensorData *getSensorDate();
 private:
     void init();
     void update(std::vector<PointPolarForm> *scan,double posLeft,double right);

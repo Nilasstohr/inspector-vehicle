@@ -5,6 +5,7 @@
 #include "TestKalmanFilterOffLine.h"
 #include <iostream>
 #include "Utilities/AwaitTimer.h"
+#include "PathPlanning/GridMap.h"
 
 TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     //OdomRangeLog  * sensorLogger[160000];
@@ -20,11 +21,12 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     if(file.is_open()){
         string line;
         while(getline(file,line)){
-     //       cout << line << endl;
+     //       cout << linePoints << endl;
             if(line.find('new') != std::string::npos){
                 newMeasurement=true;
                 if(!scan->empty()){
                     //sensorLogger[logCount] = new OdomRangeLog(posLeft, posRight, scan);
+                    break;
                     scan->clear();
                     logCount++;
                 }
@@ -46,7 +48,18 @@ TestKalmanFilterOffLine::TestKalmanFilterOffLine() {
     file.close();
 
     // kalman filter
+
     KalmanLocalization *kalmanFilter = new KalmanLocalization(nullptr);
+
+    gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
+                                   CONFIG_GRID_VALUE_FULL_OCCUPIED,
+                                   CONFIG_GRID_VALUE_UPDATE_INTERVAL);
+    Pose * pose = new Pose();
+    pose->update(40,40,0);
+    gripMap->update(scan, pose);
+
+    //kalmanFilter->build(scan);
+
     //kalmanFilter->build(sensorLogger[0]->getScan());
     int i=0;
     //AwaitTimer *awaitTimer = new AwaitTimer();
@@ -80,4 +93,8 @@ float TestKalmanFilterOffLine::getValueFromString(string s){
     }else{
         return stod(s);
     }
+}
+
+GridMap *TestKalmanFilterOffLine::getGripMap() {
+    return gripMap;
 }

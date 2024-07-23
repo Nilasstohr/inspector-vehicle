@@ -1,0 +1,4 @@
+[console_scripts]
+listener = robotvehicle_visualizer.subscriber_member_function:main
+talker = robotvehicle_visualizer.publisher_member_function:main
+

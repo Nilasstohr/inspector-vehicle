@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_TESTSEARCHALGORITMS_H
 
 #include "AStar.h"
-#include "PathPlanningConstants.h"
+#include "../Configurations.h"
 class TestSearchAlgoritms: MatrixHelper {
 public:
     TestSearchAlgoritms();

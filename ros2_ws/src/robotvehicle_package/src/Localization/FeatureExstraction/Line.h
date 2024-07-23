@@ -24,21 +24,27 @@ public:
     static void limitAngle(double &angle);
     static void correctPolarCoordinates(double &alfa, double &r);
     void reset();
-
+protected:
+    void updateSlopeForm();
+    double getM();
+    double getB();
+    PointRectForm * getFirstPoint();
+    PointRectForm * getLastPoint();
 private:
-    // line in normal form from origo.
+    // linePoints in normal form from origo.
     double r;
     double alfa;
-    // line in slope form from first and last point
+    // linePoints in slope form from first and last point
     double m;
     double b;
     //
     std::vector<PointRectForm> points;
     int pointsNum;
 
-    void updateSlopeForm();
+
     double getXFromPolarForm(double theta, double d);
     double getYFromPolarForm(double theta, double d);
+
 };
 
 

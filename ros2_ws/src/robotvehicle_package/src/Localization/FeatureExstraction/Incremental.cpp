@@ -32,7 +32,7 @@ void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {
 }
 
 void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
-    // add first to point to line;
+    // add first to point to linePoints;
     addPointToLine(line,scan->at(next()));
     addPointToLine(line,scan->at(next()));
     // make sure that there are at least 1 to process to continue

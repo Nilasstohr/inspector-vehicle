@@ -7,6 +7,7 @@
 
 #include "Sensor/PointRectForm.h"
 #include "Localization/KalmanLocalization.h"
+#include "PathPlanning/GridMap.h"
 #include <fstream>
 using namespace std;
 
@@ -16,6 +17,9 @@ public:
     void getValuesFromLine(string line, float &val1,float &val2);
 
     float getValueFromString(string s);
+    GridMap * getGripMap();
+private:
+    GridMap *gripMap;
 };
 
 

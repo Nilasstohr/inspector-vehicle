@@ -48,17 +48,17 @@ AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
     // Create a closed list and initialise it to false which
     // means that no cell has been included yet This closed
     // list is implemented as a boolean 2D array
-    bool closedList[GRID_ROW_SIZE][GRID_COL_SIZE];
+    bool closedList[CONFIG_GRID_ROW_SIZE][CONFIG_GRID_COL_SIZE];
     memset(closedList, false, sizeof(closedList));
 
     // Declare a 2D array of structure to hold the details
     // of that cell
-    cell cellDetails[GRID_ROW_SIZE][GRID_COL_SIZE];
+    cell cellDetails[CONFIG_GRID_ROW_SIZE][CONFIG_GRID_COL_SIZE];
 
     int i, j;
 
-    for (i = 0; i < GRID_ROW_SIZE; i++) {
-        for (j = 0; j < GRID_COL_SIZE; j++) {
+    for (i = 0; i < CONFIG_GRID_ROW_SIZE; i++) {
+        for (j = 0; j < CONFIG_GRID_COL_SIZE; j++) {
             cellDetails[i][j].f = FLT_MAX;
             cellDetails[i][j].g = FLT_MAX;
             cellDetails[i][j].h = FLT_MAX;
@@ -80,7 +80,7 @@ AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
      <f, <i, j>>
      where f = g + h,
      and i, j are the row and column index of that cell
-     Note that 0 <= i <= GRID_ROW_SIZE-1 & 0 <= j <= GRID_COL_SIZE-1
+     Note that 0 <= i <= CONFIG_GRID_ROW_SIZE-1 & 0 <= j <= CONFIG_GRID_COL_SIZE-1
      This open list is implemented as a set of pair of pair.
      */
     set<pPair> openList;
@@ -198,8 +198,8 @@ bool AStar::isValid(int row, int col)
 {
     // Returns true if row number and column number
     // is in range
-    return (row >= 0) && (row < GRID_ROW_SIZE) && (col >= 0)
-           && (col < GRID_COL_SIZE);
+    return (row >= 0) && (row < CONFIG_GRID_ROW_SIZE) && (col >= 0)
+           && (col < CONFIG_GRID_COL_SIZE);
 }
 
 // A Utility Function to check whether the given cell is
@@ -234,7 +234,7 @@ double AStar::calculateHValue(int row, int col, Pair dest)
 
 // A Utility Function to trace the path from the source
 // to destination
-void AStar::tracePath(cell cellDetails[][GRID_COL_SIZE], Pair dest)
+void AStar::tracePath(cell cellDetails[][CONFIG_GRID_COL_SIZE], Pair dest)
 {
     printf("\nThe Path is ");
     int row = dest.first;

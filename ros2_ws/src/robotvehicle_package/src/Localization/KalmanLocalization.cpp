@@ -98,4 +98,8 @@ string *KalmanLocalization::getPoseLastString() {
     return &poseString;
 }
 
+SensorData *KalmanLocalization::getSensorDate() {
+    return sensorData;
+}
+
 
