@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <iostream>
 #include "SensorRecorder.h"
 
 SensorRecorder::SensorRecorder() {
@@ -13,6 +14,21 @@ void SensorRecorder::startRecord(uint64_t seconds) {
     out = std::ofstream("../../../doc/Measurements/realtime/record.txt");
     awaitTimer->setTimeout(seconds,AwaitTimer::TimeUnit::seconds);
     awaitTimer->start();
+}
+
+void SensorRecorder::update(SensorData *sensorData) {
+    /*
+    cout << "new" << endl;
+    cout << sensorData->getPosLeft() << "," << sensorData->getPosRight() << endl;
+    cout << sensorData->getScanPolarForm()->at(50).getAngle() << ","
+         << sensorData->getScanPolarForm()->at(50).getDistance() << endl;
+    cout << sensorData->getScanPolarForm()->at(51).getAngle() << ","
+         << sensorData->getScanPolarForm()->at(51).getDistance() << endl;
+    */
+    writeNewRecord(sensorData->getPosLeft(),sensorData->getPosRight());
+    for(PointPolarForm scanPoint: *sensorData->getScanPolarForm()){
+        writeScanPoint(scanPoint.getAngle(),scanPoint.getDistance());
+    }
 }
 
 void SensorRecorder::writeNewRecord(double wheelTravelLeft, double wheelTravelRight) {
@@ -36,6 +52,7 @@ bool SensorRecorder::hasRecordTimeExceeded() {
 void SensorRecorder::writeNewKeyWord(){
     out << "new" << std::endl;
 }
+
 
 
 

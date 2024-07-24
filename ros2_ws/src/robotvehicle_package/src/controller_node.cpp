@@ -13,7 +13,7 @@
 #include "PathPlanning/TestSearchAlgoritms.h"
 #include "PathPlanning/GridMap.h"
 #include "Configurations.h"
-#include "TestKalmanFilterOffLine.h"
+#include "Test/OffLineTesting.h"
 #include "tutorial_interfaces/msg/num.hpp"
 #include "custom_interfaces/msg/occupancy_grid.hpp"
 
@@ -30,14 +30,13 @@ using std::placeholders::_1;
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 #define RECORD_DURATION_SECONDS 70
 
-class ReadingLaser : public rclcpp::Node {
+class ControllerNode : public rclcpp::Node {
 public:
-    ReadingLaser() : Node("reading_laser") {
+    ControllerNode() : Node("reading_laser") {
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         serialInterface = new SerialInterface(SERIAL_DEVICE_NAME);
         driverInterface = new DriverInterface(serialInterface);
         localization = new KalmanLocalization(driverInterface);
-        //testKalmanFilterOffLine = new TestKalmanFilterOffLine();
         gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                               CONFIG_GRID_VALUE_FULL_OCCUPIED,
                               CONFIG_GRID_VALUE_UPDATE_INTERVAL);
@@ -51,27 +50,13 @@ public:
         }
 
         laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
-                std::bind(&ReadingLaser::topic_callback, this, _1));
+                std::bind(&ControllerNode::topic_callback, this, _1));
 
         posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
         gridMapPublisher_ = this->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
-        // preparing for sending gridMap data to python for plotting.
-
-        //gridMapPublisher_ =  this->create_publisher<custom_interfaces::msg::OccupancyGrid>("grid_map", 10);
-        //auto gridMapMessage = custom_interfaces::msg::OccupancyGrid();
-        //gridMapMessage.width = 250;
-        //gridMapMessage.height =250;
-        //gridMapPublisher_->publish(gridMapMessage);
-        //cout << "published gridMa" << endl;
-        //gridMapMessage.info.height=250;
-        //gridMapMessage.info.width=250;
-        //std::vector<int8_t> n;
-        //gridMapMessage.data = n;
-
-
 
         timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-                                    std::bind(&ReadingLaser::timer_callback, this));
+                                    std::bind(&ControllerNode::timer_callback, this));
 
         // reset
         serialInterface->sendRequest("r");
@@ -127,18 +112,20 @@ private:
     }
     void timer_callback(){
         //auto gridMapMessage = std_msgs::msg::String();
-        //gridMapMessage.data = testKalmanFilterOffLine->getGripMap()->mapAsString()->c_str();
+        //gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
         //gridMapPublisher_->publish(gridMapMessage);
 
         if(scanReady) {
             scanReady = false;
             if (!hasMapBeenBuild) {
                 localization->build(currentScan);
-                hasMapBeenBuild = true;            }
+                hasMapBeenBuild = true;
+            }
             localization->update(currentScan);
+            recorder->update(localization->getSensorDate());
             //gripMap->update(localization->getSensorDate()->getScanPolarForm(),localization->getPose());
-            navigator->update(localization);
-
+            //navigator->update(localization);
+            //cout << *localization->getPoseLastString() << endl;
             auto message = std_msgs::msg::String();
             message.data = localization->getPoseLastString()->c_str();
             posePublisher_->publish(message);
@@ -180,7 +167,7 @@ private:
     SerialInterface * serialInterface;
     DriverInterface * driverInterface;
     KalmanLocalization * localization;
-    TestKalmanFilterOffLine * testKalmanFilterOffLine;
+    OffLineTesting * testKalmanFilterOffLine;
     Navigator * navigator;
     NavigationPath * navigationPath;
     GridMap * gripMap;
@@ -190,13 +177,56 @@ private:
     SensorRecorder * recorder = new SensorRecorder();
 };
 
+class ControllerNodeEmulated : public rclcpp::Node {
+
+public:
+    ControllerNodeEmulated() : Node("reading_laser") {
+        offLineTesting = new OffLineTesting();
+        posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
+        gridMapPublisher_ = this->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
+        cout << "starting run" << endl;
+        timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
+                                         std::bind(&ControllerNodeEmulated::timer_callback, this));
+    }
+private:
+
+    void timer_callback(){
+        auto message = std_msgs::msg::String();
+        if(offLineTesting->hasRecordsToProcess()){
+            offLineTesting->update();
+
+            //auto gridMapMessage = std_msgs::msg::String();
+            //gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
+            //gridMapPublisher_->publish(gridMapMessage);
+
+            message = std_msgs::msg::String();
+            message.data = offLineTesting->getLocalization()->getPoseLastString()->c_str();
+            posePublisher_->publish(message);
+        }else{
+            timer_->cancel();
+            message.data = "end";
+            posePublisher_->publish(message);
+            auto gridMapMessage = std_msgs::msg::String();
+            gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
+            gridMapPublisher_->publish(gridMapMessage);
+            cout << "ending run" << endl;
+            rclcpp::shutdown();
+            return;
+        }
+
+    }
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    OffLineTesting * offLineTesting;
+};
 
 int main(int argc, char ** argv)
 {
     //TestSearchAlgoritms();
-    //TestKalmanFilterOffLine();
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<ReadingLaser>();
+    //auto node = std::make_shared<ControllerNode>();
+    auto node = std::make_shared<ControllerNodeEmulated>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

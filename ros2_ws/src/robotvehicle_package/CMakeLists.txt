@@ -76,8 +76,8 @@ add_executable(
         src/Localization/RStack.h
         src/Localization/KalmanLocalization.cpp
         src/Localization/KalmanLocalization.h
-        src/TestKalmanFilterOffLine.cpp
-        src/TestKalmanFilterOffLine.h
+        src/Test/OffLineTesting.cpp
+        src/Test/OffLineTesting.h
         src/Navigation/NavigationPath.cpp
         src/Navigation/NavigationPath.h
         src/Navigation/NavigationPoint.cpp
@@ -98,7 +98,7 @@ add_executable(
         src/PathPlanning/TestSearchAlgoritms.h
         src/PathPlanning/AStar.cpp
         src/PathPlanning/AStar.h
-        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h)
+        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h)
         
 ament_target_dependencies(
         controller_node

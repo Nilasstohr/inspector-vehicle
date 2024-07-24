@@ -66,8 +66,8 @@ void KalmanLocalization::update(SensorData * sensorData) {
     update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
 }
 void KalmanLocalization::update(std::vector<PointPolarForm> *scan, double posLeft, double posRight) {
-    differentialDriveNoKalman->update(posLeft,posRight,
-                          differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
+    //differentialDriveNoKalman->update(posLeft,posRight,
+    //                      differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
     //printMatrix(differentialDriveNoKalman->getPEst(),"---P_est (no kalman)--");
     differentialDrive->update(posLeft,posRight,estimation->getXt(),estimation->getPt());
@@ -86,6 +86,11 @@ Pose * KalmanLocalization::getPose() const{
 }
 
 void KalmanLocalization::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
+    sensorData->update(scan);
+    measurementPrediction->buildMap(sensorData->getScanPolarForm());
+}
+
+void KalmanLocalization::build(std::vector<PointPolarForm> * scan) {
     sensorData->update(scan);
     measurementPrediction->buildMap(sensorData->getScanPolarForm());
 }

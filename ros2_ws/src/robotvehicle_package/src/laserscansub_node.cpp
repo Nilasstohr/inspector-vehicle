@@ -7,14 +7,14 @@ using std::placeholders::_1;
 #define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
 
-class ReadingLaser : public rclcpp::Node {
+class ControllerNode : public rclcpp::Node {
 public:
 
-  ReadingLaser() : Node("reading_laser") {
+  ControllerNode() : Node("reading_laser") {
       auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
       laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
             "scan", default_qos,
-            std::bind(&ReadingLaser::topic_callback, this, _1));
+            std::bind(&ControllerNode::topic_callback, this, _1));
   }
 
 private:
@@ -35,7 +35,7 @@ private:
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<ReadingLaser>();
+  auto node = std::make_shared<ControllerNode>();
   RCLCPP_INFO(node->get_logger(), "Hello my friend");
   rclcpp::spin(node);
   rclcpp::shutdown();

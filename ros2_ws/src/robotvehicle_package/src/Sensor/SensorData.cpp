@@ -21,6 +21,10 @@ void SensorData::update(sensor_msgs::msg::LaserScan::SharedPtr currentScan) {
     }
 }
 
+void SensorData::update(std::vector<PointPolarForm> * scan) {
+    scanPolarForm = scan;
+}
+
 std::vector<PointPolarForm> *SensorData::getScanPolarForm() const {
     return scanPolarForm;
 }
@@ -32,4 +36,3 @@ double SensorData::getPosLeft() const {
 double SensorData::getPosRight() const {
     return posRight;
 }
-

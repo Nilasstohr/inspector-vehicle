@@ -12,10 +12,11 @@
 
 class SensorData {
 public:
+
     SensorData(DriverInterface *driverInterface);
 
     void update(sensor_msgs::msg::LaserScan::SharedPtr currentScan);
-
+    void update(std::vector<PointPolarForm> * scan);
     std::vector<PointPolarForm> *getScanPolarForm() const;
 
     double getPosLeft() const;

@@ -8,19 +8,23 @@
 
 #include "PointPolarForm.h"
 #include "../Utilities/AwaitTimer.h"
+#include "../Localization/KalmanLocalization.h"
 
 class SensorRecorder {
 public:
     SensorRecorder();
     void startRecord(uint64_t seconds);
-    void writeNewRecord(double wheelTravelLeft, double wheelTravelRight);
-    void writeScanPoint(float scanAngleRad, float scanDistanceCm);
     void endRecord();
     bool hasRecordTimeExceeded();
+    void update(SensorData *sensorData);
 private:
     std::ofstream out;
     AwaitTimer * awaitTimer;
+    void writeNewRecord(double wheelTravelLeft, double wheelTravelRight);
+    void writeScanPoint(float scanAngleRad, float scanDistanceCm);
     void writeNewKeyWord();
+
+
 };
 
 

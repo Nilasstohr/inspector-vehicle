@@ -23,13 +23,14 @@ public:
 
     void update(sensor_msgs::msg::LaserScan::SharedPtr scan);
     void update(SensorData *sensorData);
+    void update(std::vector<PointPolarForm> *scan,double posLeft,double right);
     void build(sensor_msgs::msg::LaserScan::SharedPtr scan);
+    void build(std::vector<PointPolarForm> * scan);
     string *getPoseLastString();
     Pose * getPose() const;
     SensorData *getSensorDate();
 private:
     void init();
-    void update(std::vector<PointPolarForm> *scan,double posLeft,double right);
     PredictionDifferentialDrive * differentialDrive;
     PredictionDifferentialDrive * differentialDriveNoKalman;
     MeasurementPrediction *measurementPrediction;
