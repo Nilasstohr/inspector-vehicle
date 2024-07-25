@@ -34,18 +34,29 @@ class MinimalSubscriber(Node):
 
     def listener_callback(self, string):
         self.get_logger().info('got grid map update')
-
-        grid_string = string.data.split("\n")
-        m = np.empty([0, 250])
-        for row in grid_string:
-            r = np.fromstring(row, dtype=float, sep=' ')
-            m = np.vstack((m, r))
-        # print(m)
-        m = m.T
-        plt.imshow(m, origin='lower')
+        grid_map_matrix = self.get_gridmap_with_path(string)
+        plt.imshow(grid_map_matrix, origin='lower')
         plt.axis([0, 250, 0, 150])
         plt.colorbar()
         plt.show()
+
+    def get_gridmap_with_path(self, string):
+        lines = string.data.split("\n")
+        path_detected = False
+        grid_map_matrix = np.empty([0, 250])
+        for line in lines:
+            if "path" in line:
+                path_detected = True
+                continue
+            if path_detected:
+                p = np.fromstring(line, dtype=int, sep=' ')
+                x = p[0]
+                y = p[1]
+                grid_map_matrix[x, y] = 0.5
+            else:
+                r = np.fromstring(line, dtype=float, sep=' ')
+                grid_map_matrix = np.vstack((grid_map_matrix, r))
+        return grid_map_matrix.T
 
 
 def main(args=None):

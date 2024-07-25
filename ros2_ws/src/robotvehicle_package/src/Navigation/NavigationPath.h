@@ -13,6 +13,9 @@ public:
     NavigationPath();
     void addPathPoint(double x, double y, double theta);
     std::vector<NavigationPoint> *getPath() const;
+
+    void clear();
+
 private:
     std::vector<NavigationPoint> *path;
 

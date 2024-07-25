@@ -8,17 +8,15 @@
 class NavigationPoint {
 public:
     NavigationPoint(double x,double y, double theta);
-
+    double getX() const;
+    double getY() const;
+    double getTheta() const;
+    double override(double x, double y);
 private:
     double x;
     double y;
     double theta;
-public:
-    double getX() const;
 
-    double getY() const;
-
-    double getTheta() const;
 };
 
 

@@ -13,9 +13,7 @@
 #include "PathPlanning/TestSearchAlgoritms.h"
 #include "PathPlanning/GridMap.h"
 #include "Configurations.h"
-#include "Test/OffLineTesting.h"
-#include "tutorial_interfaces/msg/num.hpp"
-#include "custom_interfaces/msg/occupancy_grid.hpp"
+#include "Test/PlayBackTesting.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
@@ -112,7 +110,7 @@ private:
     }
     void timer_callback(){
         //auto gridMapMessage = std_msgs::msg::String();
-        //gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
+        //gridMapMessage.data = playBackTesting->getGripMap()->pathToString()->c_str();
         //gridMapPublisher_->publish(gridMapMessage);
 
         if(scanReady) {
@@ -138,7 +136,7 @@ private:
                 posePublisher_->publish(message);
                 // public grid map
                 //auto gridMapMessage = std_msgs::msg::String();
-                //gridMapMessage.data = gripMap->mapAsString()->c_str();
+                //gridMapMessage.data = gripMap->pathToString()->c_str();
                 //gridMapPublisher_->publish(gridMapMessage);
 
                 cout << "ending run" << endl;
@@ -167,7 +165,7 @@ private:
     SerialInterface * serialInterface;
     DriverInterface * driverInterface;
     KalmanLocalization * localization;
-    OffLineTesting * testKalmanFilterOffLine;
+    PlayBackTesting * testKalmanFilterOffLine;
     Navigator * navigator;
     NavigationPath * navigationPath;
     GridMap * gripMap;
@@ -181,7 +179,7 @@ class ControllerNodeEmulated : public rclcpp::Node {
 
 public:
     ControllerNodeEmulated() : Node("reading_laser") {
-        offLineTesting = new OffLineTesting();
+        playBackTesting = new PlayBackTesting();
         posePublisher_ = this->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
         gridMapPublisher_ = this->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
         cout << "starting run" << endl;
@@ -192,33 +190,49 @@ private:
 
     void timer_callback(){
         auto message = std_msgs::msg::String();
-        if(offLineTesting->hasRecordsToProcess()){
-            offLineTesting->update();
+        if(playBackTesting->hasRecordsToProcess()){
+            playBackTesting->update();
 
             //auto gridMapMessage = std_msgs::msg::String();
-            //gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
+            //gridMapMessage.data = playBackTesting->getGripMap()->pathToString()->c_str();
             //gridMapPublisher_->publish(gridMapMessage);
 
             message = std_msgs::msg::String();
-            message.data = offLineTesting->getLocalization()->getPoseLastString()->c_str();
+            message.data = playBackTesting->getLocalization()->getPoseLastString()->c_str();
             posePublisher_->publish(message);
         }else{
             timer_->cancel();
             message.data = "end";
             posePublisher_->publish(message);
-            auto gridMapMessage = std_msgs::msg::String();
-            gridMapMessage.data = offLineTesting->getGripMap()->mapAsString()->c_str();
-            gridMapPublisher_->publish(gridMapMessage);
+            publishGridAndNavigationPath();
             cout << "ending run" << endl;
             rclcpp::shutdown();
             return;
         }
 
     }
+
+    void publishGridAndNavigationPath(){
+        PathPoint *endPoint = new PathPoint();
+        endPoint->set(100,60);
+        AStar *aStar = new AStar(
+                playBackTesting->getLocalization()->getPose(),
+                endPoint,playBackTesting->getGripMap()->map());
+        //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
+        string gridMapMessageString;
+        gridMapMessageString.append(playBackTesting->getGripMap()->toString()->c_str());
+        gridMapMessageString.append( "\npath\n");
+        gridMapMessageString.append(aStar->pathToString());
+        auto gridMapMessage = std_msgs::msg::String();
+        gridMapMessage.data = gridMapMessageString.c_str();
+        gridMapPublisher_->publish(gridMapMessage);
+        std::this_thread::sleep_for(200ms);
+    }
+
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
     rclcpp::TimerBase::SharedPtr timer_;
-    OffLineTesting * offLineTesting;
+    PlayBackTesting * playBackTesting;
 };
 
 int main(int argc, char ** argv)

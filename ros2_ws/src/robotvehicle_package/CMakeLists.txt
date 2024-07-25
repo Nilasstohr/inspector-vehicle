@@ -22,8 +22,6 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(tutorial_interfaces REQUIRED)
-find_package(custom_interfaces REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -76,8 +74,8 @@ add_executable(
         src/Localization/RStack.h
         src/Localization/KalmanLocalization.cpp
         src/Localization/KalmanLocalization.h
-        src/Test/OffLineTesting.cpp
-        src/Test/OffLineTesting.h
+        src/Test/PlayBackTesting.cpp
+        src/Test/PlayBackTesting.h
         src/Navigation/NavigationPath.cpp
         src/Navigation/NavigationPath.h
         src/Navigation/NavigationPoint.cpp
@@ -98,14 +96,12 @@ add_executable(
         src/PathPlanning/TestSearchAlgoritms.h
         src/PathPlanning/AStar.cpp
         src/PathPlanning/AStar.h
-        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h)
+        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h src/Utilities/Verify2DArea.cpp src/Utilities/Verify2DArea.h)
         
 ament_target_dependencies(
         controller_node
         rclcpp
         sensor_msgs
-        tutorial_interfaces
-        custom_interfaces
 )
 
 add_executable(

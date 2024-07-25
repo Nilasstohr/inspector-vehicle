@@ -18,7 +18,8 @@ class GridMap: MatrixHelper {
 public:
     GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval);
     void update(std::vector<PointPolarForm> * scan, Pose *currentPose);
-    string * mapAsString();
+    string * toString();
+    MatrixXd * map();
 private:
     MatrixXd gridMap;
     LinePoints linePoints = LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM);

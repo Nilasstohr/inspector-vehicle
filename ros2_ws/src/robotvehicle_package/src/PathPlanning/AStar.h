@@ -9,6 +9,8 @@
 #include "PathPoint.h"
 #include "../Utilities/MatrixHelper.h"
 #include "../Configurations.h"
+#include "../Navigation/NavigationPath.h"
+#include <stack>
 
 // Creating a shortcut for int, int pair type
 typedef pair<int, int> Pair;
@@ -28,6 +30,7 @@ struct cell {
 class AStar: public MatrixHelper {
 public:
     AStar(Pose *currentPose, PathPoint *destination, MatrixXd *grid);
+    string pathToString();
 private:
     bool isValid(int row, int col);
     bool isDestination(int row, int col, Pair dest);
@@ -35,6 +38,10 @@ private:
     void tracePath(cell cellDetails[][CONFIG_GRID_COL_SIZE], Pair dest);
     //bool isUnBlocked(int grid[][CONFIG_GRID_COL_SIZE], int row, int col);
     bool isUnBlocked(MatrixXd *grid, int row, int col);
+    void downSampleNavigationPath(stack<Pair> *path);
+    NavigationPath * navigationPath = new NavigationPath();
+    string pathString;
+    Pose *currentPose;
 };
 
 

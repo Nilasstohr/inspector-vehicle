@@ -16,3 +16,7 @@ std::vector<NavigationPoint> *NavigationPath::getPath() const {
     return path;
 }
 
+void NavigationPath::clear() {
+    path->clear();
+}
+

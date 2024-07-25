@@ -2,21 +2,21 @@
 // Created by robot1 on 6/28/24.
 //
 
-#include <stack>
 #include <cfloat>
 #include <set>
 #include <iostream>
 #include "AStar.h"
+#include "../Utilities/Verify2DArea.h"
 
 
 AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
+    this->currentPose=currentPose;
     MatrixXd visited =  MatrixXd::Zero(gridMap->cols(),gridMap->rows());
     PathPoint startPoint = PathPoint();
     startPoint.set(floor(currentPose->getX()),floor(currentPose->getY()));
 
     Pair src  = make_pair(currentPose->getX(), currentPose->getY());
     Pair dest = make_pair(destination->getX(), destination->getY());
-
 
     // If the source is out of range
     if (isValid(src.first, src.second) == false) {
@@ -99,7 +99,6 @@ AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
 
     while (!openList.empty()) {
         pPair p = *openList.begin();
-
         // Remove this vertex from the open list
         openList.erase(openList.begin());
         //std::cout << "List Size: " << openList.size() << std::endl;
@@ -140,11 +139,12 @@ AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
             if (isValid(iSCell, jSCell) == true) {
                 // If the destination cell is the same as the
                 // current successor
-                if (isDestination(i, jSCell, dest) == true) {
+                if (isDestination(iSCell, jSCell, dest) == true) {
+                    isDestination(iSCell, jSCell, dest);
                     // Set the Parent of the destination cell
                     cellDetails[iSCell][jSCell].parent_i = i;
                     cellDetails[iSCell][jSCell].parent_j = j;
-                    printf("The destination cell is found\n");
+                    //printf("The destination cell is found\n");
                     tracePath(cellDetails, dest);
                     foundDest = true;
                     return;
@@ -207,7 +207,7 @@ bool AStar::isValid(int row, int col)
 bool AStar::isUnBlocked(MatrixXd * grid, int row, int col)
 {
     // Returns true if the cell is not blocked else false
-    if (grid->coeff(row,col) == 1)
+    if (grid->coeff(row,col) >= CONFIG_GRID_VALUE_UPDATE_INTERVAL)
         return (true);
     else
         return (false);
@@ -236,27 +236,71 @@ double AStar::calculateHValue(int row, int col, Pair dest)
 // to destination
 void AStar::tracePath(cell cellDetails[][CONFIG_GRID_COL_SIZE], Pair dest)
 {
-    printf("\nThe Path is ");
+    //printf("\nThe path is ");
     int row = dest.first;
     int col = dest.second;
 
-    stack<Pair> Path;
+    stack<Pair> path;
 
     while (!(cellDetails[row][col].parent_i == row
              && cellDetails[row][col].parent_j == col)) {
-        Path.push(make_pair(row, col));
+        path.push(make_pair(row, col));
         int temp_row = cellDetails[row][col].parent_i;
         int temp_col = cellDetails[row][col].parent_j;
         row = temp_row;
         col = temp_col;
     }
-
-    Path.push(make_pair(row, col));
-    while (!Path.empty()) {
-        pair<int, int> p = Path.top();
-        Path.pop();
-        printf("-> (%d,%d) ", p.first, p.second);
-    }
-
-    return;
+    path.push(make_pair(row, col));
+    downSampleNavigationPath(&path);
 }
+
+void AStar::downSampleNavigationPath(stack<Pair> *path){
+    navigationPath->clear();
+    int x;
+    int y;
+    NavigationPoint lastAddedPoint(currentPose->getX(), currentPose->getY(), 0);
+    while (!path->empty()) {
+        x=path->top().first;
+        y=path->top().second;
+        path->pop();
+        if(!Verify2DArea::isPointWithinSquareArea(currentPose, x, y,CONFIG_ROBOT_DIAMETER)){
+            // first check if this is the last point (goal)
+            if(path->empty()){
+                if(navigationPath->getPath()->empty()){
+                    navigationPath->addPathPoint(x,y,0);
+                }else{
+                    // if the distance between last path point in navigation and A-star is less than threshold
+                    // we just that the A-star point
+                    if(Verify2DArea::distanceBetweenPoints(
+                            navigationPath->getPath()->back().getX(),
+                            navigationPath->getPath()->back().getY(),x,y) < CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM){
+                        navigationPath->getPath()->back().override(x,y);
+                    }else{
+                        navigationPath->addPathPoint(x,y,0);
+                    }
+                }
+                break;
+            }else{
+                if(Verify2DArea::distanceBetweenPoints(
+                        lastAddedPoint.getX(),
+                        lastAddedPoint.getY(), x, y) >= CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM){
+                    navigationPath->addPathPoint(x,y,0);
+                    lastAddedPoint.override(x,y);
+                }
+            }
+        }
+    }
+}
+
+string AStar::pathToString() {
+    pathString.clear();
+    stringstream stream;
+    for(NavigationPoint point: *navigationPath->getPath()) {
+        stream << point.getX() << " " << point.getY() << endl;
+        pathString.append(stream.str());
+        stream.str(std::string());
+    }
+    pathString.replace(pathString.size()-1,1,"");
+    return pathString;
+}
+

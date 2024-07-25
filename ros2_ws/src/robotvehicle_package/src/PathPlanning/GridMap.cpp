@@ -66,7 +66,7 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
     }
 }
 
-string * GridMap::mapAsString() {
+string * GridMap::toString() {
     gridMapString.clear();
     stringstream stream;
     for(int i=0; i<gridMap.rows(); i++){
@@ -79,6 +79,10 @@ string * GridMap::mapAsString() {
     }
     gridMapString.replace(gridMapString.size()-1,1,"");
     return &gridMapString;
+}
+
+MatrixXd *GridMap::map() {
+    return &gridMap;
 }
 
 
