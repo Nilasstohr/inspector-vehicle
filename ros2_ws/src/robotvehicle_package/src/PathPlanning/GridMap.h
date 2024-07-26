@@ -13,12 +13,19 @@
 #include "../Utilities/Transformations.h"
 #include "LinePoints.h"
 #include "../Sensor/SensorData.h"
+#include <iomanip>
+#include <iostream>
+#include <fstream>
+
+#define GRID_MAP_FILE_NAME "GridMap.txt"
 
 class GridMap: MatrixHelper {
 public:
     GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval);
     void update(std::vector<PointPolarForm> * scan, Pose *currentPose);
     string * toString();
+    void storeMap();
+    void loadGridMap();
     MatrixXd * map();
 private:
     MatrixXd gridMap;
@@ -32,6 +39,9 @@ private:
     int y;
     double mapValue;
     string gridMapString;
+
+
+
 };
 
 

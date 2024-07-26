@@ -11,6 +11,7 @@ PlayBackTesting::PlayBackTesting() {
     gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                           CONFIG_GRID_VALUE_FULL_OCCUPIED,
                           CONFIG_GRID_VALUE_UPDATE_INTERVAL);
+    gripMap->loadGridMap();
     localization = new KalmanLocalization(nullptr);
     recording = new std::vector<SensorRecord>;
     hasMapBeenBuild=false;

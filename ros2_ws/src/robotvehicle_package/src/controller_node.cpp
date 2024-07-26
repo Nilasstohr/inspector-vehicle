@@ -38,6 +38,7 @@ public:
         gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                               CONFIG_GRID_VALUE_FULL_OCCUPIED,
                               CONFIG_GRID_VALUE_UPDATE_INTERVAL);
+        gripMap->loadGridMap();
         navigator = new Navigator(driverInterface);
         navigationPath = getTestPath();
         navigator->setNavigationPath(navigationPath);
@@ -109,10 +110,6 @@ private:
         scanReady=true;
     }
     void timer_callback(){
-        //auto gridMapMessage = std_msgs::msg::String();
-        //gridMapMessage.data = playBackTesting->getGripMap()->pathToString()->c_str();
-        //gridMapPublisher_->publish(gridMapMessage);
-
         if(scanReady) {
             scanReady = false;
             if (!hasMapBeenBuild) {
@@ -135,10 +132,10 @@ private:
                 message.data = "end";
                 posePublisher_->publish(message);
                 // public grid map
-                //auto gridMapMessage = std_msgs::msg::String();
-                //gridMapMessage.data = gripMap->pathToString()->c_str();
-                //gridMapPublisher_->publish(gridMapMessage);
-
+                auto gridMapMessage = std_msgs::msg::String();
+                gridMapMessage.data = gripMap->toString()->c_str();
+                gridMapPublisher_->publish(gridMapMessage);
+                std::this_thread::sleep_for(200ms);
                 cout << "ending run" << endl;
                 rclcpp::shutdown();
                 return;
@@ -146,9 +143,6 @@ private:
             //timer->printElapsedTime();
         }
     }
-
-
-
     void topic_callback_joy_stick(const std_msgs::msg::String::SharedPtr msg) const
     {
         RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
@@ -225,6 +219,7 @@ private:
         gridMapMessageString.append(aStar->pathToString());
         auto gridMapMessage = std_msgs::msg::String();
         gridMapMessage.data = gridMapMessageString.c_str();
+        playBackTesting->getGripMap()->storeMap();
         gridMapPublisher_->publish(gridMapMessage);
         std::this_thread::sleep_for(200ms);
     }
@@ -239,8 +234,8 @@ int main(int argc, char ** argv)
 {
     //TestSearchAlgoritms();
     rclcpp::init(argc, argv);
-    //auto node = std::make_shared<ControllerNode>();
-    auto node = std::make_shared<ControllerNodeEmulated>();
+    auto node = std::make_shared<ControllerNode>();
+    //auto node = std::make_shared<ControllerNodeEmulated>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

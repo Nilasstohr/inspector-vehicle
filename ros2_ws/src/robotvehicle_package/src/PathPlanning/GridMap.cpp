@@ -2,10 +2,7 @@
 // Created by robot1 on 7/3/24.
 //
 
-#include <iomanip>
-#include <iostream>
 #include "GridMap.h"
-
 
 GridMap::GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval):
 gridMapValueAvailable(gridMapValueAvailable),
@@ -68,6 +65,7 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
 
 string * GridMap::toString() {
     gridMapString.clear();
+
     stringstream stream;
     for(int i=0; i<gridMap.rows(); i++){
         for(int j=0; j<gridMap.cols();j++){
@@ -79,6 +77,36 @@ string * GridMap::toString() {
     }
     gridMapString.replace(gridMapString.size()-1,1,"");
     return &gridMapString;
+}
+
+void GridMap::storeMap(){
+    std::ofstream out(GRID_MAP_FILE_NAME);
+    out << *toString();
+    out.close();
+}
+
+void GridMap::loadGridMap(){
+    std::ifstream file;
+    file.open(GRID_MAP_FILE_NAME);
+    if(file.is_open()){
+        string line;
+        int row=0;
+        int col;
+        while(getline(file,line)) {
+            std::stringstream ss(line);
+            string valueStr;
+            col=0;
+            while(ss >> valueStr){
+                gridMap.coeffRef(row,col)= atof(valueStr.c_str());
+                col++;
+            }
+            row++;
+        }
+    }else{
+        printf("file open failed");
+        return;
+    }
+    file.close();
 }
 
 MatrixXd *GridMap::map() {
