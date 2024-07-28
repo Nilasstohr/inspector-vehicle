@@ -28,6 +28,7 @@ TestSearchAlgoritms::TestSearchAlgoritms() {
                1, 0, 1, 1, 1, 1, 0, 1, 1, 1,
                1, 1, 1, 0, 0, 0, 1, 0, 0, 1;
     */
-    AStar *asta = new AStar(&currentPose,&endPoint,&gridMap);
-    cout << "Navigation Path Found:" << asta->pathToString() << endl;
+    AStar asta;
+    asta.update(&currentPose, &endPoint, &gridMap);
+    cout << "Navigation Path Found:" << asta.pathToString() << endl;
  }

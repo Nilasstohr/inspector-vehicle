@@ -38,8 +38,9 @@ public:
         gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                               CONFIG_GRID_VALUE_FULL_OCCUPIED,
                               CONFIG_GRID_VALUE_UPDATE_INTERVAL);
-        gripMap->loadGridMap();
         navigator = new Navigator(driverInterface);
+        aStar = new AStar();
+        gripMap->loadGridMap();
         navigationPath = getTestPath();
         navigator->setNavigationPath(navigationPath);
         recorder->startRecord(RECORD_DURATION_SECONDS);
@@ -62,8 +63,15 @@ public:
     }
 private:
     NavigationPath * getTestPath(){
-        NavigationPath *navigationPath = new NavigationPath();
+        PathPoint *endPoint = new PathPoint();
+        endPoint->set(170,83);
+        aStar->update(localization->getPose(),
+                     endPoint, gripMap->map());
+        return aStar->getNavigationPath();
+
+         //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
         /*
+        NavigationPath *navigationPath = new NavigationPath();
         navigationPath->addPathPoint(60,40,0);
         navigationPath->addPathPoint(77,34,0);
         navigationPath->addPathPoint(93,29,0);
@@ -92,6 +100,8 @@ private:
         navigationPath->addPathPoint(50,45,0);
         navigationPath->addPathPoint(40,40,0);
         */
+
+        /*
         navigationPath->addPathPoint(40,50,0);
         navigationPath->addPathPoint(40,60,0);
         navigationPath->addPathPoint(40,70,0);
@@ -103,7 +113,8 @@ private:
         navigationPath->addPathPoint(80,90,0);
         navigationPath->addPathPoint(90,90,0);
         navigationPath->addPathPoint(90,100,0);
-        return navigationPath;
+        */
+        //return navigationPath;
     }
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
         currentScan = scan;
@@ -118,8 +129,8 @@ private:
             }
             localization->update(currentScan);
             recorder->update(localization->getSensorDate());
-            //gripMap->update(localization->getSensorDate()->getScanPolarForm(),localization->getPose());
-            //navigator->update(localization);
+            //gripMap->AStar(localization->getSensorDate()->getScanPolarForm(),localization->getPose());
+            navigator->update(localization);
             //cout << *localization->getPoseLastString() << endl;
             auto message = std_msgs::msg::String();
             message.data = localization->getPoseLastString()->c_str();
@@ -163,6 +174,7 @@ private:
     Navigator * navigator;
     NavigationPath * navigationPath;
     GridMap * gripMap;
+    AStar * aStar;
 
     bool scanReady=false;
     bool hasMapBeenBuild=false;
@@ -208,15 +220,15 @@ private:
 
     void publishGridAndNavigationPath(){
         PathPoint *endPoint = new PathPoint();
-        endPoint->set(100,60);
-        AStar *aStar = new AStar(
-                playBackTesting->getLocalization()->getPose(),
-                endPoint,playBackTesting->getGripMap()->map());
+        endPoint->set(150,60);
+        AStar aStar;
+        aStar.update(playBackTesting->getLocalization()->getPose(),
+                    endPoint, playBackTesting->getGripMap()->map());
         //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
         string gridMapMessageString;
         gridMapMessageString.append(playBackTesting->getGripMap()->toString()->c_str());
         gridMapMessageString.append( "\npath\n");
-        gridMapMessageString.append(aStar->pathToString());
+        gridMapMessageString.append(aStar.pathToString());
         auto gridMapMessage = std_msgs::msg::String();
         gridMapMessage.data = gridMapMessageString.c_str();
         playBackTesting->getGripMap()->storeMap();

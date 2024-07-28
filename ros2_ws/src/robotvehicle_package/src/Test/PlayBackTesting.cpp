@@ -29,10 +29,10 @@ PlayBackTesting::PlayBackTesting() {
         //if(i+1==26)
         //    cout << "stop at: " << i+1 << endl;
         //awaitTimer->reset();
-        //kalmanFilter->update(
+        //kalmanFilter->AStar(
         //        sensorLogger[i]->getPosLeft(),
         //        sensorLogger[i]->getPosRight(),sensorLogger[i]->getScan(),true);
-        //cout << "update time kalman: " << awaitTimer->getElapsedTimeMillis() << <<endl;
+        //cout << "AStar time kalman: " << awaitTimer->getElapsedTimeMillis() << <<endl;
         i++;
 
 

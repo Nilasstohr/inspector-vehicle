@@ -8,8 +8,11 @@
 #include "AStar.h"
 #include "../Utilities/Verify2DArea.h"
 
+AStar::AStar(){
+    navigationPath = new NavigationPath();
+}
 
-AStar::AStar(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
+void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
     this->currentPose=currentPose;
     MatrixXd visited =  MatrixXd::Zero(gridMap->cols(),gridMap->rows());
     PathPoint startPoint = PathPoint();
@@ -303,4 +306,9 @@ string AStar::pathToString() {
     pathString.replace(pathString.size()-1,1,"");
     return pathString;
 }
+
+NavigationPath *AStar::getNavigationPath() {
+    return navigationPath;
+}
+
 

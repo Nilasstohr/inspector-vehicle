@@ -29,7 +29,9 @@ struct cell {
 
 class AStar: public MatrixHelper {
 public:
-    AStar(Pose *currentPose, PathPoint *destination, MatrixXd *grid);
+    AStar();
+    void update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap);
+    NavigationPath * getNavigationPath();
     string pathToString();
 private:
     bool isValid(int row, int col);
@@ -39,9 +41,11 @@ private:
     //bool isUnBlocked(int grid[][CONFIG_GRID_COL_SIZE], int row, int col);
     bool isUnBlocked(MatrixXd *grid, int row, int col);
     void downSampleNavigationPath(stack<Pair> *path);
-    NavigationPath * navigationPath = new NavigationPath();
+    NavigationPath * navigationPath;
     string pathString;
     Pose *currentPose;
+
+
 };
 
 
