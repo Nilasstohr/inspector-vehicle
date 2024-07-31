@@ -8,10 +8,14 @@
 
 
 void MatrixHelper::printMatrix(const MatrixXd *matrix, char * name) {
-    printMatrix(matrix,name, matrix->rows());
+    printMatrix(matrix,name, matrix->rows(),5);
 }
 
-void MatrixHelper::printMatrix(const MatrixXd *matrix, char * name,int maxRows) {
+void MatrixHelper::printMatrix(const MatrixXd *matrix, char * name,int precision) {
+    printMatrix(matrix,name, matrix->rows(),precision);
+}
+
+void MatrixHelper::printMatrix(const MatrixXd *matrix, char * name,int maxRows,int precision) {
     cout << name << endl;
     for(int i=0; i<maxRows; i++){
         for(int j=0; j<matrix->cols();j++){
@@ -19,7 +23,7 @@ void MatrixHelper::printMatrix(const MatrixXd *matrix, char * name,int maxRows) 
             cout << "    ";
         }
         std::cout << std::fixed;
-        std::cout << std::setprecision(5);
+        std::cout << std::setprecision(precision);
         std::cout <<std::endl;
     }
 }

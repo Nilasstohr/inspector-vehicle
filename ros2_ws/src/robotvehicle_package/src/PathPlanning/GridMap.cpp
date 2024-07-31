@@ -8,7 +8,8 @@ GridMap::GridMap(double gridMapValueAvailable, double gridMapValueOccupied, doub
 gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),
 gridMapValueUpdateInterval(gridMapValueUpdateInterval){
-    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setZero();
+    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setOnes();
+    //addSafetyDistance();
 }
 
 void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
@@ -63,13 +64,19 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
     }
 }
 
-string * GridMap::toString() {
-    gridMapString.clear();
+string * GridMap::obstacleSafeDistanceMapToString() {
+    return toString(&gridMapCopy);
+}
+string * GridMap::mapToString() {
+    return toString(&gridMap);
+}
 
+string * GridMap::toString(MatrixXd *gridMap) {
+    gridMapString.clear();
     stringstream stream;
-    for(int i=0; i<gridMap.rows(); i++){
-        for(int j=0; j<gridMap.cols();j++){
-            stream << std::setprecision(2) << gridMap.coeff(i,j) << " ";
+    for(int i=0; i<gridMap->rows(); i++){
+        for(int j=0; j<gridMap->cols();j++){
+            stream << std::setprecision(2) << gridMap->coeff(i,j) << " ";
             gridMapString.append(stream.str());
             stream.str(std::string());
         }
@@ -81,7 +88,7 @@ string * GridMap::toString() {
 
 void GridMap::storeMap(){
     std::ofstream out(GRID_MAP_FILE_NAME);
-    out << *toString();
+    out << *obstacleSafeDistanceMapToString();
     out.close();
 }
 
@@ -109,8 +116,65 @@ void GridMap::loadGridMap(){
     file.close();
 }
 
-MatrixXd *GridMap::map() {
-    return &gridMap;
+MatrixXd *GridMap::UpdateMapWithObstacleSafeDistance() {
+    gridMapCopy=gridMap;
+    int radius = (CONFIG_ROBOT_DIAMETER+CONFIG_SAFETY_DISTANCE)/2;
+    int x;
+    int y;
+    for(int i=0; i<gridMapCopy.cols(); i++){
+        for(int j=0; j<gridMapCopy.rows();j++){
+            x=j;
+            y=i;
+            if(gridMapCopy.coeffRef(x,y)!=CONFIG_GRID_VALUE_SAFETY &&
+                    gridMapCopy.coeffRef(x,y)<CONFIG_GRID_VALUE_UPDATE_INTERVAL){
+                for(int k=y-radius; k<y+radius; k++){
+                    for(int l=x-radius; l<x+radius; l++){
+                        if( (k>=0 && k<gridMapCopy.rows()) && (l>=0 && l<gridMapCopy.cols())){
+                            if( (pow(l-x,2)+pow(k-y,2)) < pow(radius,2) ){
+                                gridMapCopy.coeffRef(l,k)=CONFIG_GRID_VALUE_SAFETY;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //printMatrix(&gridMap,"gridMap",0);
+    return &gridMapCopy;
+}
+
+
+
+void GridMap::addSafetyDistance() {
+    int safetyDistance = CONFIG_ROBOT_DIAMETER + CONFIG_SAFETY_DISTANCE;
+    int squareNum;
+    double value = CONFIG_GRID_VALUE_SAFETY;
+    while(safetyDistance>0){
+        squareNum=safetyDistance-1;
+        for(int col=squareNum; col<gridMap.cols()-squareNum; col++){
+            //cout << col << ":" << squareNum << endl;
+            gridMap.coeffRef(squareNum,col)=value;
+            //printMatrix(&gridMap,"gridMap",0);
+        }
+        for(int col=squareNum; col<gridMap.cols()-squareNum; col++){
+            //cout << col << ":" << squareNum << endl;
+            gridMap.coeffRef(gridMap.rows()-safetyDistance,col)=value;
+            //printMatrix(&gridMap,"gridMap",0);
+        }
+        for(int row=squareNum; row<gridMap.rows()-squareNum; row++){
+            //cout << row << ":" << squareNum << endl;
+            gridMap.coeffRef(row,squareNum)=value;
+            //printMatrix(&gridMap,"gridMap",0);
+        }
+        for(int row=squareNum; row<gridMap.rows()-squareNum; row++){
+            //cout << row << ":" << squareNum << endl;
+            gridMap.coeffRef(row,gridMap.cols()-safetyDistance)=value;
+            //printMatrix(&gridMap,"gridMap",0);
+        }
+        safetyDistance--;
+        //printMatrix(&gridMap,"gridMap",0);
+    }
+    //printMatrix(&gridMap,"gridMap",0);
 }
 
 

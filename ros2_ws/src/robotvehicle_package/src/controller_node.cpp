@@ -66,7 +66,7 @@ private:
         PathPoint *endPoint = new PathPoint();
         endPoint->set(170,83);
         aStar->update(localization->getPose(),
-                     endPoint, gripMap->map());
+                     endPoint, gripMap->UpdateMapWithObstacleSafeDistance());
         return aStar->getNavigationPath();
 
          //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
@@ -142,9 +142,9 @@ private:
                 recorder->endRecord();
                 message.data = "end";
                 posePublisher_->publish(message);
-                // public grid map
+                // public grid UpdateMapWithObstacleSafeDistance
                 auto gridMapMessage = std_msgs::msg::String();
-                gridMapMessage.data = gripMap->toString()->c_str();
+                gridMapMessage.data = gripMap->obstacleSafeDistanceMapToString()->c_str();
                 gridMapPublisher_->publish(gridMapMessage);
                 std::this_thread::sleep_for(200ms);
                 cout << "ending run" << endl;
@@ -196,11 +196,17 @@ private:
 
     void timer_callback(){
         auto message = std_msgs::msg::String();
+
+        auto gridMapMessage = std_msgs::msg::String();
+        playBackTesting->getGripMap()->UpdateMapWithObstacleSafeDistance();
+        gridMapMessage.data = playBackTesting->getGripMap()->mapToString()->c_str();
+        gridMapPublisher_->publish(gridMapMessage);
+
         if(playBackTesting->hasRecordsToProcess()){
             playBackTesting->update();
 
             //auto gridMapMessage = std_msgs::msg::String();
-            //gridMapMessage.data = playBackTesting->getGripMap()->pathToString()->c_str();
+            //gridMapMessage.data = playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str();
             //gridMapPublisher_->publish(gridMapMessage);
 
             message = std_msgs::msg::String();
@@ -223,15 +229,15 @@ private:
         endPoint->set(150,60);
         AStar aStar;
         aStar.update(playBackTesting->getLocalization()->getPose(),
-                    endPoint, playBackTesting->getGripMap()->map());
+                    endPoint, playBackTesting->getGripMap()->UpdateMapWithObstacleSafeDistance());
         //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
         string gridMapMessageString;
-        gridMapMessageString.append(playBackTesting->getGripMap()->toString()->c_str());
+        gridMapMessageString.append(playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str());
         gridMapMessageString.append( "\npath\n");
         gridMapMessageString.append(aStar.pathToString());
         auto gridMapMessage = std_msgs::msg::String();
         gridMapMessage.data = gridMapMessageString.c_str();
-        playBackTesting->getGripMap()->storeMap();
+        //playBackTesting->getGripMap()->storeMap();
         gridMapPublisher_->publish(gridMapMessage);
         std::this_thread::sleep_for(200ms);
     }
@@ -246,8 +252,8 @@ int main(int argc, char ** argv)
 {
     //TestSearchAlgoritms();
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<ControllerNode>();
-    //auto node = std::make_shared<ControllerNodeEmulated>();
+    //auto node = std::make_shared<ControllerNode>();
+    auto node = std::make_shared<ControllerNodeEmulated>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

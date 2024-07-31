@@ -23,15 +23,21 @@ class GridMap: MatrixHelper {
 public:
     GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval);
     void update(std::vector<PointPolarForm> * scan, Pose *currentPose);
-    string * toString();
+    string * obstacleSafeDistanceMapToString();
     void storeMap();
     void loadGridMap();
-    MatrixXd * map();
+    MatrixXd * UpdateMapWithObstacleSafeDistance();
+
+    string *mapToString();
+
 private:
     MatrixXd gridMap;
+    MatrixXd gridMapCopy;
     LinePoints linePoints = LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM);
     void updateAvailabilityFromLinePoints();
     void updateMapPointValue(int x, int y,double value);
+    string * toString(MatrixXd *gridMap);
+    void addSafetyDistance();
     double gridMapValueAvailable;
     double gridMapValueOccupied;
     double gridMapValueUpdateInterval;
@@ -39,8 +45,6 @@ private:
     int y;
     double mapValue;
     string gridMapString;
-
-
 
 };
 

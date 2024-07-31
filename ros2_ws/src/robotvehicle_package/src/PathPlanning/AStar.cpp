@@ -209,6 +209,9 @@ bool AStar::isValid(int row, int col)
 // blocked or not
 bool AStar::isUnBlocked(MatrixXd * grid, int row, int col)
 {
+    if(grid->coeff(row,col)==CONFIG_GRID_VALUE_SAFETY){
+        return (false);
+    }
     // Returns true if the cell is not blocked else false
     if (grid->coeff(row,col) >= CONFIG_GRID_VALUE_UPDATE_INTERVAL)
         return (true);
