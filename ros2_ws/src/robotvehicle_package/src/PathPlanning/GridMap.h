@@ -26,7 +26,7 @@ public:
     string * obstacleSafeDistanceMapToString();
     void storeMap();
     void loadGridMap();
-    MatrixXd * UpdateMapWithObstacleSafeDistance();
+    MatrixXd * updateMapWithObstacleSafeDistance();
 
     string *mapToString();
 

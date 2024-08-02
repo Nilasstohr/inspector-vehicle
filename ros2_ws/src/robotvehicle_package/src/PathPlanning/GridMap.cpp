@@ -8,8 +8,8 @@ GridMap::GridMap(double gridMapValueAvailable, double gridMapValueOccupied, doub
 gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),
 gridMapValueUpdateInterval(gridMapValueUpdateInterval){
-    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setOnes();
-    //addSafetyDistance();
+    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setZero();
+    addSafetyDistance();
 }
 
 void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
@@ -52,6 +52,8 @@ void GridMap::updateAvailabilityFromLinePoints() {
 void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval){
     if(x>0 && y>0){
         mapValue = gridMap.coeff(x,y);
+        if(mapValue==CONFIG_GRID_VALUE_SAFETY_PERIPHERAL)
+            return;
         mapValue += gridMapValueUpdateInterval;
         //cout << mapValue << endl;
         if(mapValue>gridMapValueAvailable){
@@ -104,7 +106,9 @@ void GridMap::loadGridMap(){
             string valueStr;
             col=0;
             while(ss >> valueStr){
-                gridMap.coeffRef(row,col)= atof(valueStr.c_str());
+                if(gridMap.coeffRef(row,col)!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL){
+                    gridMap.coeffRef(row,col)= atof(valueStr.c_str());
+                }
                 col++;
             }
             row++;
@@ -116,22 +120,27 @@ void GridMap::loadGridMap(){
     file.close();
 }
 
-MatrixXd *GridMap::UpdateMapWithObstacleSafeDistance() {
+MatrixXd *GridMap::updateMapWithObstacleSafeDistance() {
     gridMapCopy=gridMap;
     int radius = (CONFIG_ROBOT_DIAMETER+CONFIG_SAFETY_DISTANCE)/2;
     int x;
     int y;
+    double value;
     for(int i=0; i<gridMapCopy.cols(); i++){
         for(int j=0; j<gridMapCopy.rows();j++){
             x=j;
             y=i;
-            if(gridMapCopy.coeffRef(x,y)!=CONFIG_GRID_VALUE_SAFETY &&
-                    gridMapCopy.coeffRef(x,y)<CONFIG_GRID_VALUE_UPDATE_INTERVAL){
+            value = gridMapCopy.coeffRef(x,y);
+            if(value!=CONFIG_GRID_VALUE_SAFETY &&
+               value!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL &&
+               value<CONFIG_GRID_VALUE_UPDATE_INTERVAL){
                 for(int k=y-radius; k<y+radius; k++){
                     for(int l=x-radius; l<x+radius; l++){
                         if( (k>=0 && k<gridMapCopy.rows()) && (l>=0 && l<gridMapCopy.cols())){
-                            if( (pow(l-x,2)+pow(k-y,2)) < pow(radius,2) ){
-                                gridMapCopy.coeffRef(l,k)=CONFIG_GRID_VALUE_SAFETY;
+                            if(gridMapCopy.coeffRef(l,k)!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL) {
+                                if ((pow(l - x, 2) + pow(k - y, 2)) < pow(radius, 2)) {
+                                    gridMapCopy.coeffRef(l, k) = CONFIG_GRID_VALUE_SAFETY;
+                                }
                             }
                         }
                     }
@@ -148,7 +157,7 @@ MatrixXd *GridMap::UpdateMapWithObstacleSafeDistance() {
 void GridMap::addSafetyDistance() {
     int safetyDistance = CONFIG_ROBOT_DIAMETER + CONFIG_SAFETY_DISTANCE;
     int squareNum;
-    double value = CONFIG_GRID_VALUE_SAFETY;
+    double value = CONFIG_GRID_VALUE_SAFETY_PERIPHERAL;
     while(safetyDistance>0){
         squareNum=safetyDistance-1;
         for(int col=squareNum; col<gridMap.cols()-squareNum; col++){

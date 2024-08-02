@@ -69,7 +69,7 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         hStack->add(&H);
 
     }
-    //z_est->printLines("----z_est stacked (measurement prediction UpdateMapWithObstacleSafeDistance to {R} frame)----");
+    //z_est->printLines("----z_est stacked (measurement prediction updateMapWithObstacleSafeDistance to {R} frame)----");
     //hStack->printMatrix("----H stacked----");
 }
 

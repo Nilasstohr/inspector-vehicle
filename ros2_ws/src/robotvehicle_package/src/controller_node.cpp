@@ -66,7 +66,7 @@ private:
         PathPoint *endPoint = new PathPoint();
         endPoint->set(170,83);
         aStar->update(localization->getPose(),
-                     endPoint, gripMap->UpdateMapWithObstacleSafeDistance());
+                     endPoint, gripMap->updateMapWithObstacleSafeDistance());
         return aStar->getNavigationPath();
 
          //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
@@ -142,7 +142,7 @@ private:
                 recorder->endRecord();
                 message.data = "end";
                 posePublisher_->publish(message);
-                // public grid UpdateMapWithObstacleSafeDistance
+                // public grid updateMapWithObstacleSafeDistance
                 auto gridMapMessage = std_msgs::msg::String();
                 gridMapMessage.data = gripMap->obstacleSafeDistanceMapToString()->c_str();
                 gridMapPublisher_->publish(gridMapMessage);
@@ -197,10 +197,10 @@ private:
     void timer_callback(){
         auto message = std_msgs::msg::String();
 
-        auto gridMapMessage = std_msgs::msg::String();
-        playBackTesting->getGripMap()->UpdateMapWithObstacleSafeDistance();
-        gridMapMessage.data = playBackTesting->getGripMap()->mapToString()->c_str();
-        gridMapPublisher_->publish(gridMapMessage);
+        //auto gridMapMessage = std_msgs::msg::String();
+        //playBackTesting->getGripMap()->updateMapWithObstacleSafeDistance();
+        //gridMapMessage.data = playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str();
+        //gridMapPublisher_->publish(gridMapMessage);
 
         if(playBackTesting->hasRecordsToProcess()){
             playBackTesting->update();
@@ -229,7 +229,7 @@ private:
         endPoint->set(150,60);
         AStar aStar;
         aStar.update(playBackTesting->getLocalization()->getPose(),
-                    endPoint, playBackTesting->getGripMap()->UpdateMapWithObstacleSafeDistance());
+                    endPoint, playBackTesting->getGripMap()->updateMapWithObstacleSafeDistance());
         //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
         string gridMapMessageString;
         gridMapMessageString.append(playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str());

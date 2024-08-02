@@ -36,7 +36,7 @@ class MinimalSubscriber(Node):
         self.get_logger().info('got grid map update')
         grid_map_matrix = self.get_gridmap_with_path(string)
         plt.imshow(grid_map_matrix, origin='lower')
-        plt.axis([0, 250, 0, 150])
+        plt.axis([0, 250, 0, 250])
         plt.colorbar()
         plt.show()
 
