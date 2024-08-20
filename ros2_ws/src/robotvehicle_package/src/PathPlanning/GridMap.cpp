@@ -9,7 +9,8 @@ gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),
 gridMapValueUpdateInterval(gridMapValueUpdateInterval){
     gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setZero();
-    addSafetyDistance();
+    //addSafetyDistance();
+    obstacleDetection = ObstacleDetection();
 }
 
 void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
@@ -19,11 +20,15 @@ void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
     double yPos = currentPose->getY();
     // since the robot is at the position it must be available.
     updateMapPointValue(xPos,yPos,CONFIG_GRID_VALUE_FULL_AVAILABLE);
+    obstacleDetection.clear();
     for(int i=0; i<scan->size(); i++){
         linePoints.reset();
         Transformations::polarPointToCartesian(xp,yp,currentPose,
                                                scan->at(i).getAngle(),
                                    scan->at(i).getDistance());
+        //cout << scan->at(i).getAngle() << " " << scan->at(i).getDistance() << endl;
+        obstacleDetection.update(scan->at(i).getDistance(),scan->at(i).getAngle());
+
         // the target point of the laser is most likely occupied.
         updateMapPointValue(xp,yp,-gridMapValueUpdateInterval);
         if(xPos > xp){
@@ -67,13 +72,14 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
 }
 
 string * GridMap::obstacleSafeDistanceMapToString() {
+    updateMapWithObstacleSafeDistance();
     return toString(&gridMapCopy);
 }
 string * GridMap::mapToString() {
     return toString(&gridMap);
 }
 
-string * GridMap::toString(MatrixXd *gridMap) {
+string * GridMap:: toString(MatrixXd *gridMap) {
     gridMapString.clear();
     stringstream stream;
     for(int i=0; i<gridMap->rows(); i++){
@@ -90,7 +96,7 @@ string * GridMap::toString(MatrixXd *gridMap) {
 
 void GridMap::storeMap(){
     std::ofstream out(GRID_MAP_FILE_NAME);
-    out << *obstacleSafeDistanceMapToString();
+    out << *mapToString();
     out.close();
 }
 
@@ -122,7 +128,7 @@ void GridMap::loadGridMap(){
 
 MatrixXd *GridMap::updateMapWithObstacleSafeDistance() {
     gridMapCopy=gridMap;
-    int radius = (CONFIG_ROBOT_DIAMETER+CONFIG_SAFETY_DISTANCE)/2;
+    int radius = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE*3;
     int x;
     int y;
     double value;
@@ -153,9 +159,8 @@ MatrixXd *GridMap::updateMapWithObstacleSafeDistance() {
 }
 
 
-
 void GridMap::addSafetyDistance() {
-    int safetyDistance = CONFIG_ROBOT_DIAMETER + CONFIG_SAFETY_DISTANCE;
+    int safetyDistance = CONFIG_ROBOT_DIAMETER/2 + CONFIG_SAFETY_DISTANCE;
     int squareNum;
     double value = CONFIG_GRID_VALUE_SAFETY_PERIPHERAL;
     while(safetyDistance>0){
@@ -186,6 +191,14 @@ void GridMap::addSafetyDistance() {
     //printMatrix(&gridMap,"gridMap",0);
 }
 
+ObstacleDetection *GridMap::getObstacleDetection() {
+    return &obstacleDetection;
+}
+
+bool GridMap::isPoseInSafeZone(Pose *currentPose) {
+    return gridMapCopy.coeffRef(
+            (int)currentPose->getX(), (int)currentPose->getX())!=CONFIG_GRID_VALUE_SAFETY;
+}
 
 
 

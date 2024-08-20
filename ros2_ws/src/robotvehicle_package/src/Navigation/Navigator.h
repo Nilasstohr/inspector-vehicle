@@ -16,8 +16,12 @@ public:
     void update(KalmanLocalization *localization);
     void update();
     void setNavigationPath(NavigationPath * navigationPath);
-
     bool isDestinationReached();
+    void stopAndResetDisplacement();
+    void backwardSlow();
+    void forwardSlow();
+
+    void stop();
 
 private:
     void setLowerVelocityLimit(double wMin);

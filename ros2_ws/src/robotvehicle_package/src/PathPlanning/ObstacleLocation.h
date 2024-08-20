@@ -1,0 +1,16 @@
+//
+// Created by robot1 on 8/6/24.
+//
+
+#ifndef ROBOTVEHICLE_PACKAGE_OBSTACLELOCATION_H
+#define ROBOTVEHICLE_PACKAGE_OBSTACLELOCATION_H
+
+enum ObstacleLocationType
+{
+    BACK,
+    FRONT,
+    NONE
+};
+
+
+#endif //ROBOTVEHICLE_PACKAGE_OBSTACLELOCATION_H

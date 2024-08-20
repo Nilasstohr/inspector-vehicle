@@ -32,7 +32,11 @@ void DriverInterface::setAngularVelocity(double wl, double wr) {
     serialInterface->sendRequest(&request);
 }
 
-void DriverInterface::stop() {
+void DriverInterface::stopAndResetDisplacement() {
     serialInterface->sendRequest("s");
     serialInterface->sendRequest("r");
+}
+
+void DriverInterface::stop() {
+    serialInterface->sendRequest("s");
 }

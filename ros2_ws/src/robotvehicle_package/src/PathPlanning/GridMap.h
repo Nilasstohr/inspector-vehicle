@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include "ObstacleDetection.h"
 
 #define GRID_MAP_FILE_NAME "GridMap.txt"
 
@@ -27,8 +28,9 @@ public:
     void storeMap();
     void loadGridMap();
     MatrixXd * updateMapWithObstacleSafeDistance();
-
     string *mapToString();
+    ObstacleDetection * getObstacleDetection();
+    bool isPoseInSafeZone(Pose *currentPose);
 
 private:
     MatrixXd gridMap;
@@ -45,6 +47,8 @@ private:
     int y;
     double mapValue;
     string gridMapString;
+    ObstacleDetection obstacleDetection;
+
 
 };
 

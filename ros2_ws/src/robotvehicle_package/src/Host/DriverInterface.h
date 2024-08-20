@@ -15,12 +15,13 @@ public:
 
     void setAngularVelocity(double wl, double wr);
 
+    void stopAndResetDisplacement();
     void stop();
-
 private:
     SerialInterface* serialInterface;
     std::string *response;
     std::string request;
+
 
 };
 

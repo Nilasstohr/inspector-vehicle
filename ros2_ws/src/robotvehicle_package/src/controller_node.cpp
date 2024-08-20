@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <std_msgs/msg/string.hpp>
-#include "nav_msgs/msg/occupancy_grid.hpp"
 #include "Sensor/SensorRecorder.h"
 #include "Sensor/SensorData.h"
 #include "Localization/KalmanLocalization.h"
@@ -28,6 +27,9 @@ using std::placeholders::_1;
 #define SERIAL_DEVICE_NAME "/dev/ttyACM0"
 #define RECORD_DURATION_SECONDS 70
 
+#define DESTINATION_X 202
+#define DESTINATION_Y 54
+
 class ControllerNode : public rclcpp::Node {
 public:
     ControllerNode() : Node("reading_laser") {
@@ -41,8 +43,7 @@ public:
         navigator = new Navigator(driverInterface);
         aStar = new AStar();
         gripMap->loadGridMap();
-        navigationPath = getTestPath();
-        navigator->setNavigationPath(navigationPath);
+        generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
         recorder->startRecord(RECORD_DURATION_SECONDS);
         cout << "starting run" << endl;
         if (serialInterface->hasResponse()) {
@@ -62,15 +63,16 @@ public:
         serialInterface->sendRequest("r");
     }
 private:
-    NavigationPath * getTestPath(){
+    void generateNewPathToDestination(int x, int y){
         PathPoint *endPoint = new PathPoint();
-        endPoint->set(170,83);
+        endPoint->set(x,y);
         aStar->update(localization->getPose(),
                      endPoint, gripMap->updateMapWithObstacleSafeDistance());
-        return aStar->getNavigationPath();
+        navigator->setNavigationPath(aStar->getNavigationPath());
+        return;
 
          //cout << "Navigation Path Found:" << aStar->pathToString() << endl;
-        /*
+         /*
         NavigationPath *navigationPath = new NavigationPath();
         navigationPath->addPathPoint(60,40,0);
         navigationPath->addPathPoint(77,34,0);
@@ -99,6 +101,7 @@ private:
         navigationPath->addPathPoint(59,50,0);
         navigationPath->addPathPoint(50,45,0);
         navigationPath->addPathPoint(40,40,0);
+        navigator->setNavigationPath(navigationPath());
         */
 
         /*
@@ -113,8 +116,9 @@ private:
         navigationPath->addPathPoint(80,90,0);
         navigationPath->addPathPoint(90,90,0);
         navigationPath->addPathPoint(90,100,0);
-        */
-        //return navigationPath;
+        navigator->setNavigationPath(navigationPath());
+         */
+
     }
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
         currentScan = scan;
@@ -128,9 +132,49 @@ private:
                 hasMapBeenBuild = true;
             }
             localization->update(currentScan);
+            gripMap->update(
+                    localization->getSensorDate()->getScanPolarForm(),localization->getPose());
             recorder->update(localization->getSensorDate());
-            //gripMap->AStar(localization->getSensorDate()->getScanPolarForm(),localization->getPose());
-            navigator->update(localization);
+            if(gripMap->getObstacleDetection()->isObstacleTooClose()){
+                if(!obstacleAvoidanceInProgress){
+                    navigator->stop();
+                    gripMap->updateMapWithObstacleSafeDistance();
+                    if(gripMap->getObstacleDetection()->getObstacleLocation()==ObstacleLocationType::FRONT){
+                        navigator->backwardSlow();
+                        cout << "--------Obstacle detected (FRONT)----------- \n" << endl;
+                    }else{
+                        navigator->forwardSlow();
+                        cout << "--------Obstacle detected (BACK )----------- \n" << endl;
+                    }
+                }
+                obstacleAvoidanceInProgress = true;
+            }else{
+                if(obstacleAvoidanceInProgress){
+                    if(gripMap->isPoseInSafeZone(localization->getPose())){
+                        navigator->stop();
+                        cout << "######################### Obstacle cleared ########################" << endl;
+                        generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+                        obstacleAvoidanceInProgress=false;
+                    }
+                    /*
+                    string gridMapMessageString;
+                    gridMapMessageString.append(gripMap->mapToString()->c_str());
+                    gridMapMessageString.append( "\npath\n");
+                    gridMapMessageString.append(aStar->pathToString());
+                    auto gridMapMessage = std_msgs::msg::String();
+                    gridMapMessage.data = gridMapMessageString.c_str();
+                    gridMapPublisher_->publish(gridMapMessage);
+                    auto message = std_msgs::msg::String();
+                    message.data = "end";
+                    posePublisher_->publish(message);
+                    int i=0;
+                    */
+                }else{
+                    navigator->update(localization);
+                }
+
+            }
+            //navigator->update(localization);
             //cout << *localization->getPoseLastString() << endl;
             auto message = std_msgs::msg::String();
             message.data = localization->getPoseLastString()->c_str();
@@ -143,14 +187,20 @@ private:
                 message.data = "end";
                 posePublisher_->publish(message);
                 // public grid updateMapWithObstacleSafeDistance
+                string gridMapMessageString;
+                gripMap->updateMapWithObstacleSafeDistance();
+                gridMapMessageString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
+                gridMapMessageString.append( "\npath\n");
+                gridMapMessageString.append(aStar->pathToString());
                 auto gridMapMessage = std_msgs::msg::String();
-                gridMapMessage.data = gripMap->obstacleSafeDistanceMapToString()->c_str();
+                gridMapMessage.data = gridMapMessageString.c_str();
+
                 gridMapPublisher_->publish(gridMapMessage);
+                //gripMap->storeMap();
                 std::this_thread::sleep_for(200ms);
                 cout << "ending run" << endl;
                 rclcpp::shutdown();
-                return;
-            }
+                return;            }
             //timer->printElapsedTime();
         }
     }
@@ -179,6 +229,7 @@ private:
     bool scanReady=false;
     bool hasMapBeenBuild=false;
     SensorRecorder * recorder = new SensorRecorder();
+    bool obstacleAvoidanceInProgress=false;
 };
 
 class ControllerNodeEmulated : public rclcpp::Node {
@@ -198,17 +249,20 @@ private:
         auto message = std_msgs::msg::String();
 
         //auto gridMapMessage = std_msgs::msg::String();
-        //playBackTesting->getGripMap()->updateMapWithObstacleSafeDistance();
-        //gridMapMessage.data = playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str();
+        //gridMapMessage.data = playBackTesting->getGripMap()->mapToString()->c_str();
         //gridMapPublisher_->publish(gridMapMessage);
 
         if(playBackTesting->hasRecordsToProcess()){
             playBackTesting->update();
 
-            //auto gridMapMessage = std_msgs::msg::String();
-            //gridMapMessage.data = playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str();
-            //gridMapPublisher_->publish(gridMapMessage);
+            /*
+            auto gridMapMessage = std_msgs::msg::String();
+            gridMapMessage.data = playBackTesting->getGripMap()->obstacleSafeDistanceMapToString()->c_str();
+            gridMapPublisher_->publish(gridMapMessage);
 
+            gridMapMessage.data = playBackTesting->getGripMap()->mapToString()->c_str();
+            gridMapPublisher_->publish(gridMapMessage);
+            */
             message = std_msgs::msg::String();
             message.data = playBackTesting->getLocalization()->getPoseLastString()->c_str();
             posePublisher_->publish(message);
@@ -226,7 +280,7 @@ private:
 
     void publishGridAndNavigationPath(){
         PathPoint *endPoint = new PathPoint();
-        endPoint->set(150,60);
+        endPoint->set(210,60);
         AStar aStar;
         aStar.update(playBackTesting->getLocalization()->getPose(),
                     endPoint, playBackTesting->getGripMap()->updateMapWithObstacleSafeDistance());
@@ -237,7 +291,6 @@ private:
         gridMapMessageString.append(aStar.pathToString());
         auto gridMapMessage = std_msgs::msg::String();
         gridMapMessage.data = gridMapMessageString.c_str();
-        //playBackTesting->getGripMap()->storeMap();
         gridMapPublisher_->publish(gridMapMessage);
         std::this_thread::sleep_for(200ms);
     }
@@ -252,8 +305,8 @@ int main(int argc, char ** argv)
 {
     //TestSearchAlgoritms();
     rclcpp::init(argc, argv);
-    //auto node = std::make_shared<ControllerNode>();
-    auto node = std::make_shared<ControllerNodeEmulated>();
+    auto node = std::make_shared<ControllerNode>();
+    //auto node = std::make_shared<ControllerNodeEmulated>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

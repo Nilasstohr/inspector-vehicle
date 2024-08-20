@@ -27,7 +27,7 @@ PlayBackTesting::PlayBackTesting() {
     //while(sensorLogger[i]!=NULL && i<sizeof(sensorLogger)){
         //cout << "\n*********************" << i+1 << "***************************\n";
         //if(i+1==26)
-        //    cout << "stop at: " << i+1 << endl;
+        //    cout << "stopAndResetDisplacement at: " << i+1 << endl;
         //awaitTimer->reset();
         //kalmanFilter->AStar(
         //        sensorLogger[i]->getPosLeft(),
@@ -42,7 +42,7 @@ PlayBackTesting::PlayBackTesting() {
 void PlayBackTesting::LoadRecords(){
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
-    file.open("../../../doc/Measurements/realtime/record.txt");
+    file.open("../../../doc/Measurements/realtime/recordObst.txt");
     float angle;
     float distance;
     float posLeft;

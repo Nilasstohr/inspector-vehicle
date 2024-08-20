@@ -5,7 +5,7 @@
 #include <iostream>
 #include "Navigator.h"
 
-#define GOAL_ACCEPTANCE_TRESHOLD_CM 10
+#define GOAL_ACCEPTANCE_TRESHOLD_CM 5
 #define MIN_W_NORMAL 1
 #define MAX_W_NORMAL 4
 #define MIN_W_TURN -4
@@ -36,7 +36,7 @@ void Navigator::update(KalmanLocalization * localization) {
     if(abs(dx) < GOAL_ACCEPTANCE_TRESHOLD_CM && abs(dy) < GOAL_ACCEPTANCE_TRESHOLD_CM){
         if(navigationPointIndex>=navigationPath->getPath()->size()-1){
             destinationReached = true;
-            driverInterface->stop();
+            driverInterface->stopAndResetDisplacement();
             return;
         }
         cout << navigationPointIndex << " out of " << navigationPath->getPath()->size()-1 << endl;
@@ -50,7 +50,7 @@ void Navigator::update(KalmanLocalization * localization) {
         alfa+=2*M_PI;
     }
 
-    if(abs(alfa) > DEG2RAD(50)){
+    if(abs(alfa) > DEG2RAD(20)){
         v=0;
         setLowerVelocityLimit(MIN_W_TURN);
     }else{
@@ -71,7 +71,7 @@ void Navigator::update(KalmanLocalization * localization) {
         wr=wMin;
     else if(wr > MAX_W_NORMAL)
         wr=MAX_W_NORMAL;
-    cout << "wl= "<< wl << " wr= " << wr  << endl;
+    //cout << "wl= "<< wl << " wr= " << wr  << endl;
     driverInterface->setAngularVelocity(wl,wr);
 }
 
@@ -89,7 +89,7 @@ void Navigator::update() {
     if(abs(dx) < 2 && abs(dy) < 2){
         if(navigationPointIndex>=navigationPath->getPath()->size()){
             destinationReached = true;
-            driverInterface->stop();
+            stopAndResetDisplacement();
             return;
         }
         navigationPointIndex++;
@@ -131,4 +131,20 @@ bool Navigator::isDestinationReached() {
 
 void Navigator::setLowerVelocityLimit(double wMin) {
     this->wMin = wMin;
+}
+
+void Navigator::stopAndResetDisplacement() {
+    driverInterface->stopAndResetDisplacement();
+}
+
+void Navigator::backwardSlow() {
+    driverInterface->setAngularVelocity(-MAX_W_NORMAL,-MAX_W_NORMAL);
+}
+
+void Navigator::forwardSlow() {
+    driverInterface->setAngularVelocity(MAX_W_NORMAL,MAX_W_NORMAL);
+}
+
+void Navigator::stop() {
+    driverInterface->stop();
 }
