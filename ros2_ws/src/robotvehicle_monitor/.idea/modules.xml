@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/robotvehicle_monitor.iml" filepath="$PROJECT_DIR$/.idea/robotvehicle_monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../robotvehicle_visualizer/.idea/robotvehicle_visualizer.iml" filepath="$PROJECT_DIR$/../robotvehicle_visualizer/.idea/robotvehicle_visualizer.iml" />
     </modules>
   </component>
 </project>

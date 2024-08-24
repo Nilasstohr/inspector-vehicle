@@ -16,7 +16,7 @@ public:
     SensorData(DriverInterface *driverInterface);
 
     void update(sensor_msgs::msg::LaserScan::SharedPtr currentScan);
-    void update(std::vector<PointPolarForm> * scan);
+    void update(std::vector<PointPolarForm> *scan, double posLeft, double posRight); // used for testing
     std::vector<PointPolarForm> *getScanPolarForm() const;
 
     double getPosLeft() const;

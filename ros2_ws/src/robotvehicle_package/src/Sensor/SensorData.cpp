@@ -10,7 +10,7 @@ SensorData::SensorData(DriverInterface * driverInterface): driverInterface(drive
 
 void SensorData::update(sensor_msgs::msg::LaserScan::SharedPtr currentScan) {
     scanPolarForm->clear();
-    driverInterface->getWheelsTravled(posLeft, posRight);
+    driverInterface->getWheelsTraveled(posLeft, posRight);
     int scanPointsNum = currentScan->scan_time / currentScan->time_increment;
     for(int i = 0; i < scanPointsNum; i++) {
         angle = (currentScan->angle_min + currentScan->angle_increment * i)+M_PI;
@@ -21,8 +21,10 @@ void SensorData::update(sensor_msgs::msg::LaserScan::SharedPtr currentScan) {
     }
 }
 
-void SensorData::update(std::vector<PointPolarForm> * scan) {
+void SensorData::update(std::vector<PointPolarForm> * scan,double posLeft,double posRight) {
     scanPolarForm = scan;
+    this->posLeft=posLeft;
+    this->posRight=posRight;
 }
 
 std::vector<PointPolarForm> *SensorData::getScanPolarForm() const {

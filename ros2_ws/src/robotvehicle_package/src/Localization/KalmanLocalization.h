@@ -19,13 +19,8 @@
 class KalmanLocalization: MatrixHelper {
 public:
     KalmanLocalization();
-    KalmanLocalization(DriverInterface *driverInterface);
-
-    void update(sensor_msgs::msg::LaserScan::SharedPtr scan);
     void update(SensorData *sensorData);
-    void update(std::vector<PointPolarForm> *scan,double posLeft,double right);
-    void build(sensor_msgs::msg::LaserScan::SharedPtr scan);
-    void build(std::vector<PointPolarForm> * scan);
+    void build(SensorData * sensorData);
     string *getPoseLastString();
     Pose * getPose() const;
     SensorData *getSensorDate();

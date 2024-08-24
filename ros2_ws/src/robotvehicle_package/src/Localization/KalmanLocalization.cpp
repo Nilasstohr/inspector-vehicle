@@ -7,11 +7,6 @@
 
 
 
-KalmanLocalization::KalmanLocalization(DriverInterface *driverInterface) {
-    sensorData = new SensorData(driverInterface);
-    init();
-}
-
 KalmanLocalization::KalmanLocalization() {
     init();
 }
@@ -58,20 +53,13 @@ void KalmanLocalization::init(){
     pose = new Pose();
 }
 
-void KalmanLocalization::update(sensor_msgs::msg::LaserScan::SharedPtr scan) {
-    sensorData->update(scan);
-    update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
-}
 void KalmanLocalization::update(SensorData * sensorData) {
-    update(sensorData->getScanPolarForm(),sensorData->getPosLeft(),sensorData->getPosRight());
-}
-void KalmanLocalization::update(std::vector<PointPolarForm> *scan, double posLeft, double posRight) {
     //differentialDriveNoKalman->update(posLeft,posRight,
     //                      differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
     //printMatrix(differentialDriveNoKalman->getPEst(),"---P_est (no kalman)--");
-    differentialDrive->update(posLeft,posRight,estimation->getXt(),estimation->getPt());
-    observations->update(scan,scan->size());
+    differentialDrive->update(sensorData->getPosLeft(),sensorData->getPosRight(),estimation->getXt(),estimation->getPt());
+    observations->update(sensorData->getScanPolarForm(),sensorData->getScanPolarForm()->size());
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);
     estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
@@ -85,13 +73,7 @@ Pose * KalmanLocalization::getPose() const{
     pose->update(estimation->getX(),estimation->getY(),estimation->getTheta());
 }
 
-void KalmanLocalization::build(sensor_msgs::msg::LaserScan::SharedPtr scan) {
-    sensorData->update(scan);
-    measurementPrediction->buildMap(sensorData->getScanPolarForm());
-}
-
-void KalmanLocalization::build(std::vector<PointPolarForm> * scan) {
-    sensorData->update(scan);
+void KalmanLocalization::build(SensorData * sensorData) {
     measurementPrediction->buildMap(sensorData->getScanPolarForm());
 }
 

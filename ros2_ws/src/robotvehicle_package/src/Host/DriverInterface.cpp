@@ -8,7 +8,7 @@ DriverInterface::DriverInterface(SerialInterface *serialInterface): serialInterf
     response = new std::string();
 }
 
-void DriverInterface::getWheelsTravled(double &left, double &right) {
+void DriverInterface::getWheelsTraveled(double &left, double &right) {
     serialInterface->sendRequest("p");
     response->append(serialInterface->getResponse()->c_str());
     //ROS_INFO(odomStr->c_str());
@@ -39,4 +39,8 @@ void DriverInterface::stopAndResetDisplacement() {
 
 void DriverInterface::stop() {
     serialInterface->sendRequest("s");
+}
+
+SerialInterface *DriverInterface::getSerialInterface() {
+    return serialInterface;
 }

@@ -74,8 +74,8 @@ add_executable(
         src/Localization/RStack.h
         src/Localization/KalmanLocalization.cpp
         src/Localization/KalmanLocalization.h
-        src/Test/PlayBackTesting.cpp
-        src/Test/PlayBackTesting.h
+        src/Test/RecordHandler.cpp
+        src/Test/RecordHandler.h
         src/Navigation/NavigationPath.cpp
         src/Navigation/NavigationPath.h
         src/Navigation/NavigationPoint.cpp
@@ -96,7 +96,7 @@ add_executable(
         src/PathPlanning/TestSearchAlgoritms.h
         src/PathPlanning/AStar.cpp
         src/PathPlanning/AStar.h
-        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h src/Utilities/Verify2DArea.cpp src/Utilities/Verify2DArea.h src/PathPlanning/ObstacleDetection.cpp src/PathPlanning/ObstacleDetection.h src/PathPlanning/ObstacleLocation.h)
+        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h src/Utilities/Verify2DArea.cpp src/Utilities/Verify2DArea.h src/PathPlanning/ObstacleDetection.cpp src/PathPlanning/ObstacleDetection.h src/PathPlanning/ObstacleLocation.h src/MissionController.cpp src/MissionController.h src/Test/SerialInterfaceStub.cpp src/Test/SerialInterfaceStub.h)
         
 ament_target_dependencies(
         controller_node
