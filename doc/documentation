@@ -137,6 +137,8 @@ https://www.jetbrains.com/help/clion/remote-projects-support.html
 
 Add ssh key to between pc and host
 ---------------------------------------------
+follow guide below: 
+(!!! dont use sudo, and open terminal from home, when cloning use ssh NOT https)
 https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent (!!! remember to type in a passphase, important )
 
 
@@ -195,5 +197,14 @@ colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
 
 ubuntu installation
 ---------------------------
-
-
+1. download rufus
+2. download unbuntu of choose
+3. open disk managment on window press "windows+x"
+4. Locate the Window sdd partition (0) and delete primary partition if present. (old ubuntu)
+(if you end up in nasty grub menu after reboot of window, type reboot and continuouly preess F12 to get into boot menu)
+5. Right click on Window sdd partition and shrink volume, this will allocate memory for future
+installation. 
+6. Connect and bootable harddrev and open Rufus, update hardware list by "ALT+F" choose the connected harddrev and the downloaded ubuntu version then press start. 
+(!!! notice when asked you may have to choose to flash dd version iso, because your device will not show in boot menu with iso. You may also have to diable secrue boot this is done restarting pc then continuously press F12 use menu's from here)
+7. To install ubuntu, go intro boot menu of PC, this can be done in two ways:
+restart + shift (window 11) or restart PC then continuosly press F12, choose harddrev for the rest should be streight forward.
