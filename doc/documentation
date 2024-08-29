@@ -193,3 +193,7 @@ ros2
 source /opt/ros/foxy/setup.bash
 colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
 
+ubuntu installation
+---------------------------
+
+
