@@ -1,4 +1,21 @@
+Installation of Teensy software
+--------------------------------
+clone inspector-vehicle project. 
+transfer tools folder (stored on flash) to root of vehicle-driver.
+Setup teensy linux usb rules: 
+	1. download teensy linux usb rules file from "https://www.pjrc.com/teensy/loader_linux.html" to a location e.g downloads
+	2. download teensyduino "Download Teensy Program (64 bit)" from same page link as above place it to downloads. 
+	3. open terminal 
+	4. cd downloads
+	5. execute command 
+		sudo cp 00-teensy.rules /etc/udev/rules.d/
+		tar -xvzf teensy_linux64.tar.gz
+		./teensy &
+	5. from vehicle-driver root open terminal press execute "make" after compilation teensy loader will flash teensy 
+	(you may have to press button on teensy first time).  
+
 Eclipse Dev Invironment
+-------------------------
 	1. install Eclipse IDE for C/C++ Developers
 	2. files -> new -> Makefile project with exsisting code
 	3. name project "vechicle driver"

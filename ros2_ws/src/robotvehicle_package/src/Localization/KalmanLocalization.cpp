@@ -45,7 +45,8 @@ void KalmanLocalization::init(){
     measurementPrediction = new MeasurementPrediction(eps,R);
 
     // matching
-    matching = new Matching(15);
+    //matching = new Matching(15);
+    matching = new Matching(30);
 
     // Estimation
     estimation = new Estimation(xEst,pEst);

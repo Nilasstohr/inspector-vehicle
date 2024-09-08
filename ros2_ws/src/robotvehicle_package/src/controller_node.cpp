@@ -2,6 +2,7 @@
 #include "Utilities/SerialInterface.h"
 #include <Eigen/Dense>
 #include <fstream>
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include <std_msgs/msg/string.hpp>
 #include "Sensor/SensorRecorder.h"
 #include "Sensor/SensorData.h"
