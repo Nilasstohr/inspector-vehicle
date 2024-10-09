@@ -225,3 +225,31 @@ installation.
 (!!! notice when asked you may have to choose to flash dd version iso, because your device will not show in boot menu with iso. You may also have to diable secrue boot this is done restarting pc then continuously press F12 use menu's from here)
 7. To install ubuntu, go intro boot menu of PC, this can be done in two ways:
 restart + shift (window 11) or restart PC then continuosly press F12, choose harddrev for the rest should be streight forward.
+
+
+
+install eagle for pcb
+---------------------------
+1. install Eagle from:
+	https://www.autodesk.com/products/fusion-360/blog/how-to-install-autodesk-eagle-on-windows-mac-and-linux/
+
+2. when you open the app you will run into problems, see solution for the below:
+	https://forums.autodesk.com/t5/eagle-forum/running-eagle-on-fedora-33-dialogs-fail-display-properly-appears/m-p/10374674/highlight/true#M34418
+	
+3. from control panel choose Options (tabs dropdown) -> Directories and add directory we the project should located. 
+
+5. get teensy 4.1 eagle libraries from 
+https://github.com/eagleman1022/Eagle-Library-Teensy
+
+6. Create Project and schematic then open the schematic
+
+7. open Library manager -> available -> browse to teenst eagle pcb and find the and press 'use' button. close manager.
+
+8. in schematic file, from search field type "add" and enter which will open libraries. Search for teensy -> 4.1 and import to schematics. 
+
+9. in the library con-lstb the standart hole through pads can be found.
+
+
+
+
+
