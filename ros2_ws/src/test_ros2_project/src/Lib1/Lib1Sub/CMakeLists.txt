@@ -1,0 +1,1 @@
+add_library(Lib1Sub Lib1SubClass.cpp)

@@ -3,7 +3,6 @@
 //
 
 #include "Lib1Class.h"
-#include "Lib2Class.h"
 
 #include <iostream>
 #include <ostream>
@@ -13,7 +12,9 @@ Lib1Class::Lib1Class() {
 }
 
 void Lib1Class::print() {
-    Lib2Class * a = new Lib2Class();
+    auto * a = new Lib2Class();
+    auto *b = new Lib1SubClass();
     a->print();
+    b->print();
     std::cout << "TestPackageClass::print" << std::endl;
 }
