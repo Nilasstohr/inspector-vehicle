@@ -35,7 +35,9 @@ install(TARGETS
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(${PROJECT_NAME}_tutorial_test test/tutorial_test.cpp src/ClassToTest.cpp src/ClassToTest.h)
+  ament_add_gtest(${PROJECT_NAME}_tutorial_test test/tutorial_test.cpp)
+
+  message(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
   target_include_directories(${PROJECT_NAME}_tutorial_test PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
