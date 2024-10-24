@@ -15,128 +15,71 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
+set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+add_executable(controller_node
+        src/controller_node.cpp
+        src/MissionController.cpp
+        src/MissionController.h)
+ament_target_dependencies(controller_node rclcpp sensor_msgs)
+
+# add libraries
+#--------------------------------
+# declare variables and assign lib folder path to it (relative to root)
+set(SrcRootPath               "src/")
+set(HostLibPath               "src/Host/")
+set(UtilitiesLibPath          "src/Utilities/")
+set(SensorLibPath             "src/Sensor/")
+set(LocalizationLibPath       "src/Localization/")
+set(PathPlanningLibPath       "src/PathPlanning/")
+set(PathNavigationLibPath     "src/Navigation/")
+set(TestLibPath               "src/Test/")
+# add libraries directory, these call actually executes CMakeLists.txt of the libs.
+add_subdirectory(${UtilitiesLibPath})
+add_subdirectory(${HostLibPath})
+add_subdirectory(${SensorLibPath})
+add_subdirectory(${LocalizationLibPath})
+add_subdirectory(${PathPlanningLibPath})
+add_subdirectory(${PathNavigationLibPath})
+add_subdirectory(${TestLibPath})
+
+# link the libraries to executable
+target_link_libraries(controller_node
+        HostLib
+        SensorLib
+        LocalizationLib
+        PathPlanningLib
+        NavigationLib
+        TestLib
+)
+
+# add the libraries "include" files folders, so that include files can be found when referring to them.
+target_include_directories(controller_node
+        PUBLIC
+        ${LocalizationLibPath} ${TestLibPath} ${PathNavigationLibPath}
+)
+# if library depend on a another library  include it to lib target as below
+target_include_directories(HostLib PUBLIC  ${SrcRootPath})
+target_include_directories(SensorLib PUBLIC  ${SrcRootPath})
+target_include_directories(LocalizationLib  PUBLIC ${SrcRootPath})
+target_include_directories(PathPlanningLib  PUBLIC   ${SrcRootPath})
+target_include_directories(TestLib  PUBLIC  ${SrcRootPath})
+target_include_directories(NavigationLib  PUBLIC  ${SrcRootPath})
+#--------------------------------
 
 add_executable(laserscansub_node src/laserscansub_node.cpp)
 ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 
-add_executable(
-        controller_node
-        src/controller_node.cpp
-        src/Utilities/SerialInterface.cpp
-        src/Utilities/SerialInterface.h
-        src/Utilities/UsbSerial.cpp
-        src/Utilities/UsbSerial.h
-        src/Utilities/AwaitTimer.cpp
-        src/Utilities/AwaitTimer.h
-        src/Sensor/PointPolarForm.cpp
-        src/Sensor/PointPolarForm.h
-        src/Localization/PredictionDifferentialDrive.cpp
-        src/Localization/PredictionDifferentialDrive.h
-        src/Localization/Observations.cpp
-        src/Localization/Observations.h
-        src/Localization/FeatureExstraction/Line.cpp
-        src/Localization/FeatureExstraction/Line.h
-        src/Localization/FeatureExstraction/Incremental.cpp
-        src/Localization/FeatureExstraction/Incremental.h
-        src/Sensor/PointRectForm.cpp
-        src/Sensor/PointRectForm.h
-        src/Utilities/MathConversions.cpp
-        src/Utilities/MathConversions.h 
-        src/Localization/TestMap.cpp 
-        src/Localization/TestMap.h 
-        src/Localization/MeasurementPrediction.cpp 
-        src/Localization/MeasurementPrediction.h 
-        src/Localization/FeatureExstraction/LineStack.cpp 
-        src/Localization/FeatureExstraction/LineStack.h 
-        src/Localization/HStack.cpp 
-        src/Localization/HStack.h 
-        src/Utilities/MatrixStackBase.cpp 
-        src/Utilities/MatrixStackBase.h 
-        src/Utilities/MatrixHelper.cpp 
-        src/Utilities/MatrixHelper.h 
-        src/Localization/Matching.cpp 
-        src/Localization/Matching.h 
-        src/Localization/Matches.cpp 
-        src/Localization/Matches.h 
-        src/Localization/Estimation.cpp 
-        src/Localization/Estimation.h 
-        src/Localization/RStack.cpp 
-        src/Localization/RStack.h
-        src/Localization/KalmanLocalization.cpp
-        src/Localization/KalmanLocalization.h
-        src/Test/RecordHandler.cpp
-        src/Test/RecordHandler.h
-        src/Navigation/NavigationPath.cpp
-        src/Navigation/NavigationPath.h
-        src/Navigation/NavigationPoint.cpp
-        src/Navigation/NavigationPoint.h
-        src/Host/DriverInterface.cpp
-        src/Host/DriverInterface.h
-        src/Sensor/SensorRecorder.cpp
-        src/Sensor/SensorRecorder.h
-        src/Sensor/SensorData.cpp
-        src/Sensor/SensorData.h
-        src/Utilities/Pose.cpp
-        src/Utilities/Pose.h
-        src/Navigation/Navigator.cpp
-        src/Navigation/Navigator.h
-        src/PathPlanning/PathPoint.cpp
-        src/PathPlanning/PathPoint.h
-        src/PathPlanning/TestSearchAlgoritms.cpp
-        src/PathPlanning/TestSearchAlgoritms.h
-        src/PathPlanning/AStar.cpp
-        src/PathPlanning/AStar.h
-        src/Configurations.h src/Utilities/Transformations.cpp src/Utilities/Transformations.h src/PathPlanning/GridMap.cpp src/PathPlanning/GridMap.h src/PathPlanning/LinePoints.cpp src/PathPlanning/LinePoints.h src/Test/SensorRecord.cpp src/Test/SensorRecord.h src/Utilities/Verify2DArea.cpp src/Utilities/Verify2DArea.h src/PathPlanning/ObstacleDetection.cpp src/PathPlanning/ObstacleDetection.h src/PathPlanning/ObstacleLocation.h src/MissionController.cpp src/MissionController.h src/Test/SerialInterfaceStub.cpp src/Test/SerialInterfaceStub.h
-        src/controller_node.cpp
-        src/controller_node.cpp)
-        
-ament_target_dependencies(
-        controller_node
-        rclcpp
-        sensor_msgs
-)
 
-add_executable(
-        joystick_node
-        src/Utilities/SerialInterface.cpp
-        src/Utilities/SerialInterface.h
-        src/Utilities/UsbSerial.cpp
-        src/Utilities/UsbSerial.h
-        src/Utilities/AwaitTimer.cpp
-        src/Utilities/AwaitTimer.h
-        src/publisher_joystick_node.cpp)
-
-ament_target_dependencies(
-        joystick_node
-        rclcpp
-        std_msgs)
-
-# add Feature extraction library
-#add_subdirectory(FeatureExtraction)
-#target_include_directories(controller_node PUBLIC FeatureExtraction)
-#target_link_directories(controller_node PRIVATE FeatureExtraction)
-
-# add Localization library
-#add_subdirectory(Localization)
-#target_include_directories(controller_node PUBLIC Localization)
-#target_link_directories(controller_node PRIVATE Localization)
-
-target_link_libraries (controller_node Eigen3::Eigen)
 
 install(TARGETS
-  laserscansub_node
   controller_node
-  joystick_node
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

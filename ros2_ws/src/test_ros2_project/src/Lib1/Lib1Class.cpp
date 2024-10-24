@@ -12,9 +12,8 @@ Lib1Class::Lib1Class() {
 }
 
 void Lib1Class::print() {
-    auto * a = new Lib2Class();
     auto *b = new Lib1SubClass();
-    a->print();
+    Lib2Class::print();
     b->print();
     std::cout << "TestPackageClass::print" << std::endl;
 }

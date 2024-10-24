@@ -5,9 +5,9 @@
 #ifndef ROBOTVEHICLE_PACKAGE_NAVIGATOR_H
 #define ROBOTVEHICLE_PACKAGE_NAVIGATOR_H
 
-#include "../Localization/KalmanLocalization.h"
-#include "../Utilities/Pose.h"
-#include "../Host/DriverInterface.h"
+#include "Localization/KalmanLocalization.h"
+#include "Utilities/Pose.h"
+#include "Host/DriverInterface.h"
 #include "NavigationPath.h"
 
 class Navigator {

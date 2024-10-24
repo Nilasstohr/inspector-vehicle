@@ -4,7 +4,7 @@
 #include <fstream>
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include <std_msgs/msg/string.hpp>
-#include "Sensor/SensorRecorder.h"
+#include "SensorRecorder.h"
 #include "Sensor/SensorData.h"
 #include "Navigation/Navigator.h"
 #include "PathPlanning/GridMap.h"
@@ -99,8 +99,8 @@ private:
 int main(int argc, char ** argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<ControllerNode>();
-    //auto node = std::make_shared<ControllerNodeEmulated>();
+    //auto node = std::make_shared<ControllerNode>();
+    auto node = std::make_shared<ControllerNodeEmulated>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

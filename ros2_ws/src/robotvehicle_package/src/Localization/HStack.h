@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_HSTACK_H
 
 
-#include "../Utilities/MatrixStackBase.h"
+#include "Utilities/MatrixStackBase.h"
 
 class HStack: public MatrixStackBase{
 public:

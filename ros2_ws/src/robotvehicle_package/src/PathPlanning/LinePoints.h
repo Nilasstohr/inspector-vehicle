@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_LINEPOINTS_H
 
 
-#include "../Localization/FeatureExstraction/Line.h"
+#include "Localization/Line.h"
 #include "PathPoint.h"
 #include "../Configurations.h"
 

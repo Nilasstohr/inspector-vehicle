@@ -5,7 +5,6 @@
 #ifndef ROBOTVEHICLE_PACKAGE_POINTPOLARFORM_H
 #define ROBOTVEHICLE_PACKAGE_POINTPOLARFORM_H
 
-
 #include <sensor_msgs/msg/detail/laser_scan__struct.hpp>
 
 class PointPolarForm {

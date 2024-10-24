@@ -6,15 +6,14 @@
 #define ROBOTVEHICLE_PACKAGE_KALMANLOCALIZATION_H
 
 #include "PredictionDifferentialDrive.h"
-#include "../Utilities/MathConversions.h"
-#include "TestMap.h"
 #include "MeasurementPrediction.h"
 #include "Observations.h"
 #include "Matching.h"
 #include "Estimation.h"
-#include "../Utilities/Pose.h"
-#include "../Sensor/SensorData.h"
-#include "../Host/DriverInterface.h"
+#include "Utilities/Pose.h"
+#include "Sensor/SensorData.h"
+#include <Utilities/MathConversions.h>
+
 
 class KalmanLocalization: MatrixHelper {
 public:

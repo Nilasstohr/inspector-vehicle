@@ -6,9 +6,8 @@
 #define ROBOTVEHICLE_PACKAGE_SENSORRECORDER_H
 
 
-#include "PointPolarForm.h"
-#include "../Utilities/AwaitTimer.h"
-#include "../Localization/KalmanLocalization.h"
+#include "Utilities/AwaitTimer.h"
+#include "KalmanLocalization.h"
 
 class SensorRecorder {
 public:

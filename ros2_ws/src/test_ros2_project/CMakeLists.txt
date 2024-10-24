@@ -25,7 +25,7 @@ ament_target_dependencies(talker rclcpp std_msgs)
   # add the libraries "include" files folders, so that include files can be found when referring to them.
   target_include_directories(talker PUBLIC ${LibPath1} ${LibPath2})
   # if library depend on a another library  include it to lib target as below
-  target_include_directories(Lib1 PUBLIC ${LibPath2})
+  target_include_directories(Lib1 PUBLIC "src/")
 #--------------------------------
 
 install(TARGETS

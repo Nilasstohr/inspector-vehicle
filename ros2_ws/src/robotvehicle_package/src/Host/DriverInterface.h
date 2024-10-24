@@ -5,7 +5,7 @@
 #ifndef ROBOTVEHICLE_PACKAGE_DRIVERINTERFACE_H
 #define ROBOTVEHICLE_PACKAGE_DRIVERINTERFACE_H
 
-#include "../Utilities/SerialInterface.h"
+#include "Utilities/SerialInterface.h"
 
 class DriverInterface {
 public:

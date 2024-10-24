@@ -7,8 +7,8 @@
 
 
 #include <vector>
-#include "FeatureExstraction/Line.h"
-#include "FeatureExstraction/LineStack.h"
+#include "Line.h"
+#include "LineStack.h"
 
 class TestMap: public MatrixHelper{
 public:

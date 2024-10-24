@@ -4,6 +4,8 @@
 
 #include "LinePoints.h"
 
+#include <cmath>
+
 LinePoints::LinePoints(int h): h(h) {
     points = new std::vector<PathPoint>(CONFIG_MAX_NUMBER_OF_LINE_POINTS);
 }

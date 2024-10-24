@@ -5,9 +5,8 @@
 #ifndef ROBOTVEHICLE_PACKAGE_MEASUREMENTPREDICTION_H
 #define ROBOTVEHICLE_PACKAGE_MEASUREMENTPREDICTION_H
 
-#include "FeatureExstraction/Line.h"
 #include "PredictionDifferentialDrive.h"
-#include "FeatureExstraction/LineStack.h"
+#include "LineStack.h"
 #include "HStack.h"
 #include "Observations.h"
 

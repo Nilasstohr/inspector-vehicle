@@ -6,9 +6,9 @@
 #define ROBOTVEHICLE_PACKAGE_LINE_H
 
 
-#include "../../Sensor/PointRectForm.h"
-#include "../../Sensor/PointPolarForm.h"
-#include "math.h"
+#include "Sensor/PointRectForm.h"
+#include "Sensor/PointPolarForm.h"
+#include <vector>
 
 class Line {
 public:

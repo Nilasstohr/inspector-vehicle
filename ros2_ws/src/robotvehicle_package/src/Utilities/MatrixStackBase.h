@@ -9,7 +9,7 @@
 
 class MatrixStackBase: public MatrixHelper{
 public:
-    explicit MatrixStackBase(int capacity,int subSetRowsNum);
+     MatrixStackBase(int capacity,int subSetRowsNum);
     int size() const;
     void reset();
     const MatrixXd *const getStack() const;

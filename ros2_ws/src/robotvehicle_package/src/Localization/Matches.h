@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_MATCHES_H
 
 #include "HStack.h"
-#include "FeatureExstraction/LineStack.h"
+#include "LineStack.h"
 #include "RStack.h"
 
 class Matches: MatrixHelper {

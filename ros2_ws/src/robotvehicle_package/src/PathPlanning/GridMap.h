@@ -5,16 +5,13 @@
 #ifndef ROBOTVEHICLE_PACKAGE_GRIDMAP_H
 #define ROBOTVEHICLE_PACKAGE_GRIDMAP_H
 
-
-#include "../Utilities/MatrixHelper.h"
-#include "../Configurations.h"
-#include "../Localization/FeatureExstraction/Line.h"
-#include "../Utilities/Pose.h"
-#include "../Utilities/Transformations.h"
+#include "Utilities/MatrixHelper.h"
+#include "Configurations.h"
+#include "Localization/Line.h"
+#include "Utilities/Pose.h"
 #include "LinePoints.h"
-#include "../Sensor/SensorData.h"
+#include "Sensor/SensorData.h"
 #include <iomanip>
-#include <iostream>
 #include <fstream>
 #include "ObstacleDetection.h"
 

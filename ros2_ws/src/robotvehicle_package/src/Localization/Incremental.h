@@ -7,7 +7,7 @@
 
 #include <vector>
 #include "Line.h"
-#include "../../Sensor/PointPolarForm.h"
+#include "Sensor/PointPolarForm.h"
 #include "LineStack.h"
 
 class Incremental{

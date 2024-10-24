@@ -4,10 +4,10 @@
 
 #ifndef TESTPACKAGECLASS2_H
 #define TESTPACKAGECLASS2_H
+#include "Lib2Class2.h"
 
 
-
-class Lib2Class {
+class Lib2Class: public Lib2Class2{
 public:
     void print();
 };

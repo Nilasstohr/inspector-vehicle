@@ -7,7 +7,7 @@
 
 
 class ClassToTest {
-public:
+protected:
     void printTest();
 };
 

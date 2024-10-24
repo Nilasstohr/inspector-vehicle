@@ -3,6 +3,7 @@
 //
 
 #include "SensorData.h"
+#include <math.h>
 
 SensorData::SensorData(DriverInterface * driverInterface): driverInterface(driverInterface) {
     scanPolarForm = new std::vector<PointPolarForm>;

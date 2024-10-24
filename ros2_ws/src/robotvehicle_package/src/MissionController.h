@@ -7,7 +7,7 @@
 
 #include "Utilities/SerialInterface.h"
 #include "Host/DriverInterface.h"
-#include "Localization/KalmanLocalization.h"
+#include "KalmanLocalization.h"
 #include "Test/RecordHandler.h"
 #include "Navigation/Navigator.h"
 #include "Navigation/NavigationPath.h"

@@ -7,7 +7,7 @@
 
 
 #include "Line.h"
-#include "../../Utilities/MatrixStackBase.h"
+#include "Utilities/MatrixStackBase.h"
 
 class LineStack: public MatrixStackBase {
 public:

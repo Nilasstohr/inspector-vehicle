@@ -7,8 +7,8 @@
 
 
 #include "PointPolarForm.h"
-#include <cmath>
-#include "../Host/DriverInterface.h"
+#include <sensor_msgs/msg/detail/laser_scan__struct.hpp>
+#include "Host/DriverInterface.h"
 
 class SensorData {
 public:

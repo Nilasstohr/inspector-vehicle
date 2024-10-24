@@ -4,6 +4,8 @@
 
 #include "GridMap.h"
 
+#include <Utilities/Transformations.h>
+
 GridMap::GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval):
 gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),

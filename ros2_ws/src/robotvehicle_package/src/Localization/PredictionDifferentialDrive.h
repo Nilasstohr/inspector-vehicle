@@ -6,8 +6,8 @@
 #define ROBOTVEHICLE_PACKAGE_PREDICTIONDIFFERENTIALDRIVE_H
 
 #include <Eigen/Dense>
-#include "../Utilities/MatrixHelper.h"
-#include "FeatureExstraction/Line.h"
+#include "Utilities/MatrixHelper.h"
+#include "Line.h"
 
 using Eigen::MatrixXd;
 using Eigen::Matrix;

@@ -5,11 +5,11 @@
 #ifndef ROBOTVEHICLE_PACKAGE_ASTAR_H
 #define ROBOTVEHICLE_PACKAGE_ASTAR_H
 
-#include "../Utilities/Pose.h"
+#include "Utilities/Pose.h"
 #include "PathPoint.h"
-#include "../Utilities/MatrixHelper.h"
-#include "../Configurations.h"
-#include "../Navigation/NavigationPath.h"
+#include "Utilities/MatrixHelper.h"
+#include "Configurations.h"
+#include "Navigation/NavigationPath.h"
 #include <stack>
 
 // Creating a shortcut for int, int pair type

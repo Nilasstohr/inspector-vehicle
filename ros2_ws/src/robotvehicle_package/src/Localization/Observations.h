@@ -5,10 +5,9 @@
 #ifndef ROBOTVEHICLE_PACKAGE_OBSERVATIONS_H
 #define ROBOTVEHICLE_PACKAGE_OBSERVATIONS_H
 
-#include "FeatureExstraction/Incremental.h"
-#include "FeatureExstraction/LineStack.h"
-#include "../Sensor/PointPolarForm.h"
-#include "RStack.h"
+#include "Incremental.h"
+#include "LineStack.h"
+#include "Sensor/PointPolarForm.h"
 #include <Eigen/Dense>
 #include <vector>
 

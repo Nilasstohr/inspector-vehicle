@@ -6,7 +6,7 @@
 #include <set>
 #include <iostream>
 #include "AStar.h"
-#include "../Utilities/Verify2DArea.h"
+#include "Utilities/Verify2DArea.h"
 
 AStar::AStar(){
     navigationPath = new NavigationPath();
