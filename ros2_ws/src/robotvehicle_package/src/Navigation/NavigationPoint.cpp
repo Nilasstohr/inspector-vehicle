@@ -18,8 +18,7 @@ double NavigationPoint::getY() const {
 double NavigationPoint::getTheta() const {
     return theta;
 }
-
-double NavigationPoint::override(double x,double y){
+void NavigationPoint::override(double x,double y){
     this->x=x;
     this->y=y;
 

@@ -2,7 +2,6 @@
 // Created by robot1 on 10/9/23.
 //
 
-#include <iostream>
 #include "Estimation.h"
 
 
@@ -73,6 +72,7 @@ double Estimation::getTheta() {
     return getXt()->coeff(2,0);
 }
 
+/*
 void Estimation::printDebugData(Matching * matching) {
     //MatrixXd vtUnStacked = matching->getMatches()->getVtUnstacked();
     //printMatrix(&vtUnStacked,"---- Vt ----");
@@ -80,6 +80,7 @@ void Estimation::printDebugData(Matching * matching) {
     //<< " " << ktGain.coeff(0,0) << " " << ktGain.coeff(1,0) <<" " << ktGain.coeff(2,0);
     cout << endl;
 }
+*/
 
 
 

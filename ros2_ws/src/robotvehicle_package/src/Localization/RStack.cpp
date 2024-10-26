@@ -29,7 +29,8 @@ void RStack::reset() {
 }
 
 void RStack::printMatrix() {
-    MatrixHelper::printMatrix(&Rt,"Rt");
+    string rtName = "Rt";
+    MatrixHelper::printMatrix(&Rt,rtName.data());
 }
 
 const MatrixXd RStack::getRt() {

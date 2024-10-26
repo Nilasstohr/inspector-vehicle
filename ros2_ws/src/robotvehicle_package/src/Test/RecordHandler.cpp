@@ -13,6 +13,7 @@ RecordHandler::RecordHandler() {
 }
 
 void RecordHandler::LoadRecords(){
+    string newMeasurmentId = "new";
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
     file.open("../../../doc/Measurements/realtime/recordObst.txt");
@@ -25,7 +26,7 @@ void RecordHandler::LoadRecords(){
         string line;
         while(getline(file,line)){
             //       cout << linePoints << endl;
-            if(line.find('new') != std::string::npos){
+            if(line.find(newMeasurmentId) != std::string::npos){
                 newMeasurement=true;
                 if(!scan->empty()){
                     recording->push_back(SensorRecord(scan,posLeft,posRight));
@@ -66,7 +67,8 @@ void RecordHandler::getValuesFromLine(string line, float &val1, float &val2){
 }
 
 float RecordHandler::getValueFromString(string s){
-    if(s.find('inf') != std::string::npos){
+    string infIdentifier = "inf";
+    if(s.find(infIdentifier) != std::string::npos){
         return std::numeric_limits<float>::infinity();
     }else{
         return stod(s);

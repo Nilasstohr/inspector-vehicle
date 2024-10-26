@@ -4,7 +4,6 @@
 using std::placeholders::_1;
 
 #define ROS_INFO RCUTILS_LOG_INFO
-#define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 class ControllerNode : public rclcpp::Node {

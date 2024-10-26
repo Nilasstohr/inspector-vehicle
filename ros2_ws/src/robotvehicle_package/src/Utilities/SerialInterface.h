@@ -15,7 +15,7 @@ public:
     SerialInterface(const char *serialDevice);
     bool hasResponse();
     std::string * getResponse();
-    virtual void sendRequest(char *text) ;
+    virtual void sendRequest(const char *text) ;
     virtual void sendRequest(std::string *text);
     virtual ~SerialInterface();
     void close();

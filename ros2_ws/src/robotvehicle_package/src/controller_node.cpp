@@ -1,9 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "Utilities/SerialInterface.h"
-#include <Eigen/Dense>
 #include <fstream>
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include <std_msgs/msg/string.hpp>
 #include "SensorRecorder.h"
 #include "Sensor/SensorData.h"
 #include "Navigation/Navigator.h"
@@ -19,7 +17,6 @@ using Eigen::Vector3d;
 using std::placeholders::_1;
 
 #define ROS_INFO RCUTILS_LOG_INFO
-#define M_PI 3.1415926535897932384626433832795
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 // teensy 4.1

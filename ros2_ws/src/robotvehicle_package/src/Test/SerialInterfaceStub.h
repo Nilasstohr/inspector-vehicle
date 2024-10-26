@@ -10,7 +10,7 @@
 class SerialInterfaceStub: public SerialInterface{
 public:
     explicit SerialInterfaceStub(const char *serialDevice);
-    void sendRequest(char *text) override;
+    void sendRequest(const char *text) override;
     void sendRequest(std::string *text) override;
 };
 

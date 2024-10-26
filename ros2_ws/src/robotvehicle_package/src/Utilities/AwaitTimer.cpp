@@ -38,7 +38,7 @@ uint64_t AwaitTimer::getElapsedTimeMillis(){
     return  getSystemMillis()-startTime;
 }
 
-bool AwaitTimer::reset() {
+void  AwaitTimer::reset() {
     startTime = getSystemMillis();
 }
 

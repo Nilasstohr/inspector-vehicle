@@ -11,7 +11,7 @@ public:
     double getX() const;
     double getY() const;
     double getTheta() const;
-    double override(double x, double y);
+    void override(double x, double y);
 private:
     double x;
     double y;

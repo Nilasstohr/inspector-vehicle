@@ -23,7 +23,7 @@ void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
     // since the robot is at the position it must be available.
     updateMapPointValue(xPos,yPos,CONFIG_GRID_VALUE_FULL_AVAILABLE);
     obstacleDetection.clear();
-    for(int i=0; i<scan->size(); i++){
+    for(int i=0; static_cast<long unsigned int>(i)<scan->size(); i++){
         linePoints.reset();
         Transformations::polarPointToCartesian(xp,yp,currentPose,
                                                scan->at(i).getAngle(),

@@ -20,10 +20,12 @@ public:
     void reset();
 
 private:
+    double esp;
+    int currentPointIndex;
+    int scanPointsNum;
     Line * line;
     LineStack *lines;
-    int scanPointsNum;
-    double esp;
+
 
     void addLine(Line * line);
     void executeAlgoritm(std::vector<PointPolarForm> *scan);
@@ -31,7 +33,7 @@ private:
     void addPointToLine(Line *line,PointPolarForm point);
     int  next();
     int current();
-    int currentPointIndex;
+
     bool pointToProcess();
 };
 

@@ -18,7 +18,7 @@ public:
     double getX();
     double getY();
     double getTheta();
-    void printDebugData(Matching *matching);
+    //void printDebugData(Matching *matching);
 
 private:
     MatrixXd xt;

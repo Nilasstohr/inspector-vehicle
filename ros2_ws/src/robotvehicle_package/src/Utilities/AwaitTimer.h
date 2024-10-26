@@ -20,7 +20,7 @@ public:
     void setTimeout(uint64_t timeout,TimeUnit unit);
     void start();
     bool hasWaitingTimeExceeded();
-    bool reset();
+    void reset();
     void printElapsedTime();
 private:
     uint64_t getElapsedTimeMillis();

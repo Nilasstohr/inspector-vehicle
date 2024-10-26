@@ -16,8 +16,9 @@ public:
     void setAngle(double angle);
     void setDistance(double distance);
 private:
-    float distance;
     float angle;
+    float distance;
+
 };
 
 

@@ -23,7 +23,8 @@ LineStack * Observations::getLinesStack() const {
 }
 
 void Observations::printLineStack() {
-    getLinesStack()->printLines("-------z (scan measurement {R})-------");
+    string zScanMeasurement = "-------z (scan measurement {R})-------";
+    getLinesStack()->printLines(zScanMeasurement.data());
 }
 
 const MatrixXd * Observations::z(int i) const {

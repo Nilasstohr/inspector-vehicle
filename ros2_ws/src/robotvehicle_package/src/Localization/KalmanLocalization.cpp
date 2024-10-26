@@ -72,6 +72,7 @@ void KalmanLocalization::update(SensorData * sensorData) {
 
 Pose * KalmanLocalization::getPose() const{
     pose->update(estimation->getX(),estimation->getY(),estimation->getTheta());
+    return pose;
 }
 
 void KalmanLocalization::build(SensorData * sensorData) {

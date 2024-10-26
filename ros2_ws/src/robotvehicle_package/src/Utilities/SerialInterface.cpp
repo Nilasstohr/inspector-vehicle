@@ -48,7 +48,7 @@ void SerialInterface::stripAck(std::string *str) {
 }
 
 
-void SerialInterface::sendRequest(char *text) {
+void SerialInterface::sendRequest(const char *text) {
     m_buffer->clear();
     m_buffer->append(text);
     send();

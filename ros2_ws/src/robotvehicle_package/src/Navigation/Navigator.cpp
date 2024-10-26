@@ -34,7 +34,8 @@ void Navigator::update(KalmanLocalization * localization) {
     dy = xtGoal->getY() - xt->getY();
 
     if(abs(dx) < GOAL_ACCEPTANCE_TRESHOLD_CM && abs(dy) < GOAL_ACCEPTANCE_TRESHOLD_CM){
-        if(navigationPointIndex>=navigationPath->getPath()->size()-1){
+        //! static_cast<long unsigned int>(navigationPointIndex)> is satisfiying compile warining
+        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()-1){
             destinationReached = true;
             driverInterface->stopAndResetDisplacement();
             return;
@@ -87,7 +88,7 @@ void Navigator::update() {
     dy = xtGoal->getY() - xt->getY();
 
     if(abs(dx) < 2 && abs(dy) < 2){
-        if(navigationPointIndex>=navigationPath->getPath()->size()){
+        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()){
             destinationReached = true;
             stopAndResetDisplacement();
             return;
