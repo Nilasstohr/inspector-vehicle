@@ -26,7 +26,6 @@ void PredictionDifferentialDrive::init(const MatrixXd *xt, const MatrixXd *Pt) {
 
 void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * xt,const MatrixXd * Pt)
 {
-
     MatrixXd PtTemp = MatrixXd(3,3);;
     copyMatrix(*Pt,PtTemp);
     //setXEstLast(xt);

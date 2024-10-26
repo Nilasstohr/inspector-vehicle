@@ -16,6 +16,7 @@
 
 #define VELOC_REF 2
 
+
 #define RADIANS_PR_COUNT  (double)(2*M_PI/COUNTS_PR_REV)
 
 // sensor sampling
