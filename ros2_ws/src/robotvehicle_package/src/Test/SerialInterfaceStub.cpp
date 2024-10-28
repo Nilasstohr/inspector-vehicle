@@ -11,8 +11,8 @@ SerialInterfaceStub::SerialInterfaceStub(const char *serialDevice):
 SerialInterface(serialDevice) {}
 
 void SerialInterfaceStub::sendRequest(const char *text) {
-    std::cout << "emulated sendRequest:" << text << std::endl;
+    (void)text;
 }
 void SerialInterfaceStub::sendRequest(std::string *text) {
-    std::cout << "emulated sendRequest:" << text << std::endl;
+    (void)text;
 }
