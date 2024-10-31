@@ -7,6 +7,12 @@
 #include "../Utilities/AwaitTimer.h"
 #include "../PathPlanning/GridMap.h"
 
+// C++ Program to get the current working directory
+#include <filesystem>
+#include <iostream>
+
+using namespace std;
+
 RecordHandler::RecordHandler() {
     recording = new std::vector<SensorRecord>;
     LoadRecords();
@@ -16,7 +22,10 @@ void RecordHandler::LoadRecords(){
     string newMeasurmentId = "new";
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
-    file.open("../../../doc/Measurements/realtime/recordObst.txt");
+    string filePath =  filesystem::current_path();
+    filePath.append("/recordObst.txt");
+    //cout << filesystem::current_path() << "%%%%%% " << filePath << endl;
+    file.open(filePath);
     float angle;
     float distance;
     float posLeft;

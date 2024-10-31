@@ -76,10 +76,27 @@ target_include_directories(NavigationLib  PUBLIC  ${SrcRootPath})
 add_executable(laserscansub_node src/laserscansub_node.cpp)
 ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 
-
-
 install(TARGETS
   controller_node
   DESTINATION lib/${PROJECT_NAME})
+
+install(FILES recordObst.txt
+        DESTINATION lib/${PROJECT_NAME})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # Testing Host Library
+  ament_add_gtest(HostSystemTest Test/Host/HostSystemTest.cpp)
+  target_link_libraries(HostSystemTest HostLib UtilitiesLib)
+
+  message(${CMAKE_CURRENT_BINARY_DIR} )
+
+  target_include_directories(HostSystemTest PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          ${SrcRootPath} Configurations.h
+  )
+endif()
 
 ament_package()
