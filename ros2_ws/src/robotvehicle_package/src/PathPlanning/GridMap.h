@@ -15,6 +15,7 @@
 #include <fstream>
 #include "ObstacleDetection.h"
 
+
 #define GRID_MAP_FILE_NAME "GridMap.txt"
 
 class GridMap: MatrixHelper {

@@ -17,7 +17,7 @@ TEST(controller_node_integration_test,test_1)
 
 int main(int argc, char ** argv)
 {
-    argcTest = argc;
+    argcTest = 1;
     argvTest = argv;
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

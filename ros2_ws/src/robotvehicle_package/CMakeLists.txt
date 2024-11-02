@@ -78,23 +78,38 @@ target_include_directories(NavigationLib  PUBLIC  ${SrcRootPath})
 add_executable(laserscansub_node src/laserscansub_node.cpp)
 ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 
+# resource files
+set(ResourcesFolderName "Resources")
+set(SrcResourcesFolder "${SrcRootPath}/${ResourcesFolderName}")
+
+set(GridMapResourceFile "${SrcResourcesFolder}/GridMap.txt")
+
 install(TARGETS
   controller_node
   DESTINATION lib/${PROJECT_NAME})
 
-install(FILES recordObst.txt
+install(FILES ${GridMapResourceFile}
         DESTINATION lib/${PROJECT_NAME})
+
+configure_file(${GridMapResourceFile} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
+#################### Testing ######################
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   message(${CMAKE_CURRENT_BINARY_DIR} )
 
+  set(TestRootPath  "test/")
+  set(TestResourcesFolder "${TestRootPath}/${ResourcesFolderName}")
+
+  set(RecordFilePath "${TestResourcesFolder}/recordObst.txt")
+  configure_file(${RecordFilePath} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
   # Add test utility library that other test can use.
-  set(TestRootPath "test/")
   set(TestUtilitiesLibPath "${TestRootPath}/TestUtilities")
   add_subdirectory(${TestUtilitiesLibPath})
   target_include_directories(TestUtilitiesLib PUBLIC  ${SrcRootPath})
-
+  
   # Testing Host Library
   ament_add_gtest(HostSystemTest ${TestRootPath}/Host/HostSystemTest.cpp)
   target_link_libraries(HostSystemTest HostLib UtilitiesLib)
