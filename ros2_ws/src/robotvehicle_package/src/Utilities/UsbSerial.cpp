@@ -58,7 +58,8 @@ char UsbSerial::readChar() {
 }
 
 void UsbSerial::writeString(std::string *string) {
-    write(m_serial_id, string->c_str(), string->size());
+    ssize_t size =  write(m_serial_id, string->c_str(), string->size());
+    (void)size;
 }
 
 

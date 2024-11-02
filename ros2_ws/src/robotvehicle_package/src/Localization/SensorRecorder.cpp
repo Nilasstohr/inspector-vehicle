@@ -2,8 +2,6 @@
 // Created by robot1 on 2/26/24.
 //
 
-#include <fstream>
-#include <iostream>
 #include "SensorRecorder.h"
 
 SensorRecorder::SensorRecorder() {

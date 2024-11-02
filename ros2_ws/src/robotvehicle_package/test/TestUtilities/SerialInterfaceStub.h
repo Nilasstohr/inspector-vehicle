@@ -5,7 +5,7 @@
 #ifndef ROBOTVEHICLE_PACKAGE_SERIALINTERFACESTUB_H
 #define ROBOTVEHICLE_PACKAGE_SERIALINTERFACESTUB_H
 
-#include "../Utilities/SerialInterface.h"
+#include "Utilities/SerialInterface.h"
 
 class SerialInterfaceStub: public SerialInterface{
 public:

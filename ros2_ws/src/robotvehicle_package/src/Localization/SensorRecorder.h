@@ -5,6 +5,7 @@
 #ifndef ROBOTVEHICLE_PACKAGE_SENSORRECORDER_H
 #define ROBOTVEHICLE_PACKAGE_SENSORRECORDER_H
 
+#include <fstream>
 
 #include "Utilities/AwaitTimer.h"
 #include "KalmanLocalization.h"

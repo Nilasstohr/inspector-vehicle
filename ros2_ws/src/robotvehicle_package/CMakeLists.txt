@@ -26,7 +26,10 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 add_executable(controller_node
         src/controller_node.cpp
         src/MissionController.cpp
-        src/MissionController.h)
+        src/MissionController.h
+        src/ControllerNode.cpp
+        src/ControllerNode.h
+)
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
 
 # add libraries
@@ -56,7 +59,6 @@ target_link_libraries(controller_node
         LocalizationLib
         PathPlanningLib
         NavigationLib
-        TestLib
 )
 
 # add the libraries "include" files folders, so that include files can be found when referring to them.
@@ -85,18 +87,47 @@ install(FILES recordObst.txt
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
-
-  # Testing Host Library
-  ament_add_gtest(HostSystemTest Test/Host/HostSystemTest.cpp)
-  target_link_libraries(HostSystemTest HostLib UtilitiesLib)
-
   message(${CMAKE_CURRENT_BINARY_DIR} )
 
+  # Add test utility library that other test can use.
+  set(TestRootPath "test/")
+  set(TestUtilitiesLibPath "${TestRootPath}/TestUtilities")
+  add_subdirectory(${TestUtilitiesLibPath})
+  target_include_directories(TestUtilitiesLib PUBLIC  ${SrcRootPath})
+
+  # Testing Host Library
+  ament_add_gtest(HostSystemTest ${TestRootPath}/Host/HostSystemTest.cpp)
+  target_link_libraries(HostSystemTest HostLib UtilitiesLib)
   target_include_directories(HostSystemTest PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<INSTALL_INTERFACE:include>
           ${SrcRootPath} Configurations.h
   )
+
+  # Testing Controller node
+  # ! (notice a lot of repeated cmake code from controller_node executable above, a future task is to reuse here)
+  ament_add_gtest(ControllerNodeIntegrationTest
+          ${TestRootPath}/ControllerNode/ControllerNodeIntegrationTest.cpp
+          ${TestRootPath}/ControllerNode/ControllerNodeStub.cpp
+          ${TestRootPath}/ControllerNode/ControllerNodeStub.h
+          ${SrcRootPath}/ControllerNode.cpp
+          ${SrcRootPath}/ControllerNode.h
+          ${SrcRootPath}/MissionController.cpp
+          ${SrcRootPath}/MissionController.h
+  )
+  ament_target_dependencies(ControllerNodeIntegrationTest rclcpp sensor_msgs)
+  target_link_libraries(ControllerNodeIntegrationTest TestUtilitiesLib
+          HostLib
+          SensorLib
+          LocalizationLib
+          PathPlanningLib
+          NavigationLib)
+  target_include_directories(ControllerNodeIntegrationTest PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          ${SrcRootPath}  ${TestRootPath}  Configurations.h
+  )
+
 endif()
 
 ament_package()

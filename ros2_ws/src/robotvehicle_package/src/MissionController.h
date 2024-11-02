@@ -6,13 +6,10 @@
 #define ROBOTVEHICLE_PACKAGE_MISSIONCONTROLLER_H
 
 #include "Utilities/SerialInterface.h"
-#include "Host/DriverInterface.h"
-#include "KalmanLocalization.h"
-#include "Test/RecordHandler.h"
+#include "Localization/KalmanLocalization.h"
+#include "PathPlanning/GridMap.h"
 #include "Navigation/Navigator.h"
-#include "Navigation/NavigationPath.h"
 #include "PathPlanning/AStar.h"
-#include "Configurations.h"
 
 #include "rclcpp/rclcpp.hpp"
 #include <std_msgs/msg/string.hpp>

@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_SENSORRECORD_H
 
 
-#include "../Sensor/PointPolarForm.h"
+#include "Sensor/PointPolarForm.h"
 
 class SensorRecord {
 public:

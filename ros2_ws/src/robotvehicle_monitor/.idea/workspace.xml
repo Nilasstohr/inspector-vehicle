@@ -13,16 +13,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../doc/documentation" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/documentation" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanLocalization.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/KalmanLocalization.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/Test/Host/HostSystemTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/Host/HostSystemTest.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Test/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/RecordHandler.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/RecordHandler.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SensorRecord.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SensorRecord.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SerialInterfaceStub.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/TestUtilities/SerialInterfaceStub.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SerialInterfaceStub.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/TestUtilities/SerialInterfaceStub.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/UsbSerial.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/UsbSerial.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_visualizer/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_visualizer/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_visualizer/robotvehicle_visualizer.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_visualizer/robotvehicle_visualizer.egg-info/PKG-INFO" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_visualizer/robotvehicle_visualizer.egg-info/entry_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_visualizer/robotvehicle_visualizer.egg-info/entry_points.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,9 +45,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2Dg5Fw6qmwvsw4ShsPadHw6KEF7" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -56,7 +63,7 @@
     "WebServerToolWindowFactoryState": "false",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "MoveEmulatedNotIntoTest",
     "last_opened_file_path": "/home/robot1/devrepo/inspector-vehicle/ros2_ws/src/robotvehicle_monitor",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
