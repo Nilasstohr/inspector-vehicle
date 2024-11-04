@@ -97,14 +97,14 @@ string * GridMap:: toString(MatrixXd *gridMap) {
 }
 
 void GridMap::storeMap(){
-    std::ofstream out(GRID_MAP_FILE_NAME);
+    std::ofstream out(CONFIG_RESOURCE_FILE_GRID_MAP);
     out << *mapToString();
     out.close();
 }
 
 void GridMap::loadGridMap(){
     std::ifstream file;
-    file.open(GRID_MAP_FILE_NAME);
+    file.open(CONFIG_RESOURCE_FILE_GRID_MAP);
     if(file.is_open()){
         string line;
         int row=0;

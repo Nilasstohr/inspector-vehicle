@@ -6,7 +6,7 @@
 #define ROBOTVEHICLE_PACKAGE_OBSTACLEDETECTION_H
 
 #include "ObstacleLocation.h"
-#include "../Configurations.h"
+#include "Configurations.h"
 #include <cmath>
 
 class ObstacleDetection {

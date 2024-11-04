@@ -8,7 +8,7 @@
 
 #include "Localization/Line.h"
 #include "PathPoint.h"
-#include "../Configurations.h"
+#include "Configurations.h"
 
 class LinePoints: public Line{
 public:

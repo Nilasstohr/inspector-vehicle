@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(robotvehicle_package)
 
+# https://stackoverflow.com/questions/7900661/how-to-read-a-cmake-variable-in-c-source-code
+
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -32,6 +34,8 @@ add_executable(controller_node
 )
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
 
+#set(LIBINTERFACE_VERSION "\"helloWorld\"")
+
 # add libraries
 #--------------------------------
 # declare variables and assign lib folder path to it (relative to root)
@@ -43,6 +47,14 @@ set(LocalizationLibPath       "src/Localization/")
 set(PathPlanningLibPath       "src/PathPlanning/")
 set(PathNavigationLibPath     "src/Navigation/")
 set(TestLibPath               "src/Test/")
+
+# header template for configurations
+  # set the variable which cmake should set in Configurations.h.in
+  set(GripMapFileName "GridMap.txt")
+  # generate the header which where the variables is set and used by source code.
+  set(GeneratedFolder "${CMAKE_BINARY_DIR}/generated/")
+  configure_file("${SrcRootPath}/Configurations.h.in" "${GeneratedFolder}/Configurations.h" )
+
 # add libraries directory, these call actually executes CMakeLists.txt of the libs.
 add_subdirectory(${UtilitiesLibPath})
 add_subdirectory(${HostLibPath})
@@ -64,15 +76,18 @@ target_link_libraries(controller_node
 # add the libraries "include" files folders, so that include files can be found when referring to them.
 target_include_directories(controller_node
         PUBLIC
-        ${LocalizationLibPath} ${TestLibPath} ${PathNavigationLibPath}
+        ${LocalizationLibPath}
+        ${TestLibPath}
+        ${PathNavigationLibPath}
+        ${GeneratedFolder}
 )
 # if library depend on a another library  include it to lib target as below
-target_include_directories(HostLib PUBLIC  ${SrcRootPath})
-target_include_directories(SensorLib PUBLIC  ${SrcRootPath})
-target_include_directories(LocalizationLib  PUBLIC ${SrcRootPath})
-target_include_directories(PathPlanningLib  PUBLIC   ${SrcRootPath})
-target_include_directories(TestLib  PUBLIC  ${SrcRootPath})
-target_include_directories(NavigationLib  PUBLIC  ${SrcRootPath})
+target_include_directories(HostLib PUBLIC  ${SrcRootPath} ${GeneratedFolder})
+target_include_directories(SensorLib PUBLIC  ${SrcRootPath} ${GeneratedFolder})
+target_include_directories(LocalizationLib  PUBLIC ${SrcRootPath} ${GeneratedFolder})
+target_include_directories(PathPlanningLib  PUBLIC   ${SrcRootPath} ${GeneratedFolder})
+target_include_directories(TestLib  PUBLIC  ${SrcRootPath} ${GeneratedFolder})
+target_include_directories(NavigationLib  PUBLIC  ${SrcRootPath} ${GeneratedFolder})
 #--------------------------------
 
 add_executable(laserscansub_node src/laserscansub_node.cpp)
@@ -81,8 +96,7 @@ ament_target_dependencies(laserscansub_node rclcpp sensor_msgs)
 # resource files
 set(ResourcesFolderName "Resources")
 set(SrcResourcesFolder "${SrcRootPath}/${ResourcesFolderName}")
-
-set(GridMapResourceFile "${SrcResourcesFolder}/GridMap.txt")
+set(GridMapResourceFile "${SrcResourcesFolder}/${GripMapFileName}")
 
 install(TARGETS
   controller_node
@@ -102,14 +116,18 @@ if(BUILD_TESTING)
   set(TestRootPath  "test/")
   set(TestResourcesFolder "${TestRootPath}/${ResourcesFolderName}")
 
-  set(RecordFilePath "${TestResourcesFolder}/recordObst.txt")
+  # set the variable which cmake should set in TestConfigurations.h.in
+  set(RecordFileName "recordObst.txt")
+  configure_file("${TestRootPath}/TestConfigurations.h.in" "${GeneratedFolder}/TestConfigurations.h")
+
+  set(RecordFilePath "${TestResourcesFolder}/${RecordFileName}")
   configure_file(${RecordFilePath} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
   # Add test utility library that other test can use.
   set(TestUtilitiesLibPath "${TestRootPath}/TestUtilities")
   add_subdirectory(${TestUtilitiesLibPath})
   target_include_directories(TestUtilitiesLib PUBLIC  ${SrcRootPath})
-  
+
   # Testing Host Library
   ament_add_gtest(HostSystemTest ${TestRootPath}/Host/HostSystemTest.cpp)
   target_link_libraries(HostSystemTest HostLib UtilitiesLib)
@@ -140,7 +158,7 @@ if(BUILD_TESTING)
   target_include_directories(ControllerNodeIntegrationTest PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<INSTALL_INTERFACE:include>
-          ${SrcRootPath}  ${TestRootPath}  Configurations.h
+          ${SrcRootPath}  ${TestRootPath}  ${GeneratedFolder}
   )
 
 endif()

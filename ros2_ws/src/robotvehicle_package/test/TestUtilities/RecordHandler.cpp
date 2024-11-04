@@ -18,7 +18,7 @@ void RecordHandler::LoadRecords(){
     //string filePath =  filesystem::current_path();
     //filePath.append("/recordObst.txt");
     //cout << filesystem::current_path() << "%%%%%% " << filePath << endl;
-    file.open("recordObst.txt");
+    file.open(TEST_CONFIG_RESOURCE_FILE_RECORD);
     float angle;
     float distance;
     float posLeft;

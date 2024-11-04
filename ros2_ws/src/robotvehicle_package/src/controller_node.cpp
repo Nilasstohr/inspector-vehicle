@@ -2,6 +2,7 @@
 #include "Utilities/SerialInterface.h"
 #include "Configurations.h"
 #include "ControllerNode.h"
+#include "test_header.h"
 
 using Eigen::MatrixXd;
 using Eigen::Vector3d;
