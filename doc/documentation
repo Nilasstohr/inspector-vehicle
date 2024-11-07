@@ -30,6 +30,16 @@ Eclipse Dev Invironment
 	1. add symbol "_MK20DX256_" (dependending on platform)
 	2. add symbol "F_CPU" with value "48000000"
 
+
+flow of building and running ros2 package
+----------------------------------------
+1. open terminal and execute "source /opt/ros/humble/setup.bash"
+2. navigate to ros2_ws folder
+3. excute "colcon build --packages-select robotvehicle_package" 
+   (this will create build,install and log folder)
+4. excute "colcon test --packages-select robotvehicle_package" 
+5. colcon test-result --all --verbose
+
 Ros2 and Clion
 
 General Process
