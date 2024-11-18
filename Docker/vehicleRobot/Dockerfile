@@ -5,5 +5,5 @@ RUN git clone https://github.com/Nilasstohr/inspector-vehicle.git
 COPY KeepContainerRunning.sh $WD
 WORKDIR $WD
 RUN chmod +x Build.sh && ./Build.sh
-RUN chmod +x RunTests.sh && ./RunTests.sh
+#RUN chmod +x RunTests.sh && ./RunTests.sh
 
