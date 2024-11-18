@@ -22,7 +22,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
-set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
+#set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 add_executable(controller_node

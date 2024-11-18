@@ -33,12 +33,17 @@ Eclipse Dev Invironment
 
 flow of building and running ros2 package
 ----------------------------------------
-1. open terminal and execute "source /opt/ros/humble/setup.bash"
+1. open terminal and execute "source /opt/ros/humble/setup.bash" <-- to be able to access ros2 
 2. navigate to ros2_ws folder
 3. excute "colcon build --packages-select robotvehicle_package" 
    (this will create build,install and log folder)
 4. excute "colcon test --packages-select robotvehicle_package" 
 5. colcon test-result --all --verbose
+6. source install/setup.bash <-- to setup env to your executables 
+   (e.g install/robotvehicle_package/lib/robotvehicle_package/controller_node )
+7. navigate to "install/robotvehicle_package/lib/robotvehicle_package/controller_node" <-- usually the the node can just be run   
+   from ros2_ws root, but node has resources (file txt, xml etc), that requires to run node from its root. 
+8. ros2 run robotvehicle_package controller_node
 
 Ros2 and Clion
 
@@ -102,7 +107,12 @@ Added rplidar SDK to ros package
 			add_executable(my_package src/my_package.cpp ${RPLIDAR_SDK_SRC})
 	5. if started close Clion and Perform "Clion" guide above (!!! remember to run "sudo chmod 666 /dev/ttyUSB0" before starting Clion)
 
-inspiration from:
+
+Laser scan ros2 package
+--------------------------
+https://github.com/Slamtec/sllidar_ros2 <-- use this, a guide is also present
+
+old links:
 git clone https://github.com/slamtec/rplidar_ros 
 https://github.com/CreedyNZ/rplidar_ros2 
 
@@ -260,6 +270,31 @@ https://github.com/eagleman1022/Eagle-Library-Teensy
 9. in the library con-lstb the standart hole through pads can be found.
 
 
+Docker
+--------------------------
+Start her
+https://docs.docker.com/get-started/
+https://docs.docker.com/get-started/workshop/02_our_app/
+https://docs.docker.com/
+
+shell into container
+https://stackoverflow.com/questions/30172605/how-do-i-get-into-a-docker-containers-shell
+
+transfer file to container while building
+https://docs.docker.com/reference/cli/docker/container/cp/
+
+recipe to build, run and inspect container
+1. create docker file called "Dockerfile" as text file 
+2. From terminal at the location of docker file build image by Dockerfile with command 
+   "docker build  -t <NAME_OF_IMAGE> ."
+3. run the image in a container with below command (the script should wait forever to keep container alive)
+   "docker run <NAME_OF_IMAGE> /bin/bash <NAME_OF_SCRIPT>.sh"
+4. open a new terimal to see the container id by command "docker ps"
+5. use the id to shell into container by command docker exec -it <ID_OF_CONTAINER> /bin/bash
+
+Ros2 docker
+https://hub.docker.com/_/ros/
+https://docs.ros.org/en/humble/How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.html
 
 
 
