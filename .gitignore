@@ -8,7 +8,6 @@
 /vehicle-driver/*.elf
 /vehicle-driver/*.hex
 /vehicle-driver/.setings
-/vehicle-driver/tools
 /vehicle-driver/.cproject
 /vehicle-driver/.project
 /vehicle-driver/.settings/language.settings.xml
