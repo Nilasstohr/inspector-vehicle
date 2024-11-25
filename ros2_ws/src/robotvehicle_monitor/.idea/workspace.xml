@@ -13,23 +13,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb8fd6c0-a0ec-45ab-8edc-fdc7e30225c4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/Measurements/realtime/record.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../doc/documentation" beforeDir="false" afterPath="$PROJECT_DIR$/../../../doc/documentation" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../Build.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/Test/Host/HostSystemTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/Host/HostSystemTest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Localization/SensorRecorder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/MissionController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Test/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/RecordHandler.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/RecordHandler.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SensorRecord.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SensorRecord.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SerialInterfaceStub.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/TestUtilities/SerialInterfaceStub.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Test/SerialInterfaceStub.h" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/test/TestUtilities/SerialInterfaceStub.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/UsbSerial.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/Utilities/UsbSerial.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../robotvehicle_package/src/controller_node.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,13 +50,13 @@
     "WebServerToolWindowFactoryState": "false",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "MoveEmulatedNotIntoTest",
+    "git-widget-placeholder": "FinishUpInstallAndLaunch",
     "last_opened_file_path": "/home/robot1/devrepo/inspector-vehicle/ros2_ws/src/robotvehicle_monitor",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">

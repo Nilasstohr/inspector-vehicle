@@ -27,7 +27,6 @@
 /ros2_ws/build/
 /ros2_ws/install/
 /ros2_ws/log/
-/ros2_ws/src/rplidar_ros2/
-/ros2_ws/src/sllidar_ros2/
+/ros2_ws/GridMap.txt
 /doc/vehicle control design/python/venv/
 /doc/vehicle control design/python/.idea/

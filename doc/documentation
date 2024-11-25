@@ -132,7 +132,7 @@ Import ros2 project to pycharm
 ----------------------------------------------------------------------------
 1. open python package in pycharm
 2. go to setting -> project -> project struture -> add root content
-   -> navigate tp "/opt/ros/foxy/lib/python3.8/site-packages" and add. 
+   -> navigate tp "/opt/ros/humble/lib/python3.10/site-packages" and add. 
 
 inspiration
 https://www.youtube.com/watch?v=lTew9mbXrAs

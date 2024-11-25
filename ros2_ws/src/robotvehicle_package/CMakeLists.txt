@@ -101,11 +101,17 @@ set(GridMapResourceFile "${SrcResourcesFolder}/${GripMapFileName}")
 install(TARGETS
   controller_node
   DESTINATION lib/${PROJECT_NAME})
+	
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
 
-install(FILES ${GridMapResourceFile}
-        DESTINATION lib/${PROJECT_NAME})
+#install(FILES ${GridMapResourceFile}
+#        DESTINATION lib/${PROJECT_NAME})
+# work around for transferring resource file to ros2 install folder
+configure_file(${GridMapResourceFile} "../../" COPYONLY)
+
 
 configure_file(${GridMapResourceFile} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
 
 #################### Testing ######################
 
