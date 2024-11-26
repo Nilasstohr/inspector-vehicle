@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from rclpy.node import Node
 
 from std_msgs.msg import String
-from custom_interfaces.msg import OccupancyGrid
+#from custom_interfaces.msg import OccupancyGrid
 
 
 class MinimalSubscriber(Node):

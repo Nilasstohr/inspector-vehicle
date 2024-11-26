@@ -123,7 +123,7 @@ if(BUILD_TESTING)
   set(TestResourcesFolder "${TestRootPath}/${ResourcesFolderName}")
 
   # set the variable which cmake should set in TestConfigurations.h.in
-  set(RecordFileName "recordObst.txt")
+  set(RecordFileName "TestRecord.txt")
   configure_file("${TestRootPath}/TestConfigurations.h.in" "${GeneratedFolder}/TestConfigurations.h")
 
   set(RecordFilePath "${TestResourcesFolder}/${RecordFileName}")

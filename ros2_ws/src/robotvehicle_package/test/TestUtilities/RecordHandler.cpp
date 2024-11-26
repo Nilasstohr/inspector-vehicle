@@ -16,7 +16,7 @@ void RecordHandler::LoadRecords(){
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
     //string filePath =  filesystem::current_path();
-    //filePath.append("/recordObst.txt");
+    //filePath.append("/TestRecord.txt");
     //cout << filesystem::current_path() << "%%%%%% " << filePath << endl;
     file.open(TEST_CONFIG_RESOURCE_FILE_RECORD);
     float angle;
