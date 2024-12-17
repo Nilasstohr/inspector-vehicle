@@ -1,5 +1,0 @@
-/home/robot1/devrepo/inspector-vehicle/experimental/untitled1/cmake-build-debug/CMakeFiles/untitled1.dir
-/home/robot1/devrepo/inspector-vehicle/experimental/untitled1/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/robot1/devrepo/inspector-vehicle/experimental/untitled1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/robot1/devrepo/inspector-vehicle/experimental/untitled1/cmake-build-debug/CMakeFiles/untitled1_autogen_timestamp_deps.dir
-/home/robot1/devrepo/inspector-vehicle/experimental/untitled1/cmake-build-debug/CMakeFiles/untitled1_autogen.dir
