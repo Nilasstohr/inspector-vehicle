@@ -125,11 +125,18 @@ void MissionController::update(){
                 obstacleAvoidanceInProgress=false;
             }
         }else{
-            navigator->update(localization);
+            //navigator->update(localization);
         }
         posMessage.data = localization->getPoseLastString()->c_str();
         posePublisher_->publish(posMessage);
     }
+}
+
+double MissionController::getCurrentPoseX() {
+    return localization->getPose()->getX();
+}
+double MissionController::getCurrentPoseY() {
+    return localization->getPose()->getY();
 }
 
 void MissionController::endMission(){

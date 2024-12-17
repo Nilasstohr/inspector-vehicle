@@ -13,6 +13,7 @@
 #include "Utilities/Pose.h"
 #include "Sensor/SensorData.h"
 #include <Utilities/MathConversions.h>
+#include "Configurations.h"
 
 
 class KalmanLocalization: MatrixHelper {

@@ -4,6 +4,11 @@
 
 #include "ControllerNodeStub.h"
 
+#define EXPECTED_END_POSE_X 40
+#define EXPECTED_END_POSE_Y 40
+#define TOLERANCES_CM 3
+
+
 ControllerNodeStub::ControllerNodeStub(SerialInterface *serialInterface):
 ControllerNode(serialInterface) {
     recordHandler = new RecordHandler();
@@ -21,6 +26,17 @@ void ControllerNodeStub::timer_callback() {
         timer_->cancel();
         missionController->endMission();
         rclcpp::shutdown();
-        return;
+        verifyPosition(missionController->getCurrentPoseX(),missionController->getCurrentPoseY());
+    }
+}
+
+void ControllerNodeStub::verifyPosition(double currentPoseX, double currentPoseY) {
+    throwIfNotWithinRange(currentPoseX,EXPECTED_END_POSE_X);
+    throwIfNotWithinRange(currentPoseY,EXPECTED_END_POSE_Y);
+}
+
+void ControllerNode::throwIfNotWithinRange(double current,double expected) {
+    if(current>expected+TOLERANCES_CM || current<expected-TOLERANCES_CM) {
+        throw new ExceptionIncorrectEndPosition(current,expected,TOLERANCES_CM);
     }
 }

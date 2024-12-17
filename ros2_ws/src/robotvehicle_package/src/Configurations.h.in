@@ -17,11 +17,16 @@
 #define CONFIG_SAFETY_DISTANCE 3
 #define CONFIG_GRID_VALUE_SAFETY -1
 #define CONFIG_GRID_VALUE_SAFETY_PERIPHERAL -2
+
+// Localization
+#define CONFIG_ESP 1
+
 // Robot Dimensions
 #define CONFIG_ROBOT_DIAMETER 37
 #define CONFIG_ROBOT_DIAMETER_BETWEEN_WHEELS 27
 
 #define CONFIG_RESOURCE_FILE_GRID_MAP "@GripMapFileName@"
+//#define CONFIG_RESOURCE_FILE_GRID_MAP "/home/robot1/devrepo/inspector-vehicle/ros2_ws/src/robotvehicle_package/src/Resources/GridMap.txt"
 
 // Hardware
 #define CONFIG_ROBOT_DRIVER_DEVICE_NAME "/dev/ttyACM0"

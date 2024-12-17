@@ -22,6 +22,8 @@ public:
     Navigator *getNavigator();
     void endMission();
     void update();
+    double getCurrentPoseX();
+    double getCurrentPoseY();
 private:
     KalmanLocalization * localization;
     Navigator * navigator;

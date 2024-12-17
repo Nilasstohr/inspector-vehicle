@@ -12,11 +12,12 @@ RecordHandler::RecordHandler() {
 }
 
 void RecordHandler::LoadRecords(){
-    string newMeasurmentId = "new";
+    recordNum = 0;
+    string newMeasurementId = "new";
     std::vector<PointPolarForm> *scan = new std::vector<PointPolarForm>;
     ifstream file;
     //string filePath =  filesystem::current_path();
-    //filePath.append("/TestRecord.txt");
+    //filePath.append("/TestRecord2.txt");
     //cout << filesystem::current_path() << "%%%%%% " << filePath << endl;
     file.open(TEST_CONFIG_RESOURCE_FILE_RECORD);
     float angle;
@@ -28,7 +29,7 @@ void RecordHandler::LoadRecords(){
         string line;
         while(getline(file,line)){
             //       cout << linePoints << endl;
-            if(line.find(newMeasurmentId) != std::string::npos){
+            if(line.find(newMeasurementId) != std::string::npos){
                 newMeasurement=true;
                 if(!scan->empty()){
                     recording->push_back(SensorRecord(scan,posLeft,posRight));
@@ -53,10 +54,10 @@ void RecordHandler::LoadRecords(){
 }
 
 void RecordHandler::update(SensorData * sensorData){
-    sensorData->update(recording->begin()->getScan(),
-                       recording->begin()->getPosLeft(),
-                       recording->begin()->getPosRight());
-    recording->erase(recording->begin());
+    SensorRecord * record = &recording->at(recordNum++);
+    sensorData->update(record->getScan(),
+                       record->getPosLeft(),
+                       record->getPosRight());
 }
 
 void RecordHandler::getValuesFromLine(string line, float &val1, float &val2){
@@ -79,7 +80,7 @@ float RecordHandler::getValueFromString(string s){
 
 
 bool RecordHandler::hasRecordsToProcess() {
-    return !recording->empty();
+    return recordNum<recording->size();
 }
 
 

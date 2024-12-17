@@ -35,7 +35,7 @@ void KalmanLocalization::init(){
     differentialDriveNoKalman->init(&xEst,&pEst);
 
     // for observations step
-    double eps = 1;
+    double eps = CONFIG_ESP;
     MatrixXd R(2, 2);
     R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
     R(1, 0)= 0; R(1, 1)= pow(2,2);

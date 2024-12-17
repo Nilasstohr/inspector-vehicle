@@ -17,6 +17,9 @@ public:
 protected:
     virtual void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
     virtual void timer_callback();
+
+    void throwIfNotWithinRange(double current,double expected);
+
     rclcpp::TimerBase::SharedPtr timer_;
     MissionController * missionController;
 private:

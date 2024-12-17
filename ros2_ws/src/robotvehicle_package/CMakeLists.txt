@@ -31,6 +31,8 @@ add_executable(controller_node
         src/MissionController.h
         src/ControllerNode.cpp
         src/ControllerNode.h
+        test/ControllerNode/ExceptionIncorrectEndPosition.cpp
+        test/ControllerNode/ExceptionIncorrectEndPosition.h
 )
 ament_target_dependencies(controller_node rclcpp sensor_msgs)
 
@@ -149,6 +151,8 @@ if(BUILD_TESTING)
           ${TestRootPath}/ControllerNode/ControllerNodeIntegrationTest.cpp
           ${TestRootPath}/ControllerNode/ControllerNodeStub.cpp
           ${TestRootPath}/ControllerNode/ControllerNodeStub.h
+          ${TestRootPath}/ControllerNode/ExceptionIncorrectEndPosition.cpp
+          ${TestRootPath}/ControllerNode/ExceptionIncorrectEndPosition.h
           ${SrcRootPath}/ControllerNode.cpp
           ${SrcRootPath}/ControllerNode.h
           ${SrcRootPath}/MissionController.cpp
@@ -166,6 +170,32 @@ if(BUILD_TESTING)
           $<INSTALL_INTERFACE:include>
           ${SrcRootPath}  ${TestRootPath}  ${GeneratedFolder}
   )
+
+  # Testing Localization
+  ament_add_gtest(LineDetectionIntegrationTest
+          ${TestRootPath}/Localization/LineDetectionIntegrationTest.cpp
+          ${TestRootPath}/ControllerNode/ControllerNodeStub.cpp
+          ${TestRootPath}/ControllerNode/ControllerNodeStub.h
+          ${TestRootPath}/ControllerNode/ExceptionIncorrectEndPosition.cpp
+          ${TestRootPath}/ControllerNode/ExceptionIncorrectEndPosition.h
+          ${SrcRootPath}/ControllerNode.cpp
+          ${SrcRootPath}/ControllerNode.h
+          ${SrcRootPath}/MissionController.cpp
+          ${SrcRootPath}/MissionController.h
+  )
+  ament_target_dependencies(LineDetectionIntegrationTest rclcpp sensor_msgs)
+  target_link_libraries(LineDetectionIntegrationTest TestUtilitiesLib
+          HostLib
+          SensorLib
+          LocalizationLib
+          PathPlanningLib
+          NavigationLib)
+  target_include_directories(LineDetectionIntegrationTest PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          ${SrcRootPath}  ${TestRootPath}  ${GeneratedFolder}
+  )
+
 
 endif()
 

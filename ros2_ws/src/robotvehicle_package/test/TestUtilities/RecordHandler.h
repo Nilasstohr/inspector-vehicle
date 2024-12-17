@@ -20,6 +20,7 @@ public:
 
 private:
     vector<SensorRecord> *recording;
+    long unsigned int recordNum;
     void LoadRecords();
     void getValuesFromLine(string line, float &val1,float &val2);
     float getValueFromString(string s);

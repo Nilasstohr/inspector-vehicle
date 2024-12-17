@@ -6,6 +6,7 @@
 #define CONTROLLERNODESTUB_H
 #include "ControllerNode.h"
 #include "TestUtilities/RecordHandler.h"
+#include "ExceptionIncorrectEndPosition.h"
 
 class ControllerNodeStub: public ControllerNode{
 public:
@@ -13,6 +14,8 @@ public:
 private:
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) override;
     void timer_callback() override;
+    void verifyPosition(double currentPoseX, double currentPoseY);
+
     RecordHandler * recordHandler;
 };
 

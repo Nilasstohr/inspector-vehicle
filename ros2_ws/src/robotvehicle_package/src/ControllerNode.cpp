@@ -4,7 +4,7 @@
 
 #include "ControllerNode.h"
 
-#define RECORD_DURATION_SECONDS 70
+#define RECORD_DURATION_SECONDS 120
 
 ControllerNode::ControllerNode(SerialInterface *serialInterface):
 Node("reading_laser"),
@@ -31,6 +31,7 @@ void ControllerNode::timer_callback(){
         scanReady = false;
         missionController->getSensorData()->update(currentScan);
         missionController->update();
+        recorder->update(missionController->getSensorData());
         if(recorder->hasRecordTimeExceeded() ||
            missionController->getNavigator()->isDestinationReached()){
             timer_->cancel();
@@ -38,7 +39,6 @@ void ControllerNode::timer_callback(){
             recorder->endRecord();
             missionController->endMission();
             rclcpp::shutdown();
-            return;
         }
     }
 }
