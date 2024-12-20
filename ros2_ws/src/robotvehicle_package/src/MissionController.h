@@ -24,6 +24,7 @@ public:
     void update();
     double getCurrentPoseX();
     double getCurrentPoseY();
+
 private:
     KalmanLocalization * localization;
     Navigator * navigator;
@@ -36,6 +37,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
     std_msgs::msg::String_<allocator<void>> posMessage = std_msgs::msg::String();
     void generateNewPathToDestination(int x, int y);
+    void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
+    void initiateNavigationPath();
 };
 
 

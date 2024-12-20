@@ -34,10 +34,15 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
     }
 
     // Either the source or the destination is blocked
-    if (isUnBlocked(gridMap, src.first, src.second) == false
-        || isUnBlocked(gridMap, dest.first, dest.second)
-           == false) {
-        printf("Source or the destination is blocked\n");
+    if (isUnBlocked(gridMap, src.first, src.second) == false) {
+        printf("Current position x=%d y=%d is blocked, cell value was=%.2f\n",
+            src.first,
+            src.second,
+            gridMap->coeff(src.first,src.second));
+        return;
+    }
+    if (isUnBlocked(gridMap, dest.first, dest.second)== false) {
+        printf("Destination position x=%d y=%d is blocked\n",dest.first,dest.second);
         return;
     }
 

@@ -75,7 +75,7 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
 
 string * GridMap::obstacleSafeDistanceMapToString() {
     updateMapWithObstacleSafeDistance();
-    return toString(&gridMapCopy);
+    return toString(&gridMapWithSafetyDistance);
 }
 string * GridMap::mapToString() {
     return toString(&gridMap);
@@ -128,26 +128,26 @@ void GridMap::loadGridMap(){
     file.close();
 }
 
-MatrixXd *GridMap::updateMapWithObstacleSafeDistance() {
-    gridMapCopy=gridMap;
+void GridMap::updateMapWithObstacleSafeDistance() {
+    gridMapWithSafetyDistance=gridMap;
     int radius = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE*3;
     int x;
     int y;
     double value;
-    for(int i=0; i<gridMapCopy.cols(); i++){
-        for(int j=0; j<gridMapCopy.rows();j++){
+    for(int i=0; i<gridMapWithSafetyDistance.cols(); i++){
+        for(int j=0; j<gridMapWithSafetyDistance.rows();j++){
             x=j;
             y=i;
-            value = gridMapCopy.coeffRef(x,y);
+            value = gridMapWithSafetyDistance.coeffRef(x,y);
             if(value!=CONFIG_GRID_VALUE_SAFETY &&
                value!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL &&
                value<CONFIG_GRID_VALUE_UPDATE_INTERVAL){
                 for(int k=y-radius; k<y+radius; k++){
                     for(int l=x-radius; l<x+radius; l++){
-                        if( (k>=0 && k<gridMapCopy.rows()) && (l>=0 && l<gridMapCopy.cols())){
-                            if(gridMapCopy.coeffRef(l,k)!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL) {
+                        if( (k>=0 && k<gridMapWithSafetyDistance.rows()) && (l>=0 && l<gridMapWithSafetyDistance.cols())){
+                            if(gridMapWithSafetyDistance.coeffRef(l,k)!=CONFIG_GRID_VALUE_SAFETY_PERIPHERAL) {
                                 if ((pow(l - x, 2) + pow(k - y, 2)) < pow(radius, 2)) {
-                                    gridMapCopy.coeffRef(l, k) = CONFIG_GRID_VALUE_SAFETY;
+                                    gridMapWithSafetyDistance.coeffRef(l, k) = CONFIG_GRID_VALUE_SAFETY;
                                 }
                             }
                         }
@@ -157,7 +157,6 @@ MatrixXd *GridMap::updateMapWithObstacleSafeDistance() {
         }
     }
     //printMatrix(&gridMap,"gridMap",0);
-    return &gridMapCopy;
 }
 
 
@@ -198,8 +197,35 @@ ObstacleDetection *GridMap::getObstacleDetection() {
 }
 
 bool GridMap::isPoseInSafeZone(Pose *currentPose) {
-    return gridMapCopy.coeffRef(
+    return gridMapWithSafetyDistance.coeffRef(
             (int)currentPose->getX(), (int)currentPose->getX())!=CONFIG_GRID_VALUE_SAFETY;
+}
+
+bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
+    updateMapWithObstacleSafeDistance();
+    int x;
+    int y;
+    int radius = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE*3;
+    for(NavigationPoint point: *navigationPath->getPath()){
+        x = point.getX();
+        y = point.getY();
+        for(int k=y-radius; k<y+radius; k++){
+            for(int l=x-radius; l<x+radius; l++){
+                if( (k>=0 && k<gridMapWithSafetyDistance.rows()) && (l>=0 && l<gridMapWithSafetyDistance.cols())){
+                    if ((pow(l - x, 2) + pow(k - y, 2)) < pow(radius, 2)) {
+                        if(gridMapWithSafetyDistance.coeffRef(l, k) != CONFIG_GRID_VALUE_FULL_AVAILABLE) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+MatrixXd * GridMap::getMapWithSafetyDistance() {
+    return &gridMapWithSafetyDistance;
 }
 
 

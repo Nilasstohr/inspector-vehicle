@@ -11,9 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import random
+import threading
+from itertools import count
+
 import numpy as np
+from multiprocessing import Process, Queue
+import time
 
 import rclpy
+from matplotlib.animation import FuncAnimation
 from rclpy.node import Node
 
 from std_msgs.msg import String
@@ -24,11 +31,14 @@ from sensor_msgs.msg import LaserScan
 class MonitorNode(Node):
     poses = None
     index = None
+    ani = None
+    dataReady = False
 
     def __init__(self):
         super().__init__('monitor_node')
         self.poses = np.zeros(shape=(10000, 3))
         self.index = 0
+        #self.q = q
         # self.subscription = self.create_subscription(
         #    LaserScan,
         #    'scan',
@@ -42,11 +52,31 @@ class MonitorNode(Node):
             10)
 
         self.subscription  # prevent unused variable warning
+        threading.Thread(target=self.guiThread).start()
 
     # def listener_callback(self, msg):
     #    self.get_logger().info('I------------ "%d"' % msg.ranges[0])
 
     #def listener_callback_OccupancyGrid
+    def animate(self,i):
+       if self.dataReady:
+           x = self.poses[0:self.index, 0]
+           y = self.poses[0:self.index, 1]
+           plt.cla()
+           xm = np.array([40, 202, 119.5])
+           ym = np.array([40, 54.5, 90.5])
+           plt.scatter(xm, ym, s=50, color='green')
+           plt.axis([0, 250, 0, 250])
+           plt.grid()
+           plt.ylabel('some numbers')
+           #plt.tight_layout()
+           plt.plot(x,y)
+           self.dataReady = False
+
+
+    def guiThread(self):
+        self.ani = FuncAnimation(plt.gcf(), func=self.animate, interval=1)
+        plt.show()
 
     def listener_callback_pose_string(self, msg):
         # self.get_logger().info('I heard: "%s"' % msg.data)
@@ -57,10 +87,14 @@ class MonitorNode(Node):
             theta = float(pose[2])
             self.poses[self.index][:] = np.array([x, y, theta])
             self.index = self.index + 1
+            self.dataReady = True
+            #self.q.put([x,y,theta])
         else:
+            print(self.index)
             self.index = self.index - 1
             x = self.poses[0:self.index, 0]
             y = self.poses[0:self.index, 1]
+
             #xm = np.array([40, 201, 118, 38])
             #ym = np.array([40, 112, 148, 98])
             xm = np.array([40, 202, 119.5])
@@ -72,7 +106,6 @@ class MonitorNode(Node):
             plt.ylabel('some numbers')
             plt.show()
             self.index = 0
-
 
 def main(args=None):
     rclpy.init(args=args)
@@ -86,7 +119,6 @@ def main(args=None):
     # when the garbage collector destroys the node object)
     monitor_node.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()

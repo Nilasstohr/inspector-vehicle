@@ -20,7 +20,7 @@ MissionController::MissionController(rclcpp::Node * node,SerialInterface * seria
     navigator = new Navigator(driverInterface);
     aStar = new AStar();
     gripMap->loadGridMap();
-    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+    initiateNavigationPath();
     if (serialInterface->hasResponse()) {
         ROS_INFO(serialInterface->getResponse()->c_str());
     }
@@ -37,11 +37,14 @@ Navigator * MissionController::getNavigator(){
     return navigator;
 }
 
+void MissionController::initiateNavigationPath() {
+    gripMap->updateMapWithObstacleSafeDistance();
+    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+}
 void MissionController::generateNewPathToDestination(int x, int y){
     PathPoint *endPoint = new PathPoint();
     endPoint->set(x,y);
-    aStar->update(localization->getPose(),
-                  endPoint, gripMap->updateMapWithObstacleSafeDistance());
+    aStar->update(localization->getPose(),endPoint,gripMap->getMapWithSafetyDistance());
     navigator->setNavigationPath(aStar->getNavigationPath());
     return;
 
@@ -101,8 +104,11 @@ void MissionController::update(){
         hasMapBeenBuild = true;
     }
     localization->update(sensorData);
-    gripMap->update(
-            sensorData->getScanPolarForm(),localization->getPose());
+    updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
+    navigator->update(localization);
+    posMessage.data = localization->getPoseLastString()->c_str();
+    posePublisher_->publish(posMessage);
+    /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
             navigator->stop();
@@ -112,7 +118,7 @@ void MissionController::update(){
                 cout << "--------Obstacle detected (FRONT)----------- \n" << endl;
             }else{
                 navigator->forwardSlow();
-                cout << "--------Obstacle detected (BACK )----------- \n" << endl;
+                cout << "--------Obstacle detected (BACK)----------- \n" << endl;
             }
         }
         obstacleAvoidanceInProgress = true;
@@ -125,10 +131,18 @@ void MissionController::update(){
                 obstacleAvoidanceInProgress=false;
             }
         }else{
-            //navigator->update(localization);
+            navigator->update(localization);
         }
         posMessage.data = localization->getPoseLastString()->c_str();
         posePublisher_->publish(posMessage);
+    }*/
+}
+
+
+void MissionController::updateMapAndPath(vector<PointPolarForm> *scan, Pose *pose) {
+    gripMap->update(scan,pose);
+    if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
+        generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
     }
 }
 

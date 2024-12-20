@@ -149,3 +149,7 @@ void Navigator::forwardSlow() {
 void Navigator::stop() {
     driverInterface->stop();
 }
+
+NavigationPath * Navigator::getNavigationPath() {
+    return navigationPath;
+}

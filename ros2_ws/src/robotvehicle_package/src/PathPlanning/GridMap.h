@@ -13,6 +13,8 @@
 #include "Sensor/SensorData.h"
 #include <iomanip>
 #include <fstream>
+#include <Navigation/Navigator.h>
+
 #include "ObstacleDetection.h"
 
 
@@ -24,14 +26,17 @@ public:
     string * obstacleSafeDistanceMapToString();
     void storeMap();
     void loadGridMap();
-    MatrixXd * updateMapWithObstacleSafeDistance();
+    void updateMapWithObstacleSafeDistance();
     string *mapToString();
     ObstacleDetection * getObstacleDetection();
     bool isPoseInSafeZone(Pose *currentPose);
+    bool isPathBlocked(NavigationPath *navigationPath);
+
+    MatrixXd * getMapWithSafetyDistance();
 
 private:
     MatrixXd gridMap;
-    MatrixXd gridMapCopy;
+    MatrixXd gridMapWithSafetyDistance;
     LinePoints linePoints = LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM);
     void updateAvailabilityFromLinePoints();
     void updateMapPointValue(int x, int y,double value);

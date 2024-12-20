@@ -20,8 +20,8 @@ public:
     void stopAndResetDisplacement();
     void backwardSlow();
     void forwardSlow();
-
     void stop();
+    NavigationPath* getNavigationPath();
 
 private:
     void setLowerVelocityLimit(double wMin);
