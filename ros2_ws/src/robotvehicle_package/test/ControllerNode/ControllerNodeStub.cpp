@@ -22,6 +22,7 @@ void ControllerNodeStub::timer_callback() {
     if(recordHandler->hasRecordsToProcess()){
         recordHandler->update(missionController->getSensorData());
         missionController->update();
+        missionController->publishRobotData();
     }else{
         timer_->cancel();
         missionController->endMission();

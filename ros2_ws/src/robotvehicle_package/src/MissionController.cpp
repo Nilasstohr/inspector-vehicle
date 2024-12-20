@@ -105,7 +105,7 @@ void MissionController::update(){
     }
     localization->update(sensorData);
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
-    navigator->update(localization);
+    //navigator->update(localization);
     posMessage.data = localization->getPoseLastString()->c_str();
     posePublisher_->publish(posMessage);
     /*
@@ -156,16 +156,20 @@ double MissionController::getCurrentPoseY() {
 void MissionController::endMission(){
     posMessage.data = "end";
     posePublisher_->publish(posMessage);
-    // public grid updateMapWithObstacleSafeDistance
-    string gridMapMessageString;
-    gridMapMessageString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
-    gridMapMessageString.append( "\npath\n");
-    //generateNewPathToDestination(DESTINATION_X,DESTINATION_Y);
-    gridMapMessageString.append(aStar->pathToString());
-    auto gridMapMessage = std_msgs::msg::String();
-    gridMapMessage.data = gridMapMessageString.c_str();
-    gridMapPublisher_->publish(gridMapMessage);
     //gripMap->storeMap();
     std::this_thread::sleep_for(200ms);
     cout << "ending run" << endl;
+}
+
+void MissionController::publishRobotData() {
+    string robotDataString;
+    robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
+    robotDataString.append( "\npath\n");
+    robotDataString.append(aStar->pathToString());
+    robotDataString.append("\npose\n");
+    robotDataString.append(localization->getPoseLastString()->c_str());
+    auto gridMapMessage = std_msgs::msg::String();
+    gridMapMessage.data = robotDataString.c_str();
+    gridMapPublisher_->publish(gridMapMessage);
+
 }
