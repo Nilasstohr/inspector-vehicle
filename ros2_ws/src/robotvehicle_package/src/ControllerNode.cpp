@@ -4,7 +4,7 @@
 
 #include "ControllerNode.h"
 
-#define RECORD_DURATION_SECONDS 120
+#define RECORD_DURATION_SECONDS 70
 
 ControllerNode::ControllerNode(SerialInterface *serialInterface):
 Node("reading_laser"),
