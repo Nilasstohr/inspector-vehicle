@@ -2,12 +2,13 @@
 //#include <QPushButton>
 
 #include "MainWindow.h"
-#include "keyEnterReceiver.h"
+#include "KeyEnterReceiver.h"
 #include <QApplication>
 #include <iostream>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QDesktopWidget>
+#include <thread>
 
 /*
 QPushButton *button;
@@ -53,21 +54,24 @@ void handleButton()
 
 
 
+
 int main(int argc, char *argv[])
 {
-
-
     QApplication app(argc, argv);
     MainWindow mainWindow;
-    keyEnterReceiver* key = new keyEnterReceiver(mainWindow.m_button);
+    auto* key = new KeyEnterReceiver(mainWindow.m_button);
     mainWindow.installEventFilter(key);
     mainWindow.adjustSize();
-    QDesktopWidget dw;
+    const QDesktopWidget dw;
     float screenPercent = 0.5;
+
     int x=dw.width()*screenPercent;
     int y=dw.height()*screenPercent;
+
     mainWindow.setFixedSize(x,y);
+
     mainWindow.move(app.desktop()->screen()->rect().center() - mainWindow.rect().center());
+
     mainWindow.show();
     mainWindow.showNormal();
     return app.exec();

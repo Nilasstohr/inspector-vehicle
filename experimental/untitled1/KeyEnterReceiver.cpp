@@ -3,12 +3,12 @@
 //
 
 #include <QKeyEvent>
-#include "keyEnterReceiver.h"
+#include "KeyEnterReceiver.h"
 #include <iostream>
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <unistd.h> // write(), read(), closeSerialPort()
 
-keyEnterReceiver::keyEnterReceiver(QPushButton *button) {
+KeyEnterReceiver::KeyEnterReceiver(QPushButton *button) {
     this->button = button;
     this->m_serial_id = open("/dev/ttyACM0", O_RDWR);
     char read_buf [256];
@@ -20,18 +20,18 @@ keyEnterReceiver::keyEnterReceiver(QPushButton *button) {
     //closeSerialPort(m_serial_id);
 }
 
-void keyEnterReceiver::writeSerialChar(char c) {
+void KeyEnterReceiver::writeSerialChar(char c) {
     char write_buf [2];
     write_buf[0]=c;
     write_buf[1]='\n';
     write(m_serial_id, write_buf, 2);
 }
 
-void keyEnterReceiver::closeSerialPort() {
+void KeyEnterReceiver::closeSerialPort() {
         close(m_serial_id);
 }
 
-bool keyEnterReceiver::eventFilter(QObject* obj, QEvent* event)
+bool KeyEnterReceiver::eventFilter(QObject* obj, QEvent* event)
 {
     //pEdiyt->setText("event");
     if (event->type()==QEvent::KeyPress) {
@@ -64,6 +64,7 @@ bool keyEnterReceiver::eventFilter(QObject* obj, QEvent* event)
         return true;
     }
     else {
+        auto type = event->type();
         return QObject::eventFilter(obj, event);
     }
 }

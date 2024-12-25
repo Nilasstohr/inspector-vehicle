@@ -10,13 +10,13 @@
 #include <QTextEdit>
 #include <QPushButton>
 
-class keyEnterReceiver : public QObject{
+class KeyEnterReceiver : public QObject{
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* event);
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 public:
-    keyEnterReceiver(QPushButton *button);
+    KeyEnterReceiver(QPushButton *button);
     void closeSerialPort();
 private:
     void writeSerialChar(char c);

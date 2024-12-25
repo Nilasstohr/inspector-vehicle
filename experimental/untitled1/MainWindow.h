@@ -9,8 +9,9 @@
 #include <QPushButton>
 #include <QTextEdit>
 #include <QCloseEvent>
-#include "keyEnterReceiver.h"
-
+#include "KeyEnterReceiver.h"
+#include <QTimer>
+#include <QPainter>
 namespace Ui {
     class MainWindow;
 }
@@ -18,16 +19,20 @@ namespace Ui {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    void init(keyEnterReceiver* key);
+    explicit MainWindow();
+    void init(KeyEnterReceiver* key);
     QPushButton *m_button;
 private slots:
-    void handleButton();
-    void closeEvent (QCloseEvent *event);
+    void closeEvent (QCloseEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+    void buttonPressEvent() const;
+    void refreshTimeout();
 private:
     QTextEdit *m_txt;
-    keyEnterReceiver* m_key;
+    KeyEnterReceiver* m_key;
+    bool draw=false;
 };
 
 #endif //UNTITLED1_MAINWINDOW_H
