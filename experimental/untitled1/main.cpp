@@ -58,22 +58,9 @@ void handleButton()
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MainWindow mainWindow;
+    MainWindow mainWindow(&app);
     auto* key = new KeyEnterReceiver(mainWindow.m_button);
     mainWindow.installEventFilter(key);
-    mainWindow.adjustSize();
-    const QDesktopWidget dw;
-    float screenPercent = 0.5;
-
-    int x=dw.width()*screenPercent;
-    int y=dw.height()*screenPercent;
-
-    mainWindow.setFixedSize(x,y);
-
-    mainWindow.move(app.desktop()->screen()->rect().center() - mainWindow.rect().center());
-
-    mainWindow.show();
-    mainWindow.showNormal();
     return app.exec();
 }
 

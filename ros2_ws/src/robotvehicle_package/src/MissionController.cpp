@@ -105,9 +105,10 @@ void MissionController::update(){
     }
     localization->update(sensorData);
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
-    //navigator->update(localization);
-    posMessage.data = localization->getPoseLastString()->c_str();
-    posePublisher_->publish(posMessage);
+    navigator->update(localization);
+    //posMessage.data = localization->getPoseLastString()->c_str();
+    //posePublisher_->publish(posMessage);
+    //publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
@@ -168,8 +169,9 @@ void MissionController::publishRobotData() {
     robotDataString.append(aStar->pathToString());
     robotDataString.append("\npose\n");
     robotDataString.append(localization->getPoseLastString()->c_str());
-    auto gridMapMessage = std_msgs::msg::String();
-    gridMapMessage.data = robotDataString.c_str();
-    gridMapPublisher_->publish(gridMapMessage);
-
+    robotDataString.append("\nscan\n");
+    robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),localization->getPose())->c_str());
+    auto robotDataMessage = std_msgs::msg::String();
+    robotDataMessage.data = robotDataString.c_str();
+    gridMapPublisher_->publish(robotDataMessage);
 }

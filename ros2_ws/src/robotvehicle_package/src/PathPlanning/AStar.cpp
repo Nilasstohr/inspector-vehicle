@@ -35,10 +35,12 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
 
     // Either the source or the destination is blocked
     if (isUnBlocked(gridMap, src.first, src.second) == false) {
+        /*
         printf("Current position x=%d y=%d is blocked, cell value was=%.2f\n",
             src.first,
             src.second,
             gridMap->coeff(src.first,src.second));
+        */
         return;
     }
     if (isUnBlocked(gridMap, dest.first, dest.second)== false) {
@@ -285,7 +287,8 @@ void AStar::downSampleNavigationPath(stack<Pair> *path){
                     // we just that the A-star point
                     if(Verify2DArea::distanceBetweenPoints(
                             navigationPath->getPath()->back().getX(),
-                            navigationPath->getPath()->back().getY(),x,y) < CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM){
+                            navigationPath->getPath()->back().getY(),x,y) < CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM)
+                    {
                         navigationPath->getPath()->back().override(x,y);
                     }else{
                         navigationPath->addPathPoint(x,y,0);

@@ -9,6 +9,7 @@
 class MathConversions {
 public:
     static double deg2rad(double deg);
+    static double rad2deg(double rad);
 };
 
 

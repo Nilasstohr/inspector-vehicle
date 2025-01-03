@@ -31,9 +31,8 @@ public:
     ObstacleDetection * getObstacleDetection();
     bool isPoseInSafeZone(Pose *currentPose);
     bool isPathBlocked(NavigationPath *navigationPath);
-
     MatrixXd * getMapWithSafetyDistance();
-
+    string * scanEndPointsToString(vector<PointPolarForm> *scan, Pose *pose);
 private:
     MatrixXd gridMap;
     MatrixXd gridMapWithSafetyDistance;
@@ -49,6 +48,7 @@ private:
     int y;
     double mapValue;
     string gridMapString;
+    string scanEndPointsString;
     ObstacleDetection obstacleDetection;
 
 

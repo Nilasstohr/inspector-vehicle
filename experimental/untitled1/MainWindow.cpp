@@ -1,9 +1,13 @@
 #include <QMessageBox>
 #include "MainWindow.h"
 
+#include <cmath>
 #include <iostream>
+#include <math.h>
+#include <QDesktopWidget>
 
-MainWindow::MainWindow()
+
+MainWindow::MainWindow(QApplication *app)
         : QMainWindow()
 {
     // Create the button, make "this" the parent
@@ -18,13 +22,29 @@ MainWindow::MainWindow()
     // Connect button signal to appropriate slot
     connect(m_button, &QPushButton::released, this, &MainWindow::buttonPressEvent);
     myTimer->start();
+
+    adjustSize();
+    const QDesktopWidget dw;
+    float screenPercent = 0.5;
+    int width = 2000;//dw.width()*screenPercent;
+    int height= 1500;//dw.height()*screenPercent;
+    int plotWidthX = width-m_pixelPlotOffSetX;
+    int plotWidthY = height-m_pixelPlotOffSetY;
+    std::cout << width << height << std::endl;
+    setFixedSize(width,height);
+    move(app->desktop()->screen()->rect().center() - rect().center());
+    show();
+    showNormal();
+    m_cmToPixelX = plotWidthX/m_fieldCmSizeY;
+    m_cmToPixelY = plotWidthY/m_fieldCmSizeY;
+    std::cout << m_cmToPixelX << " " << m_cmToPixelY << std::endl;
 }
 
 static int i=0;
 void MainWindow::refreshTimeout()  {
     //m_button->setText(std::to_string(++i).data());
     if(draw==false) {
-        std::cout << "timeout: " << std::endl;
+        //std::cout << "timeout: " << std::endl;
         draw=true;
     }
     update();
@@ -32,19 +52,19 @@ void MainWindow::refreshTimeout()  {
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    auto type = event->type();
-    std::cout << "paintEvent: " << type<< std::endl;
-    //pixmap.toImage().setPixel()
     QPainter painter(this);
     QRect  rect;
+    bool hasYScaleBeenDrawn= false;
+    painter.setFont(QFont("Arial", 6, QFont::Bold));
     if(draw==true) {
         painter.drawText(QPoint(100, 100), std::to_string(++i).c_str());
         //painter.drawLine(QPoint(100+i, 100+i), QPoint(120+i, 120+i));
         bool c=false;
-        int l = 10;
-        for(int i=0; i< 250; i++) {
-            for(int j=0; j< 250; j++) {
-                rect =QRect(i, j, l, l);
+        for(int i=0;i<m_fieldCmSizeX;i++) {
+            int xPosPix =getPixPosX(i);
+            for(int j=0;j<m_fieldCmSizeY;j++) {
+                int yPosPix = j*m_cmToPixelY+m_pixelPlotOffSetY/2;
+                rect =QRect(xPosPix,yPosPix, m_cmToPixelX, m_cmToPixelY);
                 if (c==false) {
                     painter.fillRect(rect, QBrush(Qt::green, Qt::SolidPattern));
                     c=true;
@@ -53,20 +73,38 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     c=false;
                 }
                 painter.drawRect(rect);
-                j=j+l;
+                if(hasYScaleBeenDrawn==false) {
+                    drawYAxisPoint(m_fieldCmSizeY-j, yPosPix,&painter);
+                }
             }
-            i=i+l;
+            drawXAxisPoint(i,xPosPix,&painter);
+            hasYScaleBeenDrawn=true;
         }
-        painter.drawRect( rect =QRect(i+10, i+10, l, l));
-        painter.fillRect(rect, QBrush(Qt::red, Qt::SolidPattern));
-        painter.drawRect( rect =QRect(i+10, i, l, l));
-        painter.fillRect(rect, QBrush(Qt::blue, Qt::SolidPattern));
-        painter.drawRect(rect);
-        //painter.drawRect(50,50,10,10);
+        drawXAxisPoint(m_fieldCmSizeX,getPixPosX(m_fieldCmSizeX),&painter);
         draw=false;
     }
-    //m_painter->setPen(QPen(Qt::black, 12, Qt::DashDotLine, Qt::RoundCap));
-    //m_painter->drawLine(0, 0, 200, 200);
+}
+
+void MainWindow::drawXAxisPoint(int i,int xPosPix,QPainter * painter) {
+    if(i%m_xScale==0 && i!=0) {
+        int yPosPix1 = (m_fieldCmSizeY-1)*m_cmToPixelY+m_pixelPlotOffSetY/2;
+        int yPosPix2 = yPosPix1+10;
+        painter->drawLine(xPosPix, yPosPix1, xPosPix, yPosPix2);
+        painter->drawText(QPoint(xPosPix,yPosPix2+10),std::to_string(i).c_str());
+    }
+}
+
+void MainWindow::drawYAxisPoint(int j,int yPosPix,QPainter * painter) {
+    if(j%m_yScale==0) {
+        int xPosPix1 = m_cmToPixelX+m_pixelPlotOffSetX/2;
+        int xPosPix2 = xPosPix1-10;
+        painter->drawLine(xPosPix1, yPosPix, xPosPix2-5, yPosPix);
+        painter->drawText(QPoint(xPosPix2-25,yPosPix),std::to_string(j).c_str());
+    }
+}
+
+int MainWindow::getPixPosX(int i) {
+    return i*m_cmToPixelX+m_pixelPlotOffSetX/2;
 }
 
 void MainWindow::init(KeyEnterReceiver* key){

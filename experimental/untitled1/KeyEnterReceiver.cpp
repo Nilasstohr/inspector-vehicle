@@ -14,7 +14,7 @@ KeyEnterReceiver::KeyEnterReceiver(QPushButton *button) {
     char read_buf [256];
     //int n = read(m_serial_id, &read_buf, sizeof(read_buf));
     //write(m_serial_id,"5\n",1);
-    int n = read(m_serial_id, &read_buf, sizeof(read_buf));
+    //int n = read(m_serial_id, &read_buf, sizeof(read_buf));
     //writeSerialChar('f');
     //n = read(m_serial_id, &read_buf, sizeof(read_buf));
     //closeSerialPort(m_serial_id);

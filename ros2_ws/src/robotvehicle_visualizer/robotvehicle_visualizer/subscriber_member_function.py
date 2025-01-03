@@ -38,8 +38,22 @@ class MinimalSubscriber(Node):
            self.setup_plot_window()
            x = self.robot_data.get_x_poses()
            y = self.robot_data.get_y_poses()
+           #print("%.2f %.2f" % (self.robot_data.get_x_pose_last(),self.robot_data.get_y_pose_last()))
+           c1 = plt.Circle((self.robot_data.get_x_pose_last(), self.robot_data.get_y_pose_last()), 18.5, color='red', fill=False)
+           c2 = plt.Circle((self.robot_data.get_x_pose_last(), self.robot_data.get_y_pose_last()), 1, color='red')
+           #c = plt.Circle((40,40), 18.5, color='red', fill=False)
+           plt.gca().add_patch(c1)
+           plt.gca().add_patch(c2)
            plt.imshow(self.robot_data.grid_map_matrix, origin='lower')
-           plt.plot(x, y)
+           plt.plot(x,y)
+           plt.scatter(self.robot_data.get_x_scan(),self.robot_data.get_y_scan(),color='gray',s=3)
+           #for i in range(0,self.robot_data.get_scan_points_size()):
+           #    scan_point = self.robot_data.get_scan_point(i)
+           #    xd = scan_point[1]
+           #    yd = scan_point[2]
+           #    x_last = self.robot_data.get_x_pose_last()
+           #    y_last = self.robot_data.get_y_pose_last()
+           #    plt.plot([x_last,xd],[y_last, yd],color='gray',linestyle = 'dotted')
            #plt.colorbar()
            self.data_ready = False
 

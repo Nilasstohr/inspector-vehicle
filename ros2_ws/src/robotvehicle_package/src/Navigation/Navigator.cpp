@@ -40,7 +40,7 @@ void Navigator::update(KalmanLocalization * localization) {
             driverInterface->stopAndResetDisplacement();
             return;
         }
-        cout << navigationPointIndex << " out of " << navigationPath->getPath()->size()-1 << endl;
+        //cout << navigationPointIndex << " out of " << navigationPath->getPath()->size()-1 << endl;
         navigationPointIndex++;
         return;
     }
