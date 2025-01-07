@@ -24,6 +24,11 @@ public:
     string *getPoseLastString();
     Pose * getPose() const;
     SensorData *getSensorDate();
+    Observations *getObservations();
+    MeasurementPrediction* getMeasurementPrediction();
+
+    const Pose * getStarPose();
+
 private:
     void init();
     PredictionDifferentialDrive * differentialDrive;
@@ -35,6 +40,7 @@ private:
     SensorData *sensorData;
     Pose * pose;
     string poseString;
+    Pose startPose;
 
 };
 

@@ -20,6 +20,9 @@
 
 // Localization
 #define CONFIG_ESP 1
+#define CONFIG_START_POSE_X 40
+#define CONFIG_START_POSE_Y 40
+#define CONFIG_START_POSE_THETA 0
 
 // Robot Dimensions
 #define CONFIG_ROBOT_DIAMETER 37

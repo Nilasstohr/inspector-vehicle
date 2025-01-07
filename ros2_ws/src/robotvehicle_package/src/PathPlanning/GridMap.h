@@ -14,7 +14,6 @@
 #include <iomanip>
 #include <fstream>
 #include <Navigation/Navigator.h>
-
 #include "ObstacleDetection.h"
 
 
@@ -27,6 +26,7 @@ public:
     void storeMap();
     void loadGridMap();
     void updateMapWithObstacleSafeDistance();
+    void updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *currentPose);
     string *mapToString();
     ObstacleDetection * getObstacleDetection();
     bool isPoseInSafeZone(Pose *currentPose);
@@ -36,11 +36,13 @@ public:
 private:
     MatrixXd gridMap;
     MatrixXd gridMapWithSafetyDistance;
-    LinePoints linePoints = LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM);
+    LinePoints linePoints;
     void updateAvailabilityFromLinePoints();
     void updateMapPointValue(int x, int y,double value);
     string * toString(MatrixXd *gridMap);
     void addSafetyDistance();
+
+    void updateCellIfWithinRange(int x, int y);
     double gridMapValueAvailable;
     double gridMapValueOccupied;
     double gridMapValueUpdateInterval;

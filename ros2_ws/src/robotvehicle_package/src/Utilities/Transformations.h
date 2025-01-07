@@ -11,6 +11,7 @@ class Transformations {
 public:
     Transformations() = delete;
     static void polarPointToCartesian(double &xp,double &yp,Pose * currentPose,double alfa,double p);
+    static void recPointToGlobalReferenceFrame(double &xG, double &yG, double xR, double yR, const Pose *currentPose);
 };
 
 

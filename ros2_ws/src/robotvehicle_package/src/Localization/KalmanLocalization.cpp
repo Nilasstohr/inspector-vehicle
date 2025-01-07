@@ -5,13 +5,14 @@
 #include <iostream>
 #include "KalmanLocalization.h"
 
-
-
 KalmanLocalization::KalmanLocalization() {
     init();
 }
 
 void KalmanLocalization::init(){
+    startPose = Pose();
+    startPose.update(CONFIG_START_POSE_X,CONFIG_START_POSE_Y,CONFIG_START_POSE_THETA);
+
     differentialDrive =
             new PredictionDifferentialDrive();
 
@@ -27,9 +28,9 @@ void KalmanLocalization::init(){
     pEst(2, 0)= 0; pEst(2, 1)= 0; pEst(2, 2)=  pow(sigmaTheta,2);
     //printMatrix(&pEst,"---Pest init---");
     MatrixXd xEst(3,1);
-    xEst(0,0)=40;
-    xEst(1,0)=40;
-    xEst(2,0)=0;
+    xEst(0,0)=startPose.getX();
+    xEst(1,0)=startPose.getY();
+    xEst(2,0)=startPose.getTheta();
     //printMatrix(pEst,"pEst");
     //printVector(xEst,"xEst");
     differentialDriveNoKalman->init(&xEst,&pEst);
@@ -55,6 +56,9 @@ void KalmanLocalization::init(){
 }
 
 void KalmanLocalization::update(SensorData * sensorData) {
+    measurementPrediction->reset();
+    observations->reset();
+    matching->reset();
     //differentialDriveNoKalman->update(posLeft,posRight,
     //                      differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
@@ -64,9 +68,6 @@ void KalmanLocalization::update(SensorData * sensorData) {
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);
     estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
-    measurementPrediction->reset();
-    observations->reset();
-    matching->reset();
 }
 
 
@@ -76,7 +77,7 @@ Pose * KalmanLocalization::getPose() const{
 }
 
 void KalmanLocalization::build(SensorData * sensorData) {
-    measurementPrediction->buildMap(sensorData->getScanPolarForm());
+    measurementPrediction->buildMap(sensorData->getScanPolarForm(),&startPose);
 }
 
 string *KalmanLocalization::getPoseLastString() {
@@ -89,6 +90,18 @@ string *KalmanLocalization::getPoseLastString() {
 
 SensorData *KalmanLocalization::getSensorDate() {
     return sensorData;
+}
+
+Observations * KalmanLocalization::getObservations() {
+    return observations;
+}
+
+MeasurementPrediction * KalmanLocalization::getMeasurementPrediction() {
+    return measurementPrediction;
+}
+
+const Pose * KalmanLocalization::getStarPose() {
+    return &startPose;
 }
 
 

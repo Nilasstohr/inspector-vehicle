@@ -11,18 +11,20 @@ Incremental::Incremental(double esp) :
         currentPointIndex(0),
         scanPointsNum(0)
 {
-    this->lines = new LineStack(700);
+    this->lineStack = new LineStack(700);
     this->line = new Line();
+    lines = Lines();
 }
 
 int Incremental::size() {
-    return lines->size() ;
+    return lineStack->size() ;
 }
 
 void Incremental::reset() {
     scanPointsNum=0;
     currentPointIndex=0;
-    lines->reset();
+    lineStack->reset();
+    lines.reset();
 }
 
 void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {
@@ -70,7 +72,8 @@ void Incremental::addPointToLine(Line *line, PointPolarForm point) {
 
 void Incremental::addLine(Line *line) {
     line->updateOriginLineNormal();
-    lines->add(line->getAlfa(), line->getR());
+    lineStack->add(line->getAlfa(), line->getR());
+    lines.addLine(line);
     line->reset();
 }
 
@@ -87,5 +90,11 @@ int Incremental::current() {
 }
 
 LineStack *Incremental::getLineStack() {
-    return lines;
+    return lineStack;
 }
+
+Lines * Incremental::getLines() {
+    return &lines;
+}
+
+

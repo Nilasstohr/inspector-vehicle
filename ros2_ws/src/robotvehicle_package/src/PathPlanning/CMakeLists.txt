@@ -4,6 +4,8 @@ add_library(PathPlanningLib
         LinePoints.cpp
         ObstacleDetection.cpp
         PathPoint.cpp
+        CirclePoints.cpp
+        PointBase.cpp
 )
 target_link_libraries (PathPlanningLib Eigen3::Eigen)
 ament_target_dependencies(PathPlanningLib rclcpp sensor_msgs)

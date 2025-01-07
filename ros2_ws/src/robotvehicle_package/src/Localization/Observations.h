@@ -18,6 +18,7 @@ public:
     Observations(double eps, const MatrixXd &r);
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
     LineStack * getLinesStack() const;
+    Lines *getLines();
     const MatrixXd * z(int i) const;
     const MatrixXd * R() const;
     int size() const;

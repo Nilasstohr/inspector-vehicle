@@ -19,7 +19,7 @@ MeasurementPrediction::MeasurementPrediction(double eps, const MatrixXd &R){
     H = MatrixXd(2,3);
 }
 
-void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan) {
+void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan,Pose * currentPose) {
     observations->update(scan,scan->size());
     //observations->printLineStack();
     // transform lines from robot to world reference
@@ -29,7 +29,7 @@ void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan) {
     double rW;
     for(int j=0; j<observations->size(); j++){
         observations->getLinesStack()->getByIndex(j,alfaR,rR);
-        transformToWorldReferenceFrame(alfaW,rW,40,40,0,alfaR,rR);
+        transformToWorldReferenceFrame(alfaW,rW,currentPose->getX(),currentPose->getY(),currentPose->getTheta(),alfaR,rR);
         observations->getLinesStack()->setByIndex(j,alfaW,rW);
     }
 
@@ -101,6 +101,10 @@ const MatrixXd *MeasurementPrediction::HEst(int j) const {
 void MeasurementPrediction::reset() {
     z_est->reset();
     hStack->reset();
+}
+
+Observations * MeasurementPrediction::getObservations() {
+    return observations;
 }
 
 

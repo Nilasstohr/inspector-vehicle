@@ -16,7 +16,7 @@ public:
     MeasurementPrediction(const LineStack *lines);
 
     MeasurementPrediction(double eps, const MatrixXd &r);
-    void buildMap(std::vector<PointPolarForm> *scan);
+    void buildMap(std::vector<PointPolarForm> *scan,Pose * currentPose);
     void update(const PredictionDifferentialDrive *  prediction);
     void transformToRobotReferenceFrame(
             double alfaW, double rW, double xEst, double yEst, double thetaEst, double &alfaR, double &rR);
@@ -26,6 +26,7 @@ public:
     const MatrixXd * HEst(int j) const;
     int size() const;
     void reset();
+    Observations * getObservations();
 private:
     const LineStack *linesW;
     Observations * observations;

@@ -9,17 +9,19 @@
 #include "Localization/Line.h"
 #include "PathPoint.h"
 #include "Configurations.h"
+#include "PointBase.h"
 
-class LinePoints: public Line{
+class LinePoints final : public PointBase{
 public:
-    LinePoints(int h);
-    void update();
-    int getPointSize();
-    void getByIndex(int &x, int &y, int i);
+    explicit LinePoints(int h);
+    void update() override;
+    void reset() override;
+    void setFromLine(Line * line);
+    void setFromLine(double x1, double y1, double x2, double y2);
+    void addLinePoint(double xp, double yp);
 private:
     int h;
-    std::vector<PathPoint> *points;
-    int pointsNum;
+    Line line;
     // calculation details
 };
 

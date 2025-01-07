@@ -22,6 +22,10 @@ LineStack * Observations::getLinesStack() const {
     return incremental->getLineStack();
 }
 
+Lines * Observations::getLines() {
+    return incremental->getLines();
+}
+
 void Observations::printLineStack() {
     string zScanMeasurement = "-------z (scan measurement {R})-------";
     getLinesStack()->printLines(zScanMeasurement.data());

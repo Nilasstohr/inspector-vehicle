@@ -37,8 +37,12 @@ private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
     std_msgs::msg::String_<allocator<void>> posMessage = std_msgs::msg::String();
     void generateNewPathToDestination(int x, int y);
+
+    void build();
+
     void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
     void initiateNavigationPath();
+    void updateMapWithObstacleSafeDistance();
 };
 
 

@@ -20,7 +20,6 @@ MissionController::MissionController(rclcpp::Node * node,SerialInterface * seria
     navigator = new Navigator(driverInterface);
     aStar = new AStar();
     gripMap->loadGridMap();
-    initiateNavigationPath();
     if (serialInterface->hasResponse()) {
         ROS_INFO(serialInterface->getResponse()->c_str());
     }
@@ -38,9 +37,15 @@ Navigator * MissionController::getNavigator(){
 }
 
 void MissionController::initiateNavigationPath() {
-    gripMap->updateMapWithObstacleSafeDistance();
+    updateMapWithObstacleSafeDistance();
     generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
 }
+
+void MissionController::updateMapWithObstacleSafeDistance() {
+    gripMap->updateMapWithObstacleSafeDistance2(
+       localization->getObservations()->getLines(),localization->getPose());
+}
+
 void MissionController::generateNewPathToDestination(int x, int y){
     PathPoint *endPoint = new PathPoint();
     endPoint->set(x,y);
@@ -98,10 +103,17 @@ void MissionController::generateNewPathToDestination(int x, int y){
 
 }
 
+void MissionController::build() {
+    localization->build(sensorData);
+    gripMap->updateMapWithObstacleSafeDistance2(
+       localization->getMeasurementPrediction()->getObservations()->getLines(),localization->getStarPose());
+    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+    hasMapBeenBuild = true;
+}
+
 void MissionController::update(){
     if (!hasMapBeenBuild) {
-        localization->build(sensorData);
-        hasMapBeenBuild = true;
+       build();
     }
     localization->update(sensorData);
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
@@ -142,6 +154,7 @@ void MissionController::update(){
 
 void MissionController::updateMapAndPath(vector<PointPolarForm> *scan, Pose *pose) {
     gripMap->update(scan,pose);
+    updateMapWithObstacleSafeDistance();
     if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
         generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
     }
@@ -170,7 +183,8 @@ void MissionController::publishRobotData() {
     robotDataString.append("\npose\n");
     robotDataString.append(localization->getPoseLastString()->c_str());
     robotDataString.append("\nscan\n");
-    robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),localization->getPose())->c_str());
+    robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),
+        localization->getPose())->c_str());
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString.c_str();
     gridMapPublisher_->publish(robotDataMessage);

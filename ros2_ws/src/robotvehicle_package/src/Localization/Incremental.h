@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "Line.h"
+#include "Lines.h"
 #include "Sensor/PointPolarForm.h"
 #include "LineStack.h"
 
@@ -16,7 +17,7 @@ public:
     int size();
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
     LineStack * getLineStack();
-
+    Lines * getLines();
     void reset();
 
 private:
@@ -24,8 +25,8 @@ private:
     int currentPointIndex;
     int scanPointsNum;
     Line * line;
-    LineStack *lines;
-
+    LineStack *lineStack;
+    Lines lines;
 
     void addLine(Line * line);
     void executeAlgoritm(std::vector<PointPolarForm> *scan);

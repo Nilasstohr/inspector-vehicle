@@ -3,10 +3,13 @@
 //
 
 #include "GridMap.h"
-
+#include <iostream>
 #include <Utilities/Transformations.h>
 
+#include "CirclePoints.h"
+
 GridMap::GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval):
+linePoints(LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM)),
 gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),
 gridMapValueUpdateInterval(gridMapValueUpdateInterval){
@@ -35,11 +38,11 @@ void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
         // the target point of the laser is most likely occupied.
         updateMapPointValue(xp,yp,-gridMapValueUpdateInterval);
         if(xPos > xp){
-            linePoints.addRecPoint(xp, yp);
-            linePoints.addRecPoint(xPos, yPos);
+            linePoints.addLinePoint(xp, yp);
+            linePoints.addLinePoint(xPos, yPos);
         } else{
-            linePoints.addRecPoint(xPos, yPos);
-            linePoints.addRecPoint(xp, yp);
+            linePoints.addLinePoint(xPos, yPos);
+            linePoints.addLinePoint(xp, yp);
         }
         linePoints.update();
         // the points that strike through from pose to target laser point
@@ -50,8 +53,7 @@ void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
 }
 
 void GridMap::updateAvailabilityFromLinePoints() {
-
-    for(int j=0; j < linePoints.getPointSize(); j++){
+    for(int j=0; j < linePoints.size(); j++){
         linePoints.getByIndex(x, y, j);
         updateMapPointValue(x,y,gridMapValueUpdateInterval);
     }
@@ -75,7 +77,6 @@ void GridMap::updateMapPointValue(int x, int y,double gridMapValueUpdateInterval
 }
 
 string * GridMap::obstacleSafeDistanceMapToString() {
-    updateMapWithObstacleSafeDistance();
     return toString(&gridMapWithSafetyDistance);
 }
 string * GridMap::mapToString() {
@@ -160,6 +161,83 @@ void GridMap::updateMapWithObstacleSafeDistance() {
     //printMatrix(&gridMap,"gridMap",0);
 }
 
+void GridMap::updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *currentPose) {
+    gridMapWithSafetyDistance=gridMap;
+    constexpr int h=1;
+    constexpr int r = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE;
+    constexpr int d=r;
+    LinePoints linePoints(h);
+    LinePoints linePointsParallelLeft1(h);
+    LinePoints linePointsParallelRight1(h);
+    LinePoints linePointsParallelLeft2(h);
+    LinePoints linePointsParallelRight2(h);
+    int circlePoints = 200;
+    CirclePoints circlePoints1 = CirclePoints(circlePoints);
+    CirclePoints circlePoints2 = CirclePoints(circlePoints);
+
+    int x;
+    int y;
+    double x1;
+    double x2;
+    double y1;
+    double y2;
+    int xc;
+    int yc;
+    double startAngle1;
+    double startAngle2;
+    double tolerance = MathConversions::deg2rad(13);
+    double angleSize = M_PI+tolerance;
+
+    for(int i=0; i<lines->size();i++) {
+        Line *line = lines->getLine(i);
+        line->toGlobalReferenceFrame(currentPose);
+        // original line
+        line->getLineEndPoints(x1,y1,x2,y2);
+        startAngle1 = line->getPhi()+M_PI/2-tolerance;
+        startAngle2 = line->getPhi()+M_PI/2+M_PI-tolerance;
+
+        for(int k=r-CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM; k<=r;k++) {
+            circlePoints1.setCenterPoint(k,x1,y1,startAngle1,angleSize);
+            circlePoints1.update();
+            circlePoints2.setCenterPoint(k,x2,y2,startAngle2,angleSize);
+            circlePoints2.update();
+
+            for(int j=0; j<circlePoints1.size(); j++) {
+                circlePoints1.getByIndex(xc,yc,j);
+                updateCellIfWithinRange(xc,yc);
+                circlePoints2.getByIndex(xc,yc,j);
+                updateCellIfWithinRange(xc,yc);
+            }
+        }
+
+        linePoints.setFromLine(x1,y1,x2,y2);
+
+        for(int k=r-CONFIG_MIN_DISTANCE_BETWEEN_POINTS_CM; k<=r;k++) {
+            // parallel shifted to the left of original line
+            line->getParallelTransEndPoints(x1,y1,x2,y2,k);
+            linePointsParallelLeft1.setFromLine(x1,y1,x2,y2);
+
+            // parallel shifted to the right of original line
+            line->getParallelTransEndPoints(x1,y1,x2,y2,-k);
+            linePointsParallelRight1.setFromLine(x1,y1,x2,y2);
+
+            for(int j=0; j< linePoints.size();j++) {
+                linePointsParallelLeft1.getByIndex(x,y,j);
+                updateCellIfWithinRange(x,y);
+
+                linePointsParallelRight1.getByIndex(x,y,j);
+                updateCellIfWithinRange(x,y);
+            }
+        }
+
+    }
+}
+
+void GridMap::updateCellIfWithinRange(int x, int y) {
+    if( x>=0 && x<gridMapWithSafetyDistance.rows() && y>=0 && y<gridMapWithSafetyDistance.cols() ){
+        gridMapWithSafetyDistance.coeffRef(x, y) = CONFIG_GRID_VALUE_SAFETY;
+    }
+}
 
 void GridMap::addSafetyDistance() {
     int safetyDistance = CONFIG_ROBOT_DIAMETER/2 + CONFIG_SAFETY_DISTANCE;
@@ -203,10 +281,9 @@ bool GridMap::isPoseInSafeZone(Pose *currentPose) {
 }
 
 bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
-    updateMapWithObstacleSafeDistance();
     int x;
     int y;
-    int radius = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE*3;
+    int radius = 2;
     for(NavigationPoint point: *navigationPath->getPath()){
         x = point.getX();
         y = point.getY();
@@ -215,7 +292,7 @@ bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
                 if( (k>=0 && k<gridMapWithSafetyDistance.rows()) && (l>=0 && l<gridMapWithSafetyDistance.cols())){
                     if ((pow(l - x, 2) + pow(k - y, 2)) < pow(radius, 2)) {
                         if(gridMapWithSafetyDistance.coeffRef(l, k) != CONFIG_GRID_VALUE_FULL_AVAILABLE) {
-                            return true;
+                             return true;
                         }
                     }
                 }

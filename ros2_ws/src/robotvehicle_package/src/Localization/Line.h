@@ -9,6 +9,7 @@
 #include "Sensor/PointRectForm.h"
 #include "Sensor/PointPolarForm.h"
 #include <vector>
+#include <Utilities/Pose.h>
 
 class Line {
 public:
@@ -21,15 +22,23 @@ public:
     void setAlfa(double alfa);
     double getR() const;
     void setR(double r);
+    void toGlobalReferenceFrame(const Pose *currentPose);
+    double getPhi();
     static void limitAngle(double &angle);
     static void correctPolarCoordinates(double &alfa, double &r);
     void reset();
-protected:
+    int getPointCount() const;
+    void getLineEndPoints(double &x1,double &y1,double &x2,double &y2);
+    void getParallelTransEndPoints(double &x1p,double &y1p,double &x2p,double &y2p,const int d);
+
+    PointRectForm * getFirstPoint();
+    PointRectForm * getLastPoint();
+
+    // line points support.
     void updateSlopeForm();
     double getM();
     double getB();
-    PointRectForm * getFirstPoint();
-    PointRectForm * getLastPoint();
+
 private:
     // linePoints in normal form from origo.
     double r;
@@ -41,10 +50,17 @@ private:
     std::vector<PointRectForm> points;
     int pointsNum;
 
-
     double getXFromPolarForm(double theta, double d);
     double getYFromPolarForm(double theta, double d);
 
+    // parallel transition
+    double x1;
+    double y1;
+    double x2;
+    double y2;
+    double l;
+    double dx;
+    double dy;
 };
 
 
