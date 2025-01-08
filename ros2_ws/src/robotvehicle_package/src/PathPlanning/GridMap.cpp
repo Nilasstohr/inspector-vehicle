@@ -163,17 +163,16 @@ void GridMap::updateMapWithObstacleSafeDistance() {
 
 void GridMap::updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *currentPose) {
     gridMapWithSafetyDistance=gridMap;
-    constexpr int h=1;
+    constexpr int h=CONFIG_OBSTACLE_SAFETY_CONTOUR_LINE_SLOPE_X_INTERVAL_CM;
     constexpr int r = CONFIG_ROBOT_DIAMETER/2+CONFIG_SAFETY_DISTANCE;
-    constexpr int d=r;
     LinePoints linePoints(h);
     LinePoints linePointsParallelLeft1(h);
     LinePoints linePointsParallelRight1(h);
     LinePoints linePointsParallelLeft2(h);
     LinePoints linePointsParallelRight2(h);
-    int circlePoints = 200;
-    CirclePoints circlePoints1 = CirclePoints(circlePoints);
-    CirclePoints circlePoints2 = CirclePoints(circlePoints);
+
+    auto circlePoints1 = CirclePoints(CONFIG_OBSTACLE_SAFETY_CONTOUR_CIRCLE_POINTS);
+    auto circlePoints2 = CirclePoints(CONFIG_OBSTACLE_SAFETY_CONTOUR_CIRCLE_POINTS);
 
     int x;
     int y;
@@ -185,7 +184,7 @@ void GridMap::updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *curre
     int yc;
     double startAngle1;
     double startAngle2;
-    double tolerance = MathConversions::deg2rad(13);
+    double tolerance = MathConversions::deg2rad(CONFIG_OBSTACLE_SAFETY_CONTOUR_CIRCLE_ANGLE_TOL_DEG);
     double angleSize = M_PI+tolerance;
 
     for(int i=0; i<lines->size();i++) {
@@ -277,13 +276,13 @@ ObstacleDetection *GridMap::getObstacleDetection() {
 
 bool GridMap::isPoseInSafeZone(Pose *currentPose) {
     return gridMapWithSafetyDistance.coeffRef(
-            (int)currentPose->getX(), (int)currentPose->getX())!=CONFIG_GRID_VALUE_SAFETY;
+            static_cast<int>(currentPose->getX()), static_cast<int>(currentPose->getX()))!=CONFIG_GRID_VALUE_SAFETY;
 }
 
 bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
     int x;
     int y;
-    int radius = 2;
+    int radius = CONFIG_OBSTACLE_SAFETY_CHECK_RADIUS;
     for(NavigationPoint point: *navigationPath->getPath()){
         x = point.getX();
         y = point.getY();
