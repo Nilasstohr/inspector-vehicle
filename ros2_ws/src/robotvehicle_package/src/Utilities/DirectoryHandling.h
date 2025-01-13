@@ -11,6 +11,7 @@
 class DirectoryHandling {
 public:
     static std::string currentWorkingDirectory();
+    static std::string getFileFileOfPath(const std::string& path);
 };
 
 

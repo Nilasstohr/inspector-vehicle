@@ -4,7 +4,7 @@
 
 #include "Matches.h"
 
-Matches::Matches(int capacity) {
+Matches::Matches(int capacity):capacity(capacity) {
     vt = new LineStack(capacity);
     //printMatrix(vt->getStack(),"Vt init");
     Ht = new HStack(capacity);
@@ -22,6 +22,10 @@ void Matches::reset() {
 }
 
 void Matches::add(const MatrixXd *vIJ, const MatrixXd *HIJ,const MatrixXd *R) {
+    if(matchCount>=capacity) {
+        throw ExceptionExceededMaxEntries(capacity,"Line Matches",
+          __FILE__,__func__,__LINE__);
+    }
     vt->add(vIJ);
     Ht->add(HIJ);
     Rt->add(R);

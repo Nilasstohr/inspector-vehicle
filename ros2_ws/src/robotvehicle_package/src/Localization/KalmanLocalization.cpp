@@ -47,7 +47,7 @@ void KalmanLocalization::init(){
 
     // matching
     //matching = new Matching(15);
-    matching = new Matching(30);
+    matching = new Matching(CONFIG_MAX_NUMBER_OF_MATCHES);
 
     // Estimation
     estimation = new Estimation(xEst,pEst);

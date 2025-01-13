@@ -8,6 +8,7 @@
 #include "HStack.h"
 #include "LineStack.h"
 #include "RStack.h"
+#include "Utilities/ExceptionExceededMaxEntries.h"
 
 class Matches: MatrixHelper {
 public:
@@ -30,9 +31,7 @@ private:
     const MatrixXd  *PEst;
     const MatrixXd *xEst;
     int matchCount;
-
-
-
+    int capacity;
 };
 
 

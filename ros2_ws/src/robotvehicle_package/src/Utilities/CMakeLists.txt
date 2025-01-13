@@ -8,8 +8,9 @@ add_library(UtilitiesLib
     Transformations.cpp
     UsbSerial.cpp
     Verify2DArea.cpp
-        DirectoryHandling.cpp
-        DirectoryHandling.h
+    DirectoryHandling.cpp
+    BaseException.cpp
+    ExceptionExceededMaxEntries.cpp
 )
 ament_target_dependencies(UtilitiesLib rclcpp)
 target_link_libraries (UtilitiesLib Eigen3::Eigen)

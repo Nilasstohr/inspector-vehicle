@@ -12,6 +12,7 @@
 ControllerNodeStub::ControllerNodeStub(SerialInterface *serialInterface):
 ControllerNode(serialInterface) {
     recordHandler = new RecordHandler();
+    missionController->resetRobotData();
 }
 
 void ControllerNodeStub::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
@@ -38,6 +39,6 @@ void ControllerNodeStub::verifyPosition(double currentPoseX, double currentPoseY
 
 void ControllerNode::throwIfNotWithinRange(double current,double expected) {
     if(current>expected+TOLERANCES_CM || current<expected-TOLERANCES_CM) {
-        throw new ExceptionIncorrectEndPosition(current,expected,TOLERANCES_CM);
+        throw ExceptionIncorrectEndPosition(current,expected,TOLERANCES_CM,__FILE__,__func__,__LINE__);
     }
 }

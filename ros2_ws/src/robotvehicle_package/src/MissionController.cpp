@@ -120,7 +120,7 @@ void MissionController::update(){
     navigator->update(localization);
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    publishRobotData();
+    //publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
@@ -187,5 +187,12 @@ void MissionController::publishRobotData() {
         localization->getPose())->c_str());
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString.c_str();
+    gridMapPublisher_->publish(robotDataMessage);
+}
+
+void MissionController::resetRobotData() const {
+    const string robotDataString("reset");
+    auto robotDataMessage = std_msgs::msg::String();
+    robotDataMessage.data = robotDataString;
     gridMapPublisher_->publish(robotDataMessage);
 }

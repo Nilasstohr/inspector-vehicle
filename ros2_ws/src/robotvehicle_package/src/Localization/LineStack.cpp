@@ -5,6 +5,7 @@
 #include <iostream>
 #include "LineStack.h"
 
+
 LineStack::LineStack(int capacity) :MatrixStackBase(capacity,2){
     stack = MatrixXd(this->capacity * 2, 1);
     line = MatrixXd(2,1);
@@ -16,7 +17,8 @@ void LineStack::add(Line *line) {
 
 void LineStack::add(double alfa, double r) {
     if(stackNum >= capacity){
-        throw "max number of lines exceeds";
+        throw ExceptionExceededMaxEntries(capacity,"Lines in Stack",
+          __FILE__,__func__,__LINE__);
     }
     stack(index++, 0)=alfa;
     stack(index++, 0)=r;

@@ -6,7 +6,7 @@
 #define LINES_H
 
 #include <vector>
-#include <PathPlanning/LinePoints.h>
+#include "Utilities/ExceptionExceededMaxEntries.h"
 #include "Line.h"
 
 class Lines {

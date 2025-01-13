@@ -25,6 +25,9 @@ class MinimalSubscriber(Node):
 
     def subscriber_callback(self, string):
         self.robot_data.update(string.data)
+        if self.robot_data.has_reset():
+            self.robot_data.clear_reset()
+            return
         self.data_ready = True
 
     def render_thread(self):

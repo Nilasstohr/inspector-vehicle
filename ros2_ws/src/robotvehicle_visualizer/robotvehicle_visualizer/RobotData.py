@@ -10,14 +10,23 @@ class RobotData:
     index_poses = None
     index_scan  = None
     grid_map_matrix = None
+    reset_performed = False
+
     def __init__(self):
+        self.init()
+
+    def init(self):
         self.poses = np.zeros(shape=(10000, 3))
-        self.scan  = np.zeros(shape=(10000, 3))
+        self.scan = np.zeros(shape=(10000, 3))
         self.index_poses = 0
-        self.index_scan  = 0
+        self.index_scan = 0
 
     def update(self, data_string):
         lines = data_string.split("\n")
+        if "reset" in lines[0]:
+            self.init()
+            self.reset_performed = True
+            return
         path_detected = False
         pose_detected = False
         scan_detected = False
@@ -95,3 +104,10 @@ class RobotData:
 
     def get_y_scan(self):
         return self.scan[0:self.index_scan, 2]
+
+    def has_reset(self):
+        return self.reset_performed
+
+    def clear_reset(self):
+        self.reset_performed=False
+

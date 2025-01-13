@@ -4,18 +4,13 @@
 
 #ifndef EXCEPTIONINCORRECTENDPOSITION_H
 #define EXCEPTIONINCORRECTENDPOSITION_H
-#include <stdexcept>
 
+#include "Utilities/BaseException.h"
 
-class ExceptionIncorrectEndPosition: public std::runtime_error{
+class ExceptionIncorrectEndPosition: public BaseException{
 public:
-    ExceptionIncorrectEndPosition(double current, double expected, double tolerance);
-
-    virtual char const* what() const throw();
-private:
-    double current;
-    double expected;
-    double tolerance;
+    ExceptionIncorrectEndPosition(double current, double expected, double tolerance, const std::string &fileName,
+                                  const std::string &functionName, int codeLine);
 };
 
 

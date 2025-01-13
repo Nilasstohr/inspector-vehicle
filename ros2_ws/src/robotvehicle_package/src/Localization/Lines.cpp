@@ -4,9 +4,17 @@
 
 #include "Lines.h"
 
-Lines::Lines():lines(std::vector<Line>(50)),count(0) {}
+#include <iostream>
+
+#define MAX_NUMBER_OF_LINES 50
+
+Lines::Lines():lines(std::vector<Line>(MAX_NUMBER_OF_LINES)),count(0) {}
 
 void Lines::addLine(Line *line) {
+    if(count>=MAX_NUMBER_OF_LINES) {
+        throw ExceptionExceededMaxEntries(MAX_NUMBER_OF_LINES,"lines",
+            __FILE__,__func__,__LINE__);
+    }
     lines.at(count).reset();
     lines.at(count) = *line;
     count++;
