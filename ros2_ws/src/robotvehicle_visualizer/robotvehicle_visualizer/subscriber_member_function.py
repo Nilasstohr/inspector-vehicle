@@ -50,6 +50,11 @@ class MinimalSubscriber(Node):
            plt.imshow(self.robot_data.grid_map_matrix, origin='lower')
            plt.plot(x,y)
            plt.scatter(self.robot_data.get_x_scan(),self.robot_data.get_y_scan(),color='gray',s=3)
+           if self.robot_data.has_lines():
+               for i in range(0,self.robot_data.get_lines_size()):
+                   x1,y1,x2,y2 = self.robot_data.get_line_by_index(i)
+                   plt.plot([x1, x2], [y1, y2], color='black')
+
            #for i in range(0,self.robot_data.get_scan_points_size()):
            #    scan_point = self.robot_data.get_scan_point(i)
            #    xd = scan_point[1]

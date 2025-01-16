@@ -5,10 +5,12 @@ from ament_copyright.parser import is_empty_line
 class RobotData:
     poses = None
     scan  = None
+    lines = None
     pose_x_last = None
     pose_y_last = None
     index_poses = None
     index_scan  = None
+    index_lines = None
     grid_map_matrix = None
     reset_performed = False
 
@@ -18,6 +20,7 @@ class RobotData:
     def init(self):
         self.poses = np.zeros(shape=(10000, 3))
         self.scan = np.zeros(shape=(10000, 3))
+        self.lines = np.zeros(shape=(10000, 4))
         self.index_poses = 0
         self.index_scan = 0
 
@@ -30,6 +33,7 @@ class RobotData:
         path_detected = False
         pose_detected = False
         scan_detected = False
+        lines_detected= False
         grid_map_matrix = np.empty([0, 250])
         for line in lines:
             if "path" in line:
@@ -44,6 +48,11 @@ class RobotData:
                 scan_detected = True
                 pose_detected = False
                 continue
+            if "lines" in line:
+                self.index_lines = 0
+                lines_detected = True
+                scan_detected = False
+                continue
             if path_detected:
                 p = np.fromstring(line, dtype=int, sep=' ')
                 x = p[0]
@@ -53,6 +62,8 @@ class RobotData:
                 self.update_pose(line)
             elif scan_detected:
                 self.update_scan(line)
+            elif lines_detected:
+                self.update_lines(line)
             else:
                 r = np.fromstring(line, dtype=float, sep=' ')
                 grid_map_matrix = np.vstack((grid_map_matrix , r))
@@ -77,6 +88,17 @@ class RobotData:
         yp = float(scan[2])
         self.scan[self.index_scan][:] = np.array([alfa, xp, yp])
         self.index_scan = self.index_scan + 1
+
+    def update_lines(self, line):
+        if not line:
+            return
+        line = line.split()
+        x1 = float(line[0])
+        y1 = float(line[1])
+        x2 = float(line[2])
+        y2 = float(line[3])
+        self.lines[self.index_lines][:] = np.array([x1, y1, x2, y2])
+        self.index_lines = self.index_lines + 1
 
     def get_grid_map(self):
         return self.grid_map_matrix
@@ -105,9 +127,24 @@ class RobotData:
     def get_y_scan(self):
         return self.scan[0:self.index_scan, 2]
 
+    def has_lines(self):
+        return self.index_lines >0
+
+    def get_lines_size(self):
+        return self.index_lines
+
+    def get_line_by_index(self,i):
+        x1 = self.lines[i,0]
+        y1 = self.lines[i,1]
+        x2 = self.lines[i,2]
+        y2 = self.lines[i,3]
+        return x1,y1,x2,y2
+
     def has_reset(self):
         return self.reset_performed
 
     def clear_reset(self):
         self.reset_performed=False
+
+
 

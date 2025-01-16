@@ -16,8 +16,10 @@ public:
     Line * getLine(int index);
     void reset();
     int size() const;
+    std::string *toString();
 private:
     std::vector<Line> lines;
+    std::string lineAsString;
     int count;
 };
 

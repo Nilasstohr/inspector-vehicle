@@ -200,7 +200,6 @@ void GridMap::updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *curre
             circlePoints1.update();
             circlePoints2.setCenterPoint(k,x2,y2,startAngle2,angleSize);
             circlePoints2.update();
-
             for(int j=0; j<circlePoints1.size(); j++) {
                 circlePoints1.getByIndex(xc,yc,j);
                 updateCellIfWithinRange(xc,yc);
@@ -235,6 +234,14 @@ void GridMap::updateMapWithObstacleSafeDistance2(Lines *lines, const Pose *curre
 void GridMap::updateCellIfWithinRange(int x, int y) {
     if( x>=0 && x<gridMapWithSafetyDistance.rows() && y>=0 && y<gridMapWithSafetyDistance.cols() ){
         gridMapWithSafetyDistance.coeffRef(x, y) = CONFIG_GRID_VALUE_SAFETY;
+    }
+}
+
+void GridMap::displayPointIfWithin(double x1, double y1, double x2, double y2) {
+    if(x1>110 && x1<170 && y1>40 && y1<90) {
+        if(x2>110 && x2<170 && y2>40 && y2<90) {
+            cout<< x1 << " " << y1 << " " << x2 << " " << y2 << endl;
+        }
     }
 }
 

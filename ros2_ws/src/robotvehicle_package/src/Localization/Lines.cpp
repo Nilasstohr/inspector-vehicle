@@ -4,6 +4,7 @@
 
 #include "Lines.h"
 
+#include <iomanip>
 #include <iostream>
 
 #define MAX_NUMBER_OF_LINES 50
@@ -31,3 +32,23 @@ void Lines::reset() {
 int Lines::size() const {
     return count;
 }
+
+std::string * Lines::toString()  {
+    lineAsString.clear();
+    Line*line;
+    std::stringstream stream;
+    for(int i=0; i<size(); i++) {
+        line = getLine(i);
+        stream << line->getFirstPoint()->getX() << " "
+               << line->getFirstPoint()->getY() << " "
+               << line->getLastPoint()->getX() << " "
+               << line->getLastPoint()->getY()
+               << std::fixed
+               << std::setprecision(2)
+               << std::endl;
+        lineAsString.append(stream.str());
+        stream.str(std::string());
+    }
+    return &lineAsString;
+}
+

@@ -132,8 +132,12 @@ void Line::toGlobalReferenceFrame(const Pose *currentPose) {
 }
 
 double Line::getPhi() {
-    return atan2(getLastPoint()->getY()-getFirstPoint()->getY(),
-        getLastPoint()->getX()-getFirstPoint()->getX());
+    double x1;
+    double y1;
+    double x2;
+    double y2;
+    getLineEndPoints(x1,y1,x2,y2);
+    return atan2(y2-y1,x2-x1);
 }
 
 void Line::getLineEndPoints(double &x1,double &y1,double &x2,double &y2) {

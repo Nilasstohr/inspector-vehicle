@@ -176,6 +176,8 @@ void MissionController::endMission(){
 }
 
 void MissionController::publishRobotData() {
+    Lines * lines = localization->getObservations()->getLines();
+
     string robotDataString;
     robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
     robotDataString.append( "\npath\n");
@@ -185,6 +187,8 @@ void MissionController::publishRobotData() {
     robotDataString.append("\nscan\n");
     robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),
         localization->getPose())->c_str());
+    robotDataString.append("\nlines\n");
+    robotDataString.append(lines->toString()->c_str());
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString.c_str();
     gridMapPublisher_->publish(robotDataMessage);
