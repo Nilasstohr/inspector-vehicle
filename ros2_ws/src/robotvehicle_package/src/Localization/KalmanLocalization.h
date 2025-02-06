@@ -25,6 +25,9 @@ public:
     Pose * getPose() const;
     SensorData *getSensorDate();
     Observations *getObservations();
+
+    Matching *getMatching();
+
     MeasurementPrediction* getMeasurementPrediction();
 
     const Pose * getStarPose();

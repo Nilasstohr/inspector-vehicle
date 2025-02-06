@@ -71,9 +71,11 @@ void Incremental::addPointToLine(Line *line, PointPolarForm point) {
 }
 
 void Incremental::addLine(Line *line) {
-    line->updateOriginLineNormal();
-    lineStack->add(line->getAlfa(), line->getR());
-    lines.addLine(line);
+    if(line->getNumberOfPoint()>=CONFIG_MIN_POINTS_FOR_LINE_ALGO) {
+        line->updateOriginLineNormal();
+        lineStack->add(line->getAlfa(), line->getR());
+        lines.addLine(line);
+    }
     line->reset();
 }
 

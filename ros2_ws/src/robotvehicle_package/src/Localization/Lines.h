@@ -8,6 +8,7 @@
 #include <vector>
 #include "Utilities/ExceptionExceededMaxEntries.h"
 #include "Line.h"
+#include "Configurations.h"
 
 class Lines {
 public:
@@ -17,6 +18,8 @@ public:
     void reset();
     int size() const;
     std::string *toString();
+    Lines * toGlobalReferenceFrame(const Pose *pose);
+
 private:
     std::vector<Line> lines;
     std::string lineAsString;

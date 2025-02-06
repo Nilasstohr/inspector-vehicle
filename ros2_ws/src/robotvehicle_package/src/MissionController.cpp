@@ -120,7 +120,7 @@ void MissionController::update(){
     navigator->update(localization);
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    publishRobotData();
+    //publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
@@ -155,9 +155,9 @@ void MissionController::update(){
 void MissionController::updateMapAndPath(vector<PointPolarForm> *scan, Pose *pose) {
     gripMap->update(scan,pose);
     updateMapWithObstacleSafeDistance();
-    if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
-        generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
-    }
+    //if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
+    //    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+   // }
 }
 
 double MissionController::getCurrentPoseX() {
@@ -176,8 +176,8 @@ void MissionController::endMission(){
 }
 
 void MissionController::publishRobotData() {
-    Lines * lines = localization->getObservations()->getLines();
-
+    Lines * matchedlines = localization->getMatching()->getMatchedLines()->toGlobalReferenceFrame(localization->getPose());
+    Lines * unmatchedlines = localization->getMatching()->getUnMatchedLines()->toGlobalReferenceFrame(localization->getPose());
     string robotDataString;
     robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
     robotDataString.append( "\npath\n");
@@ -187,8 +187,12 @@ void MissionController::publishRobotData() {
     robotDataString.append("\nscan\n");
     robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),
         localization->getPose())->c_str());
-    robotDataString.append("\nlines\n");
-    robotDataString.append(lines->toString()->c_str());
+    robotDataString.append("\nmatchedlines\n");
+    robotDataString.append(matchedlines->toString()->c_str());
+    if(unmatchedlines->size()>0){
+        robotDataString.append("\nunmatchedlines\n");
+        robotDataString.append(unmatchedlines->toString()->c_str());
+    }
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString.c_str();
     gridMapPublisher_->publish(robotDataMessage);

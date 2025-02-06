@@ -5,6 +5,7 @@
 #include <valarray>
 #include "Line.h"
 
+#include <iostream>
 #include <Utilities/Transformations.h>
 
 Line::Line() {
@@ -43,6 +44,7 @@ double Line::perpendicularDistance(PointPolarForm *point) {
 
 void Line::updateOriginLineNormal() {
     updateSlopeForm();
+    //updateSlopeFormLeastSquare();
     double fi = atan(m);
     if( fi>0 )
         alfa = fi-M_PI/2;
@@ -140,6 +142,28 @@ double Line::getPhi() {
     return atan2(y2-y1,x2-x1);
 }
 
+void Line::updateSlopeFormLeastSquare() {
+    double sqSumX = 0;
+    double sumX =0;
+    double sumY =0;
+    double sumProductXY=0;
+    double n = pointsNum;
+    double x;
+    double y;
+    for(int i=0;i<n;i++) {
+        x = points.at(i).getX();
+        y = points.at(i).getY();
+        sqSumX+=pow(x,2);
+        sumX+=x;
+        sumY+=y;
+        sumProductXY+=x*y;
+    }
+    double sxx = sqSumX - pow(sumX,2)/n;
+    double sxy = sumProductXY - sumX*sumY/n;
+    m = sxy/sxx;
+    b = sumY/n - m*sumX/n;
+}
+
 void Line::getLineEndPoints(double &x1,double &y1,double &x2,double &y2) {
     const double x1t = getFirstPoint()->getX();
     const double y1t = getFirstPoint()->getY();
@@ -167,4 +191,8 @@ void Line::getParallelTransEndPoints(double &x1p,double &y1p,double &x2p,double 
     y1p = y1+dy;
     x2p = x2+dx;
     y2p = y2+dy;
+}
+
+int Line::getNumberOfPoint() const {
+    return pointsNum;
 }

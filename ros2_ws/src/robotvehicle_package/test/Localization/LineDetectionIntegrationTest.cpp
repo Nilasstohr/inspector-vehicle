@@ -10,7 +10,31 @@
 int argcTest;
 char **argvTest;
 
-TEST(line_detection_integration_test,test_1)
+
+TEST(line_least_square_test,test_1)
+{
+    Line line;
+    line.addRecPoint(199,0);
+    line.addRecPoint(198.9966,1.1541);
+    line.addRecPoint(198.786624,2.3060);
+    line.addRecPoint(198.7696,3.4788);
+    line.addRecPoint(198.9459,4.6362);
+    line.updateSlopeFormLeastSquare();
+    double toleranceM = 0.1;
+    double toleranceB = 2;
+    double expectedM = -7.55;
+    double expectedB = 1504.94;
+    if(line.getM() > expectedM + toleranceM ||  line.getM() < expectedM - toleranceM) {
+        EXPECT_TRUE(false) << "Expected slope to be " << expectedM << " +- " << toleranceM
+        << " but got " << line.getM() << std::endl;
+    }
+    if(line.getB() > expectedB + toleranceB ||  line.getB() < expectedB - toleranceB) {
+        EXPECT_TRUE(false) << "Expected intercept to be " << expectedB << " +- " << toleranceB
+        << " but got " << line.getB() << std::endl;
+    }
+}
+
+TEST(line_detection_integration_test,test_2)
 {
     int MAX_LINES_EXPECTED = 10;
     auto *serial_interface = new SerialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME);

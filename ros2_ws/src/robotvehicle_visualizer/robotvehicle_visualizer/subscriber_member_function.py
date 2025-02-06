@@ -49,11 +49,20 @@ class MinimalSubscriber(Node):
            plt.gca().add_patch(c2)
            plt.imshow(self.robot_data.grid_map_matrix, origin='lower')
            plt.plot(x,y)
-           plt.scatter(self.robot_data.get_x_scan(),self.robot_data.get_y_scan(),color='gray',s=3)
-           if self.robot_data.has_lines():
-               for i in range(0,self.robot_data.get_lines_size()):
-                   x1,y1,x2,y2 = self.robot_data.get_line_by_index(i)
-                   plt.plot([x1, x2], [y1, y2], color='black')
+           #plt.scatter(self.robot_data.get_x_scan(),self.robot_data.get_y_scan(),color='blue',s=5)
+
+           if self.robot_data.has_unmatched_lines():
+               size = self.robot_data.get_unmatched_lines_size()
+               plt.text(50, 210, "Unmatched Lines found:" + str(size))
+               for i in range(0, size):
+                   x1, y1, x2, y2 = self.robot_data.get_unmatched_line_by_index(i)
+                   plt.plot([x1, x2], [y1, y2], color='red')
+           if self.robot_data.has_matched_lines():
+               size = self.robot_data.get_matched_lines_size()
+               plt.text(50, 220, "matched Lines found:" + str(size))
+               for i in range(0, size):
+                   x1, y1, x2, y2 = self.robot_data.get_matched_line_by_index(i)
+                   plt.plot([x1, x2], [y1, y2], color='blue')
 
            #for i in range(0,self.robot_data.get_scan_points_size()):
            #    scan_point = self.robot_data.get_scan_point(i)
@@ -70,7 +79,7 @@ class MinimalSubscriber(Node):
         xm = np.array([40, 202, 119.5])
         ym = np.array([40, 54.5, 90.5])
         plt.scatter(xm, ym, s=50, color='green')
-        plt.axis([0, 250, 0, 250])
+        plt.axis([-20, 250, -20, 250])
 
 
 class ScanPoint:

@@ -9,6 +9,7 @@
 #include "MeasurementPrediction.h"
 #include "Observations.h"
 #include "Matches.h"
+#include "LineStack.h"
 
 class Matching: MatrixHelper {
 public:
@@ -16,14 +17,24 @@ public:
 
     void update(const PredictionDifferentialDrive* prediction,
                 const MeasurementPrediction* measurementPrediction,
-                const Observations *observations);
+                 Observations *observations);
     const Matches * getMatches();
     void reset();
+
+    LineStack * getUnMatchedStack();
+    Lines * getUnMatchedLines();
+    Lines * getMatchedLines();
+
 private:
     Matches * matches;
+    LineStack *unmatched;
     MatrixXd vIJ;
     MatrixXd PIJ;
     double g;
+
+    // for logging
+    Lines matchedLines;
+    Lines unmatchedLines;
 };
 
 

@@ -20,7 +20,7 @@ public:
     double getRByIndex(int j) const;
     void setByIndex(int j,double alfa,double r);
     void getByIndex(int j,double &alfa,double &r);
-    const MatrixXd  *getLineByIndex(int j);
+    MatrixXd  *getLineByIndex(int j);
     const MatrixXd getLines();
     void printLines(char * name);
     MatrixXd unstackLines();

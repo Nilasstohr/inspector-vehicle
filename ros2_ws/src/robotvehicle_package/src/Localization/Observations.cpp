@@ -18,7 +18,7 @@ int Observations::size() const {
     return incremental->size();
 }
 
-LineStack * Observations::getLinesStack() const {
+LineStack * Observations::getLinesStack() {
     return incremental->getLineStack();
 }
 
@@ -31,7 +31,7 @@ void Observations::printLineStack() {
     getLinesStack()->printLines(zScanMeasurement.data());
 }
 
-const MatrixXd * Observations::z(int i) const {
+ MatrixXd * Observations::z(int i)  {
     return getLinesStack()->getLineByIndex(i);
 }
 

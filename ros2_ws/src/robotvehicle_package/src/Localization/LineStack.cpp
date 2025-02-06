@@ -47,7 +47,7 @@ void LineStack::getByIndex(int j,double &alfa,double &r){
     r    = getRByIndex(j);
 }
 
-const MatrixXd *LineStack::getLineByIndex(int j) {
+ MatrixXd *LineStack::getLineByIndex(int j) {
     line(0,0)= getAlfaByIndex(j);
     line(1,0)= getRByIndex(j);
     return &line;

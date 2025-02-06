@@ -17,9 +17,9 @@ class Observations{
 public:
     Observations(double eps, const MatrixXd &r);
     void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
-    LineStack * getLinesStack() const;
+    LineStack * getLinesStack();
     Lines *getLines();
-    const MatrixXd * z(int i) const;
+    MatrixXd * z(int i) ;
     const MatrixXd * R() const;
     int size() const;
     void printLineStack();

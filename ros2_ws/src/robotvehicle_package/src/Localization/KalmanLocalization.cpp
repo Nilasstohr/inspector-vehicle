@@ -39,7 +39,7 @@ void KalmanLocalization::init(){
     double eps = CONFIG_ESP;
     MatrixXd R(2, 2);
     R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
-    R(1, 0)= 0; R(1, 1)= pow(2,2);
+    R(1, 0)= 0; R(1, 1)= pow(1,2);
     observations = new Observations(eps,R);
     //printMatrix(&R,"----R init----");
     // measurement prediction
@@ -68,6 +68,8 @@ void KalmanLocalization::update(SensorData * sensorData) {
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);
     estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
+    measurementPrediction->addLinesToMap(matching->getUnMatchedStack(),
+      estimation->getX(),estimation->getY(),estimation->getTheta());
 }
 
 
@@ -94,6 +96,9 @@ SensorData *KalmanLocalization::getSensorDate() {
 
 Observations * KalmanLocalization::getObservations() {
     return observations;
+}
+Matching * KalmanLocalization::getMatching()  {
+    return matching;
 }
 
 MeasurementPrediction * KalmanLocalization::getMeasurementPrediction() {

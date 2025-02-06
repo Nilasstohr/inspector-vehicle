@@ -5,13 +5,7 @@
 #include <iostream>
 #include "MeasurementPrediction.h"
 
-MeasurementPrediction::MeasurementPrediction(const LineStack *linesW) {
-    this->linesW = linesW;
-    this->z_est = new LineStack(linesW->size());
-    this->hStack = new HStack(linesW->size());
-    // initialize the H matrix vector with 2 x 3 space.
-    H = MatrixXd(2,3);
-}
+
 
 MeasurementPrediction::MeasurementPrediction(double eps, const MatrixXd &R){
     observations = new Observations(eps,R);
@@ -35,8 +29,21 @@ void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan,Pose * cu
 
     //observations->printLineStack();
     linesW = observations->getLinesStack();
-    this->z_est  = new LineStack(observations->size());
-    this->hStack = new HStack(observations->size());
+    this->z_est  = new LineStack(3000);
+    this->hStack = new HStack(3000);
+}
+
+void MeasurementPrediction::addLinesToMap(LineStack * unmatchedLines,double x, double y, double theta) {
+    double alfaR;
+    double rR;
+    double alfaW;
+    double rW;
+    for(int i=0; i<unmatchedLines->size(); i++) {
+        unmatchedLines->getByIndex(i,alfaR,rR);
+        transformToWorldReferenceFrame(alfaW,rW,x,y,theta,alfaR,rR);
+        linesW->add(alfaW,rW);
+    }
+    //std::cout<<"addLinesToMap: "<<linesW->size()<<"\n";
 }
 
 void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction) {

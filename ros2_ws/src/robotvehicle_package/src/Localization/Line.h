@@ -24,12 +24,14 @@ public:
     void setR(double r);
     void toGlobalReferenceFrame(const Pose *currentPose);
     double getPhi();
+    void updateSlopeFormLeastSquare();
     static void limitAngle(double &angle);
     static void correctPolarCoordinates(double &alfa, double &r);
     void reset();
     int getPointCount() const;
     void getLineEndPoints(double &x1,double &y1,double &x2,double &y2);
     void getParallelTransEndPoints(double &x1p,double &y1p,double &x2p,double &y2p,const int d);
+    int getNumberOfPoint() const;
 
     PointRectForm * getFirstPoint();
     PointRectForm * getLastPoint();
