@@ -26,6 +26,7 @@ public:
     double getCurrentPoseY();
     void publishRobotData();
     void resetRobotData() const;
+    void printMap();
 private:
     KalmanLocalization * localization;
     Navigator * navigator;

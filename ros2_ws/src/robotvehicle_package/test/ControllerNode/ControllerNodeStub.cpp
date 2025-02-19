@@ -25,6 +25,7 @@ void ControllerNodeStub::timer_callback() {
         missionController->update();
         missionController->publishRobotData();
     }else{
+        //missionController->printMap();
         timer_->cancel();
         missionController->endMission();
         rclcpp::shutdown();

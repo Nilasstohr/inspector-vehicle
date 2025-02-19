@@ -68,7 +68,7 @@ void KalmanLocalization::update(SensorData * sensorData) {
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);
     estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
-    measurementPrediction->addLinesToMap(matching->getUnMatchedStack(),
+    measurementPrediction->addLinesToMap(matching->getUnmatchedVerified(),
       estimation->getX(),estimation->getY(),estimation->getTheta());
 }
 

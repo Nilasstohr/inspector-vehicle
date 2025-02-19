@@ -8,6 +8,7 @@
 #include "PredictionDifferentialDrive.h"
 #include "LineStack.h"
 #include "HStack.h"
+
 #include "Observations.h"
 
 class MeasurementPrediction: public MatrixHelper{
@@ -18,7 +19,7 @@ public:
     MeasurementPrediction(double eps, const MatrixXd &r);
     void buildMap(std::vector<PointPolarForm> *scan,Pose * currentPose);
 
-    void addLinesToMap(LineStack *unmatchedLines, double x, double y, double theta);
+    void addLinesToMap(Lines *unmatchedLines, double x, double y, double theta);
 
     void update(const PredictionDifferentialDrive *  prediction);
     void transformToRobotReferenceFrame(
@@ -30,12 +31,18 @@ public:
     int size() const;
     void reset();
     Observations * getObservations();
+
+    Lines * getMapLines();
+
+    void print(int j) const;
+
 private:
-    LineStack *linesW;
+    Lines lineWorldMap;
     Observations * observations;
     LineStack *z_est;
     HStack *hStack;
     MatrixXd H;
+    void addLineToMap(Line *line, Pose *currentPose);
 };
 
 

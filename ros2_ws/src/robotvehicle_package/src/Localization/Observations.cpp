@@ -4,6 +4,8 @@
 
 #include "Observations.h"
 
+#include <iostream>
+
 Observations::Observations(double eps, const MatrixXd &r) : esp(eps), R_(r) {
     incremental = new Incremental(eps);
 
@@ -42,3 +44,9 @@ const MatrixXd *Observations::R() const {
 void Observations::reset() {
     incremental->reset();
 }
+
+
+void Observations::print(int i) {
+    std::cout << z(i)->coeff(0,0) << " " <<  z(i)->coeff(1,0);
+}
+

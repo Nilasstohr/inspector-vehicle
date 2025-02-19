@@ -24,6 +24,9 @@ public:
     int size() const;
     void printLineStack();
     void reset();
+
+    void print(int i);
+
 private:
     Incremental * incremental;
     double esp;

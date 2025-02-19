@@ -5,8 +5,6 @@
 #include <iostream>
 #include "MeasurementPrediction.h"
 
-
-
 MeasurementPrediction::MeasurementPrediction(double eps, const MatrixXd &R){
     observations = new Observations(eps,R);
     // initialize the H matrix vector with 2 x 3 space.
@@ -17,31 +15,26 @@ void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan,Pose * cu
     observations->update(scan,scan->size());
     //observations->printLineStack();
     // transform lines from robot to world reference
-    double alfaR;
-    double rR;
-    double alfaW;
-    double rW;
     for(int j=0; j<observations->size(); j++){
-        observations->getLinesStack()->getByIndex(j,alfaR,rR);
-        transformToWorldReferenceFrame(alfaW,rW,currentPose->getX(),currentPose->getY(),currentPose->getTheta(),alfaR,rR);
-        observations->getLinesStack()->setByIndex(j,alfaW,rW);
+        addLineToMap(observations->getLines()->getLine(j),currentPose);
     }
-
     //observations->printLineStack();
-    linesW = observations->getLinesStack();
     this->z_est  = new LineStack(3000);
     this->hStack = new HStack(3000);
 }
 
-void MeasurementPrediction::addLinesToMap(LineStack * unmatchedLines,double x, double y, double theta) {
-    double alfaR;
-    double rR;
-    double alfaW;
-    double rW;
+void MeasurementPrediction::addLineToMap(Line * line,Pose * currentPose) {
+    line->toGlobalReferenceFrame(currentPose);
+    line->updateOriginLineNormal();
+    lineWorldMap.addLine(line);
+    //cout << line->getAlfa() << " " << line->getR() << endl;
+}
+
+void MeasurementPrediction::addLinesToMap(Lines * unmatchedLines, double x, double y, double theta) {
+    Pose currentPose;
+    currentPose.update(x,y,theta);
     for(int i=0; i<unmatchedLines->size(); i++) {
-        unmatchedLines->getByIndex(i,alfaR,rR);
-        transformToWorldReferenceFrame(alfaW,rW,x,y,theta,alfaR,rR);
-        linesW->add(alfaW,rW);
+        addLineToMap(unmatchedLines->getLine(i),&currentPose);
     }
     //std::cout<<"addLinesToMap: "<<linesW->size()<<"\n";
 }
@@ -54,9 +47,9 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
     double rW;
     double alfaR;
     double rR;
-    for(int j=0; j<linesW->size(); j++){
-        alfaW = linesW->getAlfaByIndex(j);
-        rW = linesW->getRByIndex(j);
+    for(int j=0; j<lineWorldMap.size(); j++){
+        alfaW = lineWorldMap.getLine(j)->getAlfa();
+        rW = lineWorldMap.getLine(j)->getR();
 
         xESt     = prediction->getX();
         yEst     = prediction->getY();
@@ -112,6 +105,14 @@ void MeasurementPrediction::reset() {
 
 Observations * MeasurementPrediction::getObservations() {
     return observations;
+}
+
+Lines * MeasurementPrediction::getMapLines() {
+    return &lineWorldMap;
+}
+
+void MeasurementPrediction::print(const int j) const {
+    cout << zEst(j)->coeff(0,0) << " " <<  zEst(j)->coeff(1,0);
 }
 
 

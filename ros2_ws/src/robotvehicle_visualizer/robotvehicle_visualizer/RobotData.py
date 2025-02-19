@@ -7,12 +7,14 @@ class RobotData:
     scan  = None
     lines_matched = None
     lines_unmatched = None
+    lines_map = None
     pose_x_last = None
     pose_y_last = None
     index_poses = None
     index_scan  = None
     index_lines_matched = 0
     index_lines_unmatched = 0
+    index_lines_map = 0
     grid_map_matrix = None
     reset_performed = False
 
@@ -24,6 +26,7 @@ class RobotData:
         self.scan = np.zeros(shape=(10000, 3))
         self.lines_matched = np.zeros(shape=(10000, 4))
         self.lines_unmatched = np.zeros(shape=(10000, 4))
+        self.lines_map = np.zeros(shape=(10000, 4))
         self.index_poses = 0
         self.index_scan = 0
 
@@ -38,6 +41,7 @@ class RobotData:
         scan_detected = False
         matched_lines_detected= False
         unmatched_lines_detected = False
+        map_lines_detected = False
         grid_map_matrix = np.empty([0, 250])
         for line in lines:
             if "path" in line:
@@ -62,6 +66,12 @@ class RobotData:
                 unmatched_lines_detected = True
                 matched_lines_detected = False
                 continue
+            if "maplines" == line:
+                self.index_lines_map = 0
+                map_lines_detected = True
+                matched_lines_detected = False
+                unmatched_lines_detected = False
+                continue
             if path_detected:
                 p = np.fromstring(line, dtype=int, sep=' ')
                 x = p[0]
@@ -75,6 +85,8 @@ class RobotData:
                 self.update_matched_lines(line)
             elif unmatched_lines_detected:
                 self.update_unmatched_lines(line)
+            elif map_lines_detected:
+                self.update_map_lines(line)
             else:
                 r = np.fromstring(line, dtype=float, sep=' ')
                 grid_map_matrix = np.vstack((grid_map_matrix , r))
@@ -121,6 +133,17 @@ class RobotData:
         y2 = float(line[3])
         self.lines_unmatched[self.index_lines_unmatched][:] = np.array([x1, y1, x2, y2])
         self.index_lines_unmatched = self.index_lines_unmatched + 1
+
+    def update_map_lines(self, line):
+        if not line:
+            return
+        line = line.split()
+        x1 = float(line[0])
+        y1 = float(line[1])
+        x2 = float(line[2])
+        y2 = float(line[3])
+        self.lines_map[self.index_lines_map][:] = np.array([x1, y1, x2, y2])
+        self.index_lines_map = self.index_lines_map + 1
 
     def get_grid_map(self):
         return self.grid_map_matrix
@@ -173,6 +196,19 @@ class RobotData:
         y1 = self.lines_unmatched[i,1]
         x2 = self.lines_unmatched[i,2]
         y2 = self.lines_unmatched[i,3]
+        return x1,y1,x2,y2
+
+    def has_map_lines(self):
+        return self.index_lines_map >0
+
+    def get_map_lines_size(self):
+        return self.index_lines_map
+
+    def get_map_line_by_index(self, i):
+        x1 = self.lines_map[i,0]
+        y1 = self.lines_map[i,1]
+        x2 = self.lines_map[i,2]
+        y2 = self.lines_map[i,3]
         return x1,y1,x2,y2
 
     def has_reset(self):

@@ -22,12 +22,14 @@ public:
     void reset();
 
     LineStack * getUnMatchedStack();
+    Lines *getUnmatchedVerified();
+
     Lines * getUnMatchedLines();
     Lines * getMatchedLines();
 
 private:
     Matches * matches;
-    LineStack *unmatched;
+    Lines unmatchedVerified;
     MatrixXd vIJ;
     MatrixXd PIJ;
     double g;

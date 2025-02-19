@@ -178,6 +178,7 @@ void MissionController::endMission(){
 void MissionController::publishRobotData() {
     Lines * matchedlines = localization->getMatching()->getMatchedLines()->toGlobalReferenceFrame(localization->getPose());
     Lines * unmatchedlines = localization->getMatching()->getUnMatchedLines()->toGlobalReferenceFrame(localization->getPose());
+    Lines * maplines = localization->getMeasurementPrediction()->getMapLines();
     string robotDataString;
     robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
     robotDataString.append( "\npath\n");
@@ -193,6 +194,8 @@ void MissionController::publishRobotData() {
         robotDataString.append("\nunmatchedlines\n");
         robotDataString.append(unmatchedlines->toString()->c_str());
     }
+    robotDataString.append("\nmaplines\n");
+    robotDataString.append(maplines->toString()->c_str());
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString.c_str();
     gridMapPublisher_->publish(robotDataMessage);
@@ -203,4 +206,16 @@ void MissionController::resetRobotData() const {
     auto robotDataMessage = std_msgs::msg::String();
     robotDataMessage.data = robotDataString;
     gridMapPublisher_->publish(robotDataMessage);
+}
+
+void MissionController::printMap() {
+    Lines * mapLines = localization->getMeasurementPrediction()->getMapLines();
+    for(int i=0; i<mapLines->size(); i++) {
+        Line * line = mapLines->getLine(i);
+        cout << line->getAlfa() <<" "<< line->getR() <<" "<< line->getM() <<" "<< line->getB() <<" "<<
+            line->getFirstPoint()->getX() <<" "<<
+            line->getFirstPoint()->getY() <<" "<<
+            line->getLastPoint()->getX()  <<" "<<
+            line->getLastPoint()->getY()  << endl;
+    }
 }

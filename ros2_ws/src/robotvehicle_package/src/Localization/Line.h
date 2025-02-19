@@ -49,6 +49,7 @@ private:
     double m;
     double b;
     //
+    bool isAlreadyGlobal;
     std::vector<PointRectForm> points;
     int pointsNum;
 

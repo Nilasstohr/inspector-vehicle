@@ -56,13 +56,19 @@ class MinimalSubscriber(Node):
                plt.text(50, 210, "Unmatched Lines found:" + str(size))
                for i in range(0, size):
                    x1, y1, x2, y2 = self.robot_data.get_unmatched_line_by_index(i)
-                   plt.plot([x1, x2], [y1, y2], color='red')
+                   #plt.plot([x1, x2], [y1, y2], color='red')
            if self.robot_data.has_matched_lines():
                size = self.robot_data.get_matched_lines_size()
                plt.text(50, 220, "matched Lines found:" + str(size))
                for i in range(0, size):
                    x1, y1, x2, y2 = self.robot_data.get_matched_line_by_index(i)
-                   plt.plot([x1, x2], [y1, y2], color='blue')
+                   #plt.plot([x1, x2], [y1, y2], color='blue')
+           if self.robot_data.has_map_lines():
+               size = self.robot_data.get_map_lines_size()
+               plt.text(50, 230, "map Lines found:" + str(size))
+               for i in range(0, size):
+                   x1, y1, x2, y2 = self.robot_data.get_map_line_by_index(i)
+                   plt.plot([x1, x2], [y1, y2], color='brown')
 
            #for i in range(0,self.robot_data.get_scan_points_size()):
            #    scan_point = self.robot_data.get_scan_point(i)

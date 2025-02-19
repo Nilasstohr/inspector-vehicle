@@ -12,6 +12,7 @@ Line::Line() {
     std::vector<PointRectForm> points(700);
     this->points = points;
     reset();
+    isAlreadyGlobal = false;
 }
 
 void Line::addRecPointFromPolar(double theta, double d) {
@@ -43,8 +44,8 @@ double Line::perpendicularDistance(PointPolarForm *point) {
 }
 
 void Line::updateOriginLineNormal() {
-    updateSlopeForm();
-    //updateSlopeFormLeastSquare();
+    //updateSlopeForm();
+    updateSlopeFormLeastSquare();
     double fi = atan(m);
     if( fi>0 )
         alfa = fi-M_PI/2;
@@ -120,17 +121,19 @@ PointRectForm *Line::getLastPoint() {
 }
 
 void Line::toGlobalReferenceFrame(const Pose *currentPose) {
-    double x;
-    double y;
-    Transformations::recPointToGlobalReferenceFrame(x,y,
-        getFirstPoint()->getX(),getFirstPoint()->getY(),currentPose);
-
-    getFirstPoint()->set(x,y);
-
-    Transformations::recPointToGlobalReferenceFrame(x,y,
-        getLastPoint()->getX(),getLastPoint()->getY(),currentPose);
-
-    getLastPoint()->set(x,y);
+    if(!isAlreadyGlobal) {
+        double xR;
+        double yR;
+        double xG;
+        double yG;
+        for(int i=0;i<pointsNum;i++) {
+            xR = points.at(i).getX();
+            yR = points.at(i).getY();
+            Transformations::recPointToGlobalReferenceFrame(xG,yG,xR,yR,currentPose);
+            points.at(i).set(xG,yG);
+        }
+        isAlreadyGlobal = true;
+    }
 }
 
 double Line::getPhi() {
