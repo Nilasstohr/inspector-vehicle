@@ -126,10 +126,15 @@ if(BUILD_TESTING)
 
   # set the variable which cmake should set in TestConfigurations.h.in
   set(RecordFileName "TestRecord.txt")
+  set(MapLinesFileName "MapLines.txt")
+
   configure_file("${TestRootPath}/TestConfigurations.h.in" "${GeneratedFolder}/TestConfigurations.h")
 
   set(RecordFilePath "${TestResourcesFolder}/${RecordFileName}")
   configure_file(${RecordFilePath} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
+  set(MapLinesPath "${TestResourcesFolder}/${MapLinesFileName}")
+  configure_file(${MapLinesPath} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
   # Add test utility library that other test can use.
   set(TestUtilitiesLibPath "${TestRootPath}/TestUtilities")
@@ -189,11 +194,24 @@ if(BUILD_TESTING)
           SensorLib
           LocalizationLib
           PathPlanningLib
-          NavigationLib)
+          NavigationLib
+  )
   target_include_directories(LineDetectionIntegrationTest PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<INSTALL_INTERFACE:include>
           ${SrcRootPath}  ${TestRootPath}  ${GeneratedFolder}
+  )
+
+
+  # Testing Utilities
+  ament_add_gtest(StringUnitTest
+          ${TestRootPath}/Utilities/StringUnitTest.cpp
+  )
+  target_link_libraries(StringUnitTest UtilitiesLib)
+  target_include_directories(StringUnitTest PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          ${SrcRootPath}  ${TestRootPath}
   )
 
 

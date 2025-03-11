@@ -212,10 +212,19 @@ void MissionController::printMap() {
     Lines * mapLines = localization->getMeasurementPrediction()->getMapLines();
     for(int i=0; i<mapLines->size(); i++) {
         Line * line = mapLines->getLine(i);
+        //cout << line->getM() << ";" << line->getB() << " ";
+        //cout << line->getAlfa() << ";" << line->getR() << " ";
+        for(int j=0; j<line->getPointCount(); j++) {
+            cout << line->getPoint(j)->getX() <<";"<< line->getPoint(j)->getY() << " ";
+        }
+        cout << endl;
+        /*
+        Line * line = mapLines->getLine(i);
         cout << line->getAlfa() <<" "<< line->getR() <<" "<< line->getM() <<" "<< line->getB() <<" "<<
             line->getFirstPoint()->getX() <<" "<<
             line->getFirstPoint()->getY() <<" "<<
             line->getLastPoint()->getX()  <<" "<<
             line->getLastPoint()->getY()  << endl;
+        */
     }
 }

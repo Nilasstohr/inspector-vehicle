@@ -13,6 +13,7 @@ add_library(LocalizationLib
         HStack.cpp
         KalmanLocalization.cpp
         Lines.cpp
+        BatchGradientDecent.cpp
 )
 ament_target_dependencies(LocalizationLib rclcpp sensor_msgs)
 target_link_libraries (LocalizationLib Eigen3::Eigen UtilitiesLib SensorLib)

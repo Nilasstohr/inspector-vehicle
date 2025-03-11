@@ -19,6 +19,13 @@ public:
     int size() const;
     std::string *toString();
     Lines * toGlobalReferenceFrame(const Pose *pose);
+    void printLineParameters();
+
+    void addLine(double m, double b);
+
+    void printLinePoints();
+
+    void updateOriginalAllLinesNormalFromSlopeForm();
 
 private:
     std::vector<Line> lines;

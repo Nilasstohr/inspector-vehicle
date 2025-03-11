@@ -13,6 +13,7 @@ Line::Line() {
     this->points = points;
     reset();
     isAlreadyGlobal = false;
+    collinearMatched = false;
 }
 
 void Line::addRecPointFromPolar(double theta, double d) {
@@ -46,6 +47,10 @@ double Line::perpendicularDistance(PointPolarForm *point) {
 void Line::updateOriginLineNormal() {
     //updateSlopeForm();
     updateSlopeFormLeastSquare();
+    updateOriginalLineNormalFromSlopeForm();
+}
+
+void Line::updateOriginalLineNormalFromSlopeForm() {
     double fi = atan(m);
     if( fi>0 )
         alfa = fi-M_PI/2;
@@ -166,6 +171,41 @@ void Line::updateSlopeFormLeastSquare() {
     m = sxy/sxx;
     b = sumY/n - m*sumX/n;
 }
+
+PointRectForm *Line::getPoint(const int i) {
+    return &points.at(i);
+}
+
+void Line::setCollinearMatched() {
+    collinearMatched=true;
+}
+
+bool Line::hasBeenCollinearMatched() {
+    return collinearMatched;
+}
+
+void Line::setM(double m) {
+    this->m=m;
+}
+
+void Line::setB(double b) {
+    this->b=b;
+}
+
+void Line::addRecPoints(Line *line) {
+    for(int i=0;i<line->getNumberOfPoint();i++) {
+        addRecPoint(line->getPoint(i)->getX(),line->getPoint(i)->getY());
+    }
+}
+
+void Line::printPoints() const {
+    std::cout << m << ";" << b << " ";
+    for(int i=0;i<pointsNum;i++) {
+        std::cout << points.at(i).getX() << ";" << points.at(i).getY() << " ";
+    }
+    std::cout << std::endl;
+}
+
 
 void Line::getLineEndPoints(double &x1,double &y1,double &x2,double &y2) {
     const double x1t = getFirstPoint()->getX();

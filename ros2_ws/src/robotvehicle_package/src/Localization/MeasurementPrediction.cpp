@@ -47,6 +47,22 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
     double rW;
     double alfaR;
     double rR;
+    /*
+    Lines lineWorldMap;
+    lineWorldMap.addLine(60.979, -14503.5);
+    lineWorldMap.addLine(-0.0249823, 180.085);
+    lineWorldMap.addLine(0.313572,163.068);
+    lineWorldMap.addLine(48.5323, 132.339);
+    lineWorldMap.addLine(-1.00032, 140.125);
+    lineWorldMap.addLine(-2.77891, 123.759);
+    lineWorldMap.addLine(-0.813229, 101.981);
+    lineWorldMap.addLine(0.62089, 94.9994);
+    lineWorldMap.addLine(40.9292, 89.8273);
+    lineWorldMap.addLine(-0.0412801, 1.71617);
+    lineWorldMap.addLine(-0.687521, 181.108);
+    lineWorldMap.addLine(-0.0312365, -1.13905);
+    //lineWorldMap.printLineParameters2();
+    */
     for(int j=0; j<lineWorldMap.size(); j++){
         alfaW = lineWorldMap.getLine(j)->getAlfa();
         rW = lineWorldMap.getLine(j)->getR();

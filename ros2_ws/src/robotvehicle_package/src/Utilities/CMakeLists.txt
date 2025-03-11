@@ -11,6 +11,7 @@ add_library(UtilitiesLib
     DirectoryHandling.cpp
     BaseException.cpp
     ExceptionExceededMaxEntries.cpp
+    String.cpp
 )
 ament_target_dependencies(UtilitiesLib rclcpp)
 target_link_libraries (UtilitiesLib Eigen3::Eigen)

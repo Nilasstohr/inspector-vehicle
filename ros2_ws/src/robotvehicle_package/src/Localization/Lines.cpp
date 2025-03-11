@@ -58,3 +58,36 @@ Lines * Lines::toGlobalReferenceFrame(const Pose * pose) {
     return this;
 }
 
+void Lines::printLineParameters() {
+    for(int i=0; i<size(); i++) {
+        Line *line = getLine(i);
+        line->updateOriginLineNormal();
+        std::cout << line->getAlfa() << " " << line->getR() << " " << line->getM() << " " << line->getB() << std::endl;
+    }
+}
+
+
+void Lines::printLinePoints() {
+    for(int i=0; i<size(); i++) {
+        getLine(i)->printPoints();
+    }
+}
+
+void Lines::updateOriginalAllLinesNormalFromSlopeForm() {
+    for(int i=0; i<size(); i++) {
+        getLine(i)->updateOriginalLineNormalFromSlopeForm();
+    }
+}
+
+
+void Lines::addLine(double m, double b) {
+    Line line;
+    line.setM(m);
+    line.setB(b);
+    line.updateOriginalLineNormalFromSlopeForm();
+    addLine(&line);
+}
+
+
+
+

@@ -11,6 +11,7 @@
 #include <vector>
 #include <Utilities/Pose.h>
 
+
 class Line {
 public:
     Line();
@@ -18,6 +19,8 @@ public:
     void addRecPoint(double x, double y);
     double perpendicularDistance(PointPolarForm *point);
     void updateOriginLineNormal();
+    void updateOriginalLineNormalFromSlopeForm();
+
     double getAlfa() const;
     void setAlfa(double alfa);
     double getR() const;
@@ -25,6 +28,18 @@ public:
     void toGlobalReferenceFrame(const Pose *currentPose);
     double getPhi();
     void updateSlopeFormLeastSquare();
+    PointRectForm *getPoint(int i);
+
+    void setCollinearMatched();
+    bool hasBeenCollinearMatched();
+
+    void setM(double m);
+    void setB(double b);
+
+    void addRecPoints(Line * line);
+
+    void printPoints() const;
+
     static void limitAngle(double &angle);
     static void correctPolarCoordinates(double &alfa, double &r);
     void reset();
@@ -33,6 +48,7 @@ public:
     void getParallelTransEndPoints(double &x1p,double &y1p,double &x2p,double &y2p,const int d);
     int getNumberOfPoint() const;
 
+    
     PointRectForm * getFirstPoint();
     PointRectForm * getLastPoint();
 
@@ -50,6 +66,7 @@ private:
     double b;
     //
     bool isAlreadyGlobal;
+    bool collinearMatched;
     std::vector<PointRectForm> points;
     int pointsNum;
 
