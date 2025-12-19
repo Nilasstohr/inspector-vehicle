@@ -154,6 +154,9 @@ class RobotData:
     def get_y_poses(self):
         return self.poses[0:self.index_poses, 1]
 
+    def get_theta_poses(self):
+        return self.poses[0:self.index_poses, 2]
+
     def get_x_pose_last(self):
         return self.pose_x_last
 

@@ -13,7 +13,7 @@ linePoints(LinePoints(CONFIG_DISTANCE_BETWEEN_POINTS_CM)),
 gridMapValueAvailable(gridMapValueAvailable),
 gridMapValueOccupied(gridMapValueOccupied),
 gridMapValueUpdateInterval(gridMapValueUpdateInterval){
-    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setZero();
+    gridMap = MatrixXd(CONFIG_GRID_ROW_SIZE, CONFIG_GRID_COL_SIZE).setOnes();
     //addSafetyDistance();
     obstacleDetection = ObstacleDetection();
 }

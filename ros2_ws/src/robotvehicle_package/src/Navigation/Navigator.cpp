@@ -29,27 +29,28 @@ void Navigator::update(KalmanLocalization * localization) {
     }
     xt = localization->getPose();
     xtGoal = &navigationPath->getPath()->at(navigationPointIndex);
-    //cout << "in: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
+    //cout << "at: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
+    //cout << "goal: " << xtGoal->getX() << " " << xtGoal->getY() << " " << xtGoal->getTheta() << endl;
     dx = xtGoal->getX() - xt->getX();
     dy = xtGoal->getY() - xt->getY();
 
     if(abs(dx) < GOAL_ACCEPTANCE_TRESHOLD_CM && abs(dy) < GOAL_ACCEPTANCE_TRESHOLD_CM){
-        //! static_cast<long unsigned int>(navigationPointIndex)> is satisfiying compile warining
         if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()-1){
             destinationReached = true;
             driverInterface->stopAndResetDisplacement();
             return;
         }
-        //cout << navigationPointIndex << " out of " << navigationPath->getPath()->size()-1 << endl;
+        //cout << navigationPointIndex << "--------> out of " << navigationPath->getPath()->size()-1 << endl;
         navigationPointIndex++;
         return;
     }
 
     ro = sqrt(pow(dx,2)+pow(dy,2));
     alfa = -xt->getTheta() + atan2(dy,dx);
-    if(dx < 0 && dy < 0){
-        alfa+=2*M_PI;
-    }
+
+    // Normalize alfa to [-π, π] range to prevent jumps
+    while(alfa > M_PI) alfa -= 2*M_PI;
+    while(alfa < -M_PI) alfa += 2*M_PI;
 
     if(abs(alfa) > DEG2RAD(20)){
         v=0;
@@ -112,7 +113,7 @@ void Navigator::update() {
     w= K_alfa * alfa;
     wl = double(v-w*l)/r;
     wr = double(v+w*l)/r;
-    cout << "out: " << wl << " " << wr << endl;
+    //cout << "out: " << wl << " " << wr << endl;
     if(wr > 10){
         cout << "faulty output" << endl;
         return;

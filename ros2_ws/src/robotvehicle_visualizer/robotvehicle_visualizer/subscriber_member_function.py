@@ -41,14 +41,26 @@ class MinimalSubscriber(Node):
            self.setup_plot_window()
            x = self.robot_data.get_x_poses()
            y = self.robot_data.get_y_poses()
-           #print("%.2f %.2f" % (self.robot_data.get_x_pose_last(),self.robot_data.get_y_pose_last()))
-           c1 = plt.Circle((self.robot_data.get_x_pose_last(), self.robot_data.get_y_pose_last()), 18.5, color='red', fill=False)
-           c2 = plt.Circle((self.robot_data.get_x_pose_last(), self.robot_data.get_y_pose_last()), 1, color='red')
-           #c = plt.Circle((40,40), 18.5, color='red', fill=False)
+           theta = self.robot_data.get_theta_poses()
+
+           x_last = self.robot_data.get_x_pose_last()
+           y_last = self.robot_data.get_y_pose_last()
+           theta_last = theta[-1] if len(theta) > 0 else 0
+
+           # Draw robot position
+           c1 = plt.Circle((x_last, y_last), 18.5, color='red', fill=False)
+           c2 = plt.Circle((x_last, y_last), 1, color='red')
            plt.gca().add_patch(c1)
            plt.gca().add_patch(c2)
+
+           # Draw heading arrow
+           arrow_length = 20
+           dx = arrow_length * np.cos(theta_last)
+           dy = arrow_length * np.sin(theta_last)
+           plt.arrow(x_last, y_last, dx, dy, head_width=5, head_length=3, fc='blue', ec='blue')
+
            plt.imshow(self.robot_data.grid_map_matrix, origin='lower')
-           plt.plot(x,y)
+           plt.plot(x, y)
            #plt.scatter(self.robot_data.get_x_scan(),self.robot_data.get_y_scan(),color='blue',s=5)
 
            if self.robot_data.has_unmatched_lines():
@@ -82,8 +94,8 @@ class MinimalSubscriber(Node):
 
     def setup_plot_window(self):
         plt.cla()
-        xm = np.array([40, 202, 119.5])
-        ym = np.array([40, 54.5, 90.5])
+        xm = np.array([40, 170, 105])
+        ym = np.array([40, 57.5, 90])
         plt.scatter(xm, ym, s=50, color='green')
         plt.axis([-20, 250, -20, 250])
 
