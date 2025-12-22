@@ -189,7 +189,8 @@ if(BUILD_TESTING)
           ${SrcRootPath}/MissionController.h
   )
   ament_target_dependencies(LineDetectionIntegrationTest rclcpp sensor_msgs)
-  target_link_libraries(LineDetectionIntegrationTest TestUtilitiesLib
+  target_link_libraries(LineDetectionIntegrationTest
+          TestUtilitiesLib
           HostLib
           SensorLib
           LocalizationLib
@@ -202,6 +203,17 @@ if(BUILD_TESTING)
           ${SrcRootPath}  ${TestRootPath}  ${GeneratedFolder}
   )
 
+  # Testing Navigation
+  ament_add_gtest(TestNavigationUnitTest
+          ${TestRootPath}/Navigator/TestNavigationUnitTest.cpp
+
+  )
+  target_link_libraries(TestNavigationUnitTest UtilitiesLib NavigationLib)
+  target_include_directories(TestNavigationUnitTest PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          ${SrcRootPath}  ${TestRootPath}
+  )
 
   # Testing Utilities
   ament_add_gtest(StringUnitTest

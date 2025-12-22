@@ -27,6 +27,7 @@ private:
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
     bool scanReady;
     SensorRecorder * recorder;
+    NavigationPath * missionPath;
 };
 
 #endif //CONTROLLERNODE_H

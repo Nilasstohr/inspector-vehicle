@@ -4,7 +4,12 @@
 
 #include "NavigationPath.h"
 
-NavigationPath::NavigationPath(){
+#include <stdexcept>
+
+#include "NavigationExceptionNoPathPoints.h"
+#include "NavigationExceptionPathPointAlreadyCompleted.h"
+
+NavigationPath::NavigationPath(): pathIndex(0) {
     path = new std::vector<NavigationPoint>;
 }
 
@@ -18,5 +23,23 @@ std::vector<NavigationPoint> *NavigationPath::getPath() const {
 
 void NavigationPath::clear() {
     path->clear();
+}
+
+NavigationPoint * NavigationPath::getCurrentGoToPoint() const {
+    if(path->empty()){
+        throw NavigationExceptionNoPathPoints();
+    }
+    return &path->at(pathIndex);
+}
+
+void NavigationPath::setNextGoToPoint() {
+    if(pathIndex + 1 == path->size()){
+        throw NavigationExceptionPathPointAlreadyCompleted();
+    }
+    pathIndex++;
+}
+
+bool NavigationPath::isNextPointAvailable() const {
+    return  pathIndex + 1 < path->size();
 }
 

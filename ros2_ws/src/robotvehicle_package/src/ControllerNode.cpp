@@ -3,16 +3,25 @@
 //
 
 #include "ControllerNode.h"
+#include <fstream>
+#include <string>
 
-#define RECORD_DURATION_SECONDS 70
+#define RECORD_DURATION_SECONDS 180
 
 ControllerNode::ControllerNode(SerialInterface *serialInterface):
 Node("reading_laser"),
 scanReady(false)
 {
     recorder = new SensorRecorder();
+    missionPath = new NavigationPath();
     auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
     missionController = new MissionController(this,serialInterface);
+    //missionPath->addPathPoint(40,200,0);
+    missionPath->addPathPoint(170,65,0);
+    missionPath->addPathPoint(40,40,0);
+    missionPath->addPathPoint(170,65,0);
+    missionPath->addPathPoint(40,40,0);
+    missionController->setMissionPath(missionPath);
     recorder->startRecord(RECORD_DURATION_SECONDS);
     cout << "starting run" << endl;
     laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
@@ -32,8 +41,7 @@ void ControllerNode::timer_callback(){
         missionController->getSensorData()->update(currentScan);
         missionController->update();
         recorder->update(missionController->getSensorData());
-        if(recorder->hasRecordTimeExceeded() ||
-           missionController->getNavigator()->isDestinationReached()){
+        if(recorder->hasRecordTimeExceeded() || missionController->isMissionComplete()){
             timer_->cancel();
             laserScanSubscription_.reset();
             recorder->endRecord();

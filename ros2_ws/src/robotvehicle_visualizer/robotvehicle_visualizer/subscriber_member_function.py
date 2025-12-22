@@ -97,7 +97,7 @@ class MinimalSubscriber(Node):
         xm = np.array([40, 170, 105])
         ym = np.array([40, 57.5, 90])
         plt.scatter(xm, ym, s=50, color='green')
-        plt.axis([-20, 250, -20, 250])
+        plt.axis([-20, 300, -20, 300])
 
 
 class ScanPoint:
@@ -156,7 +156,7 @@ class PlayBackTesting:
             x, y = self.get_array_from_scan(scan)
             plt.scatter(x, y, s=50, color='green')
             #plt.plot(x, y)
-            plt.axis([0, 250, 0, 150])
+            plt.axis([0, 300, 0, 300])
             plt.grid()
             plt.ylabel('some numbers')
             plt.show()

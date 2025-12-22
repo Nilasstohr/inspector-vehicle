@@ -20,10 +20,16 @@ void ControllerNodeStub::topic_callback(const sensor_msgs::msg::LaserScan::Share
 }
 
 void ControllerNodeStub::timer_callback() {
+    static int i=1;
     if(recordHandler->hasRecordsToProcess()){
         recordHandler->update(missionController->getSensorData());
         missionController->update();
-        missionController->publishRobotData();
+        //cout << i << endl;
+        if(i==227) {
+            i=227;
+        }
+        i++;
+        //missionController->publishRobotData();
     }else{
         //missionController->printMap();
         timer_->cancel();

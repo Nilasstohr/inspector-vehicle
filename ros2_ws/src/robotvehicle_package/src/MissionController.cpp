@@ -5,12 +5,11 @@
 #include "MissionController.h"
 #include "rclcpp/rclcpp.hpp"
 #define ROS_INFO RCUTILS_LOG_INFO
-#define DESTINATION_X 170
-#define DESTINATION_Y 56
 
 MissionController::MissionController(rclcpp::Node * node,SerialInterface * serialInterface) {
     obstacleAvoidanceInProgress=false;
     hasMapBeenBuild=false;
+    missionComplete = false;
     auto *driverInterface = new DriverInterface(serialInterface);
     sensorData = new SensorData(driverInterface);
     localization = new KalmanLocalization();
@@ -36,18 +35,15 @@ Navigator * MissionController::getNavigator(){
     return navigator;
 }
 
-void MissionController::initiateNavigationPath() {
-    updateMapWithObstacleSafeDistance();
-    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
-}
-
 void MissionController::updateMapWithObstacleSafeDistance() {
     gripMap->updateMapWithObstacleSafeDistance2(
        localization->getObservations()->getLines(),localization->getPose());
 }
 
-void MissionController::generateNewPathToDestination(int x, int y){
-    PathPoint *endPoint = new PathPoint();
+void MissionController::generateNewPathToDestination(){
+    const int x = missionPath->getCurrentGoToPoint()->getX();
+    const int y = missionPath->getCurrentGoToPoint()->getY();
+    auto *endPoint = new PathPoint();
     endPoint->set(x,y);
     aStar->update(localization->getPose(),endPoint,gripMap->getMapWithSafetyDistance());
     navigator->setNavigationPath(aStar->getNavigationPath());
@@ -57,7 +53,7 @@ void MissionController::build() {
     localization->build(sensorData);
     gripMap->updateMapWithObstacleSafeDistance2(
        localization->getMeasurementPrediction()->getObservations()->getLines(),localization->getStarPose());
-    generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+    generateNewPathToDestination();
     hasMapBeenBuild = true;
 }
 
@@ -67,10 +63,20 @@ void MissionController::update(){
     }
     localization->update(sensorData);
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
+
     navigator->update(localization);
+    if(navigator->isDestinationReached()) {
+        if(missionPath->isNextPointAvailable()) {
+            missionPath->setNextGoToPoint();
+            generateNewPathToDestination();
+        }else {
+            navigator->stopAndResetDisplacement();
+            missionComplete=true;
+        }
+    }
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    //publishRobotData();
+    publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
@@ -106,7 +112,7 @@ void MissionController::updateMapAndPath(vector<PointPolarForm> *scan, Pose *pos
     gripMap->update(scan,pose);
     updateMapWithObstacleSafeDistance();
     if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
-        generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
+        generateNewPathToDestination();
     }
 }
 
@@ -177,4 +183,12 @@ void MissionController::printMap() {
             line->getLastPoint()->getY()  << endl;
         */
     }
+}
+
+bool MissionController::isMissionComplete() const {
+    return missionComplete;
+}
+
+void MissionController::setMissionPath(NavigationPath * missionPath) {
+    this->missionPath = missionPath;
 }

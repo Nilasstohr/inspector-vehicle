@@ -16,8 +16,15 @@ public:
 
     void clear();
 
+    NavigationPoint * getCurrentGoToPoint() const;
+
+    void setNextGoToPoint();
+
+    bool isNextPointAvailable() const;
+
 private:
     std::vector<NavigationPoint> *path;
+    int pathIndex;
 
 };
 

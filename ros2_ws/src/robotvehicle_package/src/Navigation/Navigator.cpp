@@ -37,7 +37,6 @@ void Navigator::update(KalmanLocalization * localization) {
     if(abs(dx) < GOAL_ACCEPTANCE_TRESHOLD_CM && abs(dy) < GOAL_ACCEPTANCE_TRESHOLD_CM){
         if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()-1){
             destinationReached = true;
-            driverInterface->stopAndResetDisplacement();
             return;
         }
         //cout << navigationPointIndex << "--------> out of " << navigationPath->getPath()->size()-1 << endl;

@@ -27,9 +27,13 @@ public:
     void publishRobotData();
     void resetRobotData() const;
     void printMap();
+    bool isMissionComplete() const;
+    void setMissionPath(NavigationPath * navigation_path);
+
 private:
     KalmanLocalization * localization;
     Navigator * navigator;
+    NavigationPath * missionPath;
     GridMap * gripMap;
     AStar * aStar;
     SensorData * sensorData;
@@ -38,12 +42,13 @@ private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
     std_msgs::msg::String_<allocator<void>> posMessage = std_msgs::msg::String();
-    void generateNewPathToDestination(int x, int y);
+    bool missionComplete;
+
+    void generateNewPathToDestination();
 
     void build();
 
     void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
-    void initiateNavigationPath();
     void updateMapWithObstacleSafeDistance();
 };
 

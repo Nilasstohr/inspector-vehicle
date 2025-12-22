@@ -42,7 +42,7 @@ class RobotData:
         matched_lines_detected= False
         unmatched_lines_detected = False
         map_lines_detected = False
-        grid_map_matrix = np.empty([0, 250])
+        grid_map_matrix = np.empty([0, 300])
         for line in lines:
             if "path" in line:
                 path_detected = True

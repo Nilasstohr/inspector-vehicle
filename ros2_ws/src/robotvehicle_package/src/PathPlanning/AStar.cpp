@@ -6,6 +6,7 @@
 #include <set>
 #include <iostream>
 #include "AStar.h"
+#include "Navigation/NavigationExceptionDestinationBlocked.h"
 #include "Utilities/Verify2DArea.h"
 
 AStar::AStar(){
@@ -41,7 +42,7 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
             src.second,
             gridMap->coeff(src.first,src.second));
         */
-        return;
+       return;
     }
     if (isUnBlocked(gridMap, dest.first, dest.second)== false) {
         printf("Destination position x=%d y=%d is blocked\n",dest.first,dest.second);
