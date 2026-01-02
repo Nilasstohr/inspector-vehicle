@@ -13,6 +13,9 @@
 class Navigator {
 public:
     Navigator(DriverInterface * driverInterface);
+
+    bool validNavigationPath();
+
     void update(KalmanLocalization *localization);
     void update();
     void setNavigationPath(NavigationPath * navigationPath);
@@ -44,6 +47,7 @@ private:
     double r; // radius of wheel
     bool destinationReached;
     double wMin;
+    bool validPath;
 };
 
 

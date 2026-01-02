@@ -23,7 +23,20 @@ Navigator::Navigator(DriverInterface *driverInterface):
     K_alfa = 0.5*3;
 }
 
+bool Navigator::validNavigationPath() {
+    return validPath;
+}
+
 void Navigator::update(KalmanLocalization * localization) {
+
+    if(navigationPath->getPath()->empty()) {
+        validPath = false;
+        cout << "Navigation path is empty, trying again!" << endl;
+        return;
+    }else {
+        validPath=true;
+    }
+    
     if(destinationReached){
         return;
     }

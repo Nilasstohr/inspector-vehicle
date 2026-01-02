@@ -19,8 +19,11 @@ scanReady(false)
     //missionPath->addPathPoint(40,200,0);
     missionPath->addPathPoint(170,65,0);
     missionPath->addPathPoint(40,40,0);
-    missionPath->addPathPoint(170,65,0);
-    missionPath->addPathPoint(40,40,0);
+    //missionPath->addPathPoint(170,65,0);
+    //missionPath->addPathPoint(40,40,0);
+    //missionPath->addPathPoint(68,500,0);
+    //missionPath->addPathPoint(40,40,0);
+
     missionController->setMissionPath(missionPath);
     recorder->startRecord(RECORD_DURATION_SECONDS);
     cout << "starting run" << endl;
