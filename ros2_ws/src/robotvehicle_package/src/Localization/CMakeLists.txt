@@ -5,6 +5,7 @@ add_library(LocalizationLib
         MeasurementPrediction.cpp
         Observations.cpp
         PredictionDifferentialDrive.cpp
+        Odom.cpp
         RStack.cpp
         SensorRecorder.cpp
         Incremental.cpp

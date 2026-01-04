@@ -298,3 +298,45 @@ https://docs.ros.org/en/humble/How-To-Guides/Run-2-nodes-in-single-or-separate-d
 
 
 
+Slam-toolbox
+-----------------------------
+
+find inspiration from:
+https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/ 
+
+read about input configuration parameters to yaml file to launch slamtect node in https://github.com/SteveMacenski/slam_toolbox
+
+Step to start slam basic:
+
+1. public TF 
+ros2 run tf2_ros static_transform_publisher 0 0 0 3.14159 0 0 base_link laser
+
+2. start slam tec nodes with config file:
+ros2 launch slam_toolbox localization_launch.py slam_params_file:=/home/robot1/devrepo/inspector-vehicle/ros2_ws/slamtec_config.yaml
+
+3. start odam nodes (from robotvehicle_package) view position in application. 
+
+4. view in rviz by running "ros2 run rviz2 rviz2", go to Panels -> new panel -> SlamtoolBoxPanel. 
+   Also add relevant displays like pose, map, etc. 
+   
+Step to start slam basic - mapping and localization
+
+1. Use step 1. in above guide. 
+2. Create a map 
+   2.a Start slam toolbox in mapping mode
+   "ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/home/robot1/devrepo/inspector-vehicle/ros2_ws/slamtec_config_mapping.yaml mode:=mapping" 
+   2.b Use step 3 from above guide
+   2.c drive robot a around till map is forfilled. 
+   2.d keeping mapping node running, and save map by
+   "ros2 run nav2_map_server map_saver_cli -f /home/robot1/devrepo/inspector-vehicle/ros2_ws/my_map --ros-args -p save_map_timeout:=29.0"
+   2.e Stop slam toolbox mapping node start localization
+   ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/home/robot1/devrepo/inspector-vehicle/ros2_ws/slamtec_config.yaml mode:=lifelong map_file_name:=/home/robot1/devrepo/inspector-vehicle/ros2_ws/my_map
+  
+   
+Nav2
+-------------------------------------
+read about input configuration parameters to yaml file to launch nav2: https://docs.nav2.org/configuration/index.html
+
+
+
+

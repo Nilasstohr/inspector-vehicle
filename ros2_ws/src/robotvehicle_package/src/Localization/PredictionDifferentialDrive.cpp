@@ -56,9 +56,7 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
     double dS   = (dSr + dSl)/2;
 
     // kinematic model for differential driver page 270
-    xEst = *xt + Vector3d (dS * cos(phi + dPhi / 2),
-                                         dS*sin(phi + dPhi/2),
-                           dPhi);
+    xEst = *xt + Vector3d (dS * cos(phi + dPhi / 2),dS*sin(phi + dPhi/2),dPhi);
     Line::limitAngle(xEst(2));
     //printMatrix(&xEst,"xEst");
 
@@ -86,7 +84,7 @@ void PredictionDifferentialDrive::update(double sl, double sr,const MatrixXd * x
 
     MatrixXd Q(2,2);
     Q(0,0)=kr*abs(dSr); Q(0,1)=0;
-    Q(1,0)=0;              Q(1,1)=kl*abs(dSl);
+    Q(1,0)=0;           Q(1,1)=kl*abs(dSl);
     //printMatrix(&Q,"---Q---");
     //printMatrix(Pt,"Pt");
     pEst = Fx * PtTemp * Fx.transpose() + Fu * Q * Fu.transpose();

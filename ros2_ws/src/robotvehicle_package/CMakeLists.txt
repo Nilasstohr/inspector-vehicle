@@ -21,6 +21,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
 
 #set (CMAKE_PREFIX_PATH "/home/robot1/Downloads/eigen-3.4.0")
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
@@ -34,7 +37,7 @@ add_executable(controller_node
         test/ControllerNode/ExceptionIncorrectEndPosition.cpp
         test/ControllerNode/ExceptionIncorrectEndPosition.h
 )
-ament_target_dependencies(controller_node rclcpp sensor_msgs)
+ament_target_dependencies(controller_node rclcpp sensor_msgs nav_msgs tf2_ros)
 
 #set(LIBINTERFACE_VERSION "\"helloWorld\"")
 
@@ -163,7 +166,7 @@ if(BUILD_TESTING)
           ${SrcRootPath}/MissionController.cpp
           ${SrcRootPath}/MissionController.h
   )
-  ament_target_dependencies(ControllerNodeIntegrationTest rclcpp sensor_msgs)
+  ament_target_dependencies(ControllerNodeIntegrationTest rclcpp sensor_msgs nav_msgs tf2_ros)
   target_link_libraries(ControllerNodeIntegrationTest TestUtilitiesLib
           HostLib
           SensorLib
