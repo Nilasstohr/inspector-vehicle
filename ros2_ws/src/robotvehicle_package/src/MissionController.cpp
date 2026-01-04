@@ -69,6 +69,7 @@ void MissionController::update(){
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
 
 
+    /*
     navigator->update(localization);
 
     if(navigator->isDestinationReached()) {
@@ -80,6 +81,7 @@ void MissionController::update(){
             missionComplete=true;
         }
     }
+    */
 
     // this used for larger gripmap, because transmitting large data takes time
     //if(!navigator->validNavigationPath()) {
@@ -133,6 +135,10 @@ double MissionController::getCurrentPoseX() {
 }
 double MissionController::getCurrentPoseY() {
     return localization->getPose()->getY();
+}
+
+double MissionController::getCurrentPoseTheta() {
+    return localization->getPose()->getTheta();
 }
 
 void MissionController::endMission(){
@@ -205,4 +211,8 @@ bool MissionController::isMissionComplete() const {
 
 void MissionController::setMissionPath(NavigationPath * missionPath) {
     this->missionPath = missionPath;
+}
+
+KalmanLocalization *MissionController::getLocalization() const {
+    return localization;
 }

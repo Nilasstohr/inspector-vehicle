@@ -24,6 +24,8 @@ void ControllerNodeStub::timer_callback() {
     if(recordHandler->hasRecordsToProcess()){
         recordHandler->update(missionController->getSensorData());
         missionController->update();
+        //broadCastTF();
+        publishOdom();
         //cout << i << endl;
         if(i==227) {
             i=227;

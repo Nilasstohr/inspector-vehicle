@@ -32,6 +32,8 @@ public:
 
     const Pose * getStarPose();
 
+    PredictionDifferentialDrive *getPrediction();
+
 private:
     void init();
     PredictionDifferentialDrive * differentialDrive;

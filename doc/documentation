@@ -296,5 +296,27 @@ Ros2 docker
 https://hub.docker.com/_/ros/
 https://docs.ros.org/en/humble/How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.html
 
+Slam-toolbox
+-----------------------------
+
+find inspiration from:
+https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/ 
+
+read about input configuration parameters to yaml file to launch slamtect node in https://github.com/SteveMacenski/slam_toolbox
+
+Step to start slam:
+
+1. public TF 
+ros2 run tf2_ros static_transform_publisher 0 0 0 3.14159 0 0 base_link laser
+
+2. start odam nodes (from robotvehicle_package)
+
+3. start slam tec nodes with config file:
+ros2 launch slam_toolbox localization_launch.py slam_params_file:=/home/robot1/devrepo/inspector-vehicle/ros2_ws/slamtec_config.yaml
+
+4. subscripe to slamtec pose topic (note when moving your robot the entries will appear) 
+ros2 topic echo /pose --field pose.pose.position
+
+
 
 
