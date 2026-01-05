@@ -42,10 +42,14 @@ private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gridMapPublisher_;
     std_msgs::msg::String_<allocator<void>> posMessage = std_msgs::msg::String();
+
+
     bool missionComplete;
+
 
     void generateNewPathToDestination();
     void build();
+
     void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
     void updateMapWithObstacleSafeDistance();
 };
