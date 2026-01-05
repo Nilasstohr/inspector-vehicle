@@ -45,7 +45,11 @@ void MissionController::generateNewPathToDestination(){
     const int y = missionPath->getCurrentGoToPoint()->getY();
     auto *endPoint = new PathPoint();
     endPoint->set(x,y);
-    aStar->update(localization->getPose(),endPoint,gripMap->getMapWithSafetyDistance());
+    //try {
+        aStar->update(localization->getPose(),endPoint,gripMap->getMapWithSafetyDistance());
+    //}   catch (const std::exception& e) {
+    //    cout << "A* pathfinding exception: " << e.what() << endl;
+    //}
     navigator->setNavigationPath(aStar->getNavigationPath());
 }
 
@@ -64,7 +68,9 @@ void MissionController::update(){
     localization->update(sensorData);
     updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
 
+
     navigator->update(localization);
+
     if(navigator->isDestinationReached()) {
         if(missionPath->isNextPointAvailable()) {
             missionPath->setNextGoToPoint();
@@ -74,6 +80,12 @@ void MissionController::update(){
             missionComplete=true;
         }
     }
+
+    // this used for larger gripmap, because transmitting large data takes time
+    //if(!navigator->validNavigationPath()) {
+    //    publishRobotData();
+    //}
+
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
     publishRobotData();
@@ -137,8 +149,10 @@ void MissionController::publishRobotData() {
     Lines * maplines = localization->getMeasurementPrediction()->getMapLines();
     string robotDataString;
     robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
-    robotDataString.append( "\npath\n");
-    robotDataString.append(aStar->pathToString());
+    if(!aStar->getNavigationPath()->getPath()->empty()) {
+        robotDataString.append( "\npath\n");
+        robotDataString.append(aStar->pathToString());
+    }
     robotDataString.append("\npose\n");
     robotDataString.append(localization->getPoseLastString()->c_str());
     robotDataString.append("\nscan\n");

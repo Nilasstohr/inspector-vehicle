@@ -13,13 +13,14 @@ AStar::AStar(){
     navigationPath = new NavigationPath();
 }
 
-void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
-    this->currentPose=currentPose;
-    MatrixXd visited =  MatrixXd::Zero(gridMap->cols(),gridMap->rows());
-    PathPoint startPoint = PathPoint();
-    startPoint.set(floor(currentPose->getX()),floor(currentPose->getY()));
 
-    Pair src  = make_pair(currentPose->getX(), currentPose->getY());
+void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap) {
+    this->currentPose = currentPose;
+    MatrixXd visited = MatrixXd::Zero(gridMap->cols(), gridMap->rows());
+    PathPoint startPoint = PathPoint();
+    startPoint.set(floor(currentPose->getX()), floor(currentPose->getY()));
+
+    Pair src = make_pair(currentPose->getX(), currentPose->getY());
     Pair dest = make_pair(destination->getX(), destination->getY());
 
     // If the source is out of range
@@ -36,40 +37,31 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
 
     // Either the source or the destination is blocked
     if (isUnBlocked(gridMap, src.first, src.second) == false) {
-        /*
-        printf("Current position x=%d y=%d is blocked, cell value was=%.2f\n",
-            src.first,
-            src.second,
-            gridMap->coeff(src.first,src.second));
-        */
-       return;
+        return;
     }
-    if (isUnBlocked(gridMap, dest.first, dest.second)== false) {
-        printf("Destination position x=%d y=%d is blocked\n",dest.first,dest.second);
+    if (isUnBlocked(gridMap, dest.first, dest.second) == false) {
+        printf("Destination position x=%d y=%d is blocked\n", dest.first, dest.second);
         return;
     }
 
     // If the destination cell is the same as source cell
-    if (isDestination(src.first, src.second, dest)
-        == true) {
+    if (isDestination(src.first, src.second, dest) == true) {
         printf("We are already at the destination\n");
         return;
     }
 
-    // Create a closed list and initialise it to false which
-    // means that no cell has been included yet This closed
-    // list is implemented as a boolean 2D array
-    bool closedList[CONFIG_GRID_ROW_SIZE][CONFIG_GRID_COL_SIZE];
-    memset(closedList, false, sizeof(closedList));
+    int rows = CONFIG_GRID_ROW_SIZE;
+    int cols = CONFIG_GRID_COL_SIZE;
 
-    // Declare a 2D array of structure to hold the details
-    // of that cell
-    cell cellDetails[CONFIG_GRID_ROW_SIZE][CONFIG_GRID_COL_SIZE];
+    // Use dynamic allocation instead of stack arrays
+    bool **closedList = new bool*[rows];
+    cell **cellDetails = new cell*[rows];
 
-    int i, j;
+    for (int i = 0; i < rows; i++) {
+        closedList[i] = new bool[cols]();  // () initializes to false
+        cellDetails[i] = new cell[cols];
 
-    for (i = 0; i < CONFIG_GRID_ROW_SIZE; i++) {
-        for (j = 0; j < CONFIG_GRID_COL_SIZE; j++) {
+        for (int j = 0; j < cols; j++) {
             cellDetails[i][j].f = FLT_MAX;
             cellDetails[i][j].g = FLT_MAX;
             cellDetails[i][j].h = FLT_MAX;
@@ -79,111 +71,74 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
     }
 
     // Initialising the parameters of the starting node
-    i = src.first, j = src.second;
+    int i = src.first, j = src.second;
     cellDetails[i][j].f = 0.0;
     cellDetails[i][j].g = 0.0;
     cellDetails[i][j].h = 0.0;
     cellDetails[i][j].parent_i = i;
     cellDetails[i][j].parent_j = j;
 
-    /*
-     Create an open list having information as-
-     <f, <i, j>>
-     where f = g + h,
-     and i, j are the row and column index of that cell
-     Note that 0 <= i <= CONFIG_GRID_ROW_SIZE-1 & 0 <= j <= CONFIG_GRID_COL_SIZE-1
-     This open list is implemented as a set of pair of pair.
-     */
     set<pPair> openList;
-
-    // Put the starting cell on the open list and set its
-    // 'f' as 0
     openList.insert(make_pair(0.0, make_pair(i, j)));
 
-    // We set this boolean value as false as initially
-    // the destination is not reached.
     bool foundDest = false;
 
-    int iS[8] = {-1, 1,0, 0, -1, -1,1, 1};
-
-    int jS[8] = { 0, 0,1,-1,  1, -1,1,-1};
+    int iS[8] = {-1, 1, 0, 0, -1, -1, 1, 1};
+    int jS[8] = {0, 0, 1, -1, 1, -1, 1, -1};
 
     while (!openList.empty()) {
         pPair p = *openList.begin();
-        // Remove this vertex from the open list
         openList.erase(openList.begin());
-        //std::cout << "List Size: " << openList.size() << std::endl;
 
-        // Add this vertex to the closed list
         i = p.second.first;
         j = p.second.second;
         closedList[i][j] = true;
 
-
-        /*
-         Generating all the 8 successor of this cell
-
-             N.W   N   N.E
-               \   |   /
-                \  |  /
-             W----Cell----E
-                  / | \
-                /   |  \
-             S.W    S   S.E
-
-         Cell-->Popped Cell (i, j)
-         N -->  North       (i-1, j)
-         S -->  South       (i+1, j)
-         E -->  East        (i, j+1)
-         W -->  West        (i, j-1)
-         N.E--> North-East  (i-1, j+1)
-         N.W--> North-West  (i-1, j-1)
-         S.E--> South-East  (i+1, j+1)
-         S.W--> South-West  (i+1, j-1)*/
-
-        // To store the 'g', 'h' and 'f' of the 8 successors
         double gNew, hNew, fNew;
         int n = sizeof(iS) / sizeof(int);
-        for(int k=0; k<n;k++){
+        for (int k = 0; k < n; k++) {
             int iSCell = i + iS[k];
             int jSCell = j + jS[k];
             if (isValid(iSCell, jSCell) == true) {
-                // If the destination cell is the same as the
-                // current successor
                 if (isDestination(iSCell, jSCell, dest) == true) {
-                    isDestination(iSCell, jSCell, dest);
-                    // Set the Parent of the destination cell
                     cellDetails[iSCell][jSCell].parent_i = i;
                     cellDetails[iSCell][jSCell].parent_j = j;
-                    //printf("The destination cell is found\n");
-                    tracePath(cellDetails, dest);
+
+                    // Need to pass cellDetails differently now - create a helper or convert
+                    // Trace path before cleanup
+                    stack<Pair> path;
+                    int row = dest.first;
+                    int col = dest.second;
+
+                    while (!(cellDetails[row][col].parent_i == row && cellDetails[row][col].parent_j == col)) {
+                        path.push(make_pair(row, col));
+                        int temp_row = cellDetails[row][col].parent_i;
+                        int temp_col = cellDetails[row][col].parent_j;
+                        row = temp_row;
+                        col = temp_col;
+                    }
+                    path.push(make_pair(row, col));
+                    downSampleNavigationPath(&path);
+
                     foundDest = true;
+
+                    // Clean up
+                    for (int i = 0; i < rows; i++) {
+                        delete[] closedList[i];
+                        delete[] cellDetails[i];
+                    }
+                    delete[] closedList;
+                    delete[] cellDetails;
+
                     return;
-                }
-                    // If the successor is already on the closed
-                    // list or if it is blocked, then ignore it.
-                    // Else do the following
-                else if (closedList[iSCell][jSCell] == false
-                         && isUnBlocked(gridMap, iSCell, jSCell)
-                            == true) {
+                } else if (closedList[iSCell][jSCell] == false && isUnBlocked(gridMap, iSCell, jSCell) == true) {
                     gNew = cellDetails[i][j].g + 1.0;
                     hNew = calculateHValue(iSCell, jSCell, dest);
                     fNew = gNew + hNew;
 
-                    // If it isn’t on the open list, add it to
-                    // the open list. Make the current square
-                    // the parent of this square. Record the
-                    // f, g, and h costs of the square cell
-                    //                OR
-                    // If it is on the open list already, check
-                    // to see if this path to that square is
-                    // better, using 'f' cost as the measure.
-                    if (cellDetails[iSCell][jSCell].f == FLT_MAX
-                        || cellDetails[iSCell][jSCell].f > fNew) {
-                        openList.insert(make_pair(
-                                fNew, make_pair(iSCell, jSCell)));
+                    if (cellDetails[iSCell][jSCell].f == FLT_MAX || cellDetails[iSCell][jSCell].f > fNew) {
+                        openList.insert(make_pair(fNew, make_pair(iSCell, jSCell)));
 
-                        // Update the details of this cell
                         cellDetails[iSCell][jSCell].f = fNew;
                         cellDetails[iSCell][jSCell].g = gNew;
                         cellDetails[iSCell][jSCell].h = hNew;
@@ -194,16 +149,22 @@ void AStar::update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap)
             }
         }
     }
-    // When the destination cell is not found and the open
-    // list is empty, then we conclude that we failed to
-    // reach the destination cell. This may happen when the
-    // there is no way to destination cell (due to
-    // blockages)
+
     if (foundDest == false)
         printf("Failed to find the Destination Cell\n");
 
+    // Clean up
+    for (int i = 0; i < rows; i++) {
+        delete[] closedList[i];
+        delete[] cellDetails[i];
+    }
+    delete[] closedList;
+    delete[] cellDetails;
+
     return;
 }
+
+
 
 bool AStar::isValid(int row, int col)
 {
