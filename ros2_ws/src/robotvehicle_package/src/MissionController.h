@@ -45,9 +45,7 @@ private:
     bool missionComplete;
 
     void generateNewPathToDestination();
-
     void build();
-
     void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
     void updateMapWithObstacleSafeDistance();
 };
