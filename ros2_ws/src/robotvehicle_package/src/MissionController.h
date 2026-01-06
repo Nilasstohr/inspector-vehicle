@@ -24,11 +24,15 @@ public:
     void update();
     double getCurrentPoseX();
     double getCurrentPoseY();
+    double getCurrentPoseTheta();
+
     void publishRobotData();
     void resetRobotData() const;
     void printMap();
     bool isMissionComplete() const;
     void setMissionPath(NavigationPath * navigation_path);
+
+    KalmanLocalization *getLocalization() const;
 
 private:
     KalmanLocalization * localization;

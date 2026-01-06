@@ -109,4 +109,8 @@ const Pose * KalmanLocalization::getStarPose() {
     return &startPose;
 }
 
+PredictionDifferentialDrive * KalmanLocalization::getPrediction() {
+    return differentialDrive;
+}
+
 
