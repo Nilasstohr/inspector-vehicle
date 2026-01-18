@@ -24,14 +24,19 @@ public:
     void update();
     double getCurrentPoseX();
     double getCurrentPoseY();
+
     void publishRobotData();
     void resetRobotData() const;
     void printMap();
     bool isMissionComplete() const;
     void setMissionPath(NavigationPath * navigation_path);
 
+    KalmanLocalization *getLocalization() const;
+    Odom * getOdom();
+
 private:
     KalmanLocalization * localization;
+    Odom * odom;
     Navigator * navigator;
     NavigationPath * missionPath;
     GridMap * gripMap;

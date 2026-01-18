@@ -13,6 +13,7 @@ MissionController::MissionController(rclcpp::Node * node,SerialInterface * seria
     auto *driverInterface = new DriverInterface(serialInterface);
     sensorData = new SensorData(driverInterface);
     localization = new KalmanLocalization();
+    odom = new Odom();
     gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                           CONFIG_GRID_VALUE_FULL_OCCUPIED,
                           CONFIG_GRID_VALUE_UPDATE_INTERVAL);
@@ -62,13 +63,20 @@ void MissionController::build() {
 }
 
 void MissionController::update(){
-    if (!hasMapBeenBuild) {
-       build();
-    }
-    localization->update(sensorData);
-    updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
+    //if (!hasMapBeenBuild) {
+    //   build();
+   // }
+    //localization->update(sensorData);
+    odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
+    //updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
 
+    // ./StartLidar.sh
+    // ./StartSlamTF.sh
+    // ./StartSlamToolBoxMapping.sh
+    // ./StoreSlamToolboxMapNav2.sh
+    // ./StartSlamToolBoxLocalization.sh
 
+/*
     navigator->update(localization);
 
     if(navigator->isDestinationReached()) {
@@ -80,6 +88,9 @@ void MissionController::update(){
             missionComplete=true;
         }
     }
+*/
+
+
 
     // this used for larger gripmap, because transmitting large data takes time
     //if(!navigator->validNavigationPath()) {
@@ -88,7 +99,7 @@ void MissionController::update(){
 
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    publishRobotData();
+    //publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){
@@ -134,6 +145,7 @@ double MissionController::getCurrentPoseX() {
 double MissionController::getCurrentPoseY() {
     return localization->getPose()->getY();
 }
+
 
 void MissionController::endMission(){
     posMessage.data = "end";
@@ -205,4 +217,12 @@ bool MissionController::isMissionComplete() const {
 
 void MissionController::setMissionPath(NavigationPath * missionPath) {
     this->missionPath = missionPath;
+}
+
+KalmanLocalization *MissionController::getLocalization() const {
+    return localization;
+}
+
+Odom * MissionController::getOdom() {
+    return odom;
 }
