@@ -64,7 +64,6 @@ void KalmanLocalization::update(SensorData * sensorData) {
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
     //printMatrix(differentialDriveNoKalman->getPEst(),"---P_est (no kalman)--");
     differentialDrive->update(sensorData->getPosLeft(),sensorData->getPosRight(),estimation->getXt(),estimation->getPt());
-    odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
     observations->update(sensorData->getScanPolarForm(),sensorData->getScanPolarForm()->size());
     measurementPrediction->update(differentialDrive);
     matching->update(differentialDrive,measurementPrediction,observations);

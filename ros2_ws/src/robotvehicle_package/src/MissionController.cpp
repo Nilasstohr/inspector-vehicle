@@ -68,6 +68,7 @@ void MissionController::update(){
    // }
     //localization->update(sensorData);
     odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
+    navigator->setNav2Velocities(angular_z,linear_x);
     //updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
 
     // ./StartLidar.sh
@@ -225,4 +226,16 @@ KalmanLocalization *MissionController::getLocalization() const {
 
 Odom * MissionController::getOdom() {
     return odom;
+}
+
+void MissionController::setCmdVel(const double linear_x, const double angular_z) {
+    this->linear_x = linear_x;
+    this->angular_z = angular_z;
+}
+
+double MissionController::getLinearX() const {
+    return linear_x;
+}
+double MissionController::getAngularZ() const {
+    return angular_z;
 }
