@@ -89,6 +89,37 @@ void Navigator::update(KalmanLocalization * localization) {
     driverInterface->setAngularVelocity(wl,wr);
 }
 
+void Navigator::setNav2Velocities(double w, double v){
+    // Nav2: v in m/s, w in rad/s. Navigator uses cm and cm/s for kinematics.
+    // Convert linear velocity to cm/s to match l and r units (which are in cm).
+    static double l =0.145;
+    static double r =0.045;
+
+    if(w==0 && v==0){
+        driverInterface->stop();
+        return;
+    }
+
+    // compute wheel angular speeds (units consistent: cm/s divided by cm -> 1/s)
+    wl = double(v-w*l)/r;
+    wr = double(v+w*l)/r;
+
+    cout << "in(nav2): v=" << v << " m/s w=" << w << " rad/s -> out: wl=" << wl << " wr=" << wr << endl;
+
+    /*
+    if(wl < wMin)
+        wl = wMin;
+    else if(wl > MAX_W_NORMAL)
+        wl = MAX_W_NORMAL;
+    */
+    if(wr < wMin)
+        wr = wMin;
+    else if(wr > MAX_W_NORMAL)
+        wr = MAX_W_NORMAL;
+
+    driverInterface->setAngularVelocity(wl,wr);
+}
+
 void Navigator::update() {
     if(destinationReached){
         return;

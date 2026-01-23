@@ -5,6 +5,8 @@
 #ifndef ROBOTVEHICLE_PACKAGE_MISSIONCONTROLLER_H
 #define ROBOTVEHICLE_PACKAGE_MISSIONCONTROLLER_H
 
+#include <Odom.h>
+
 #include "Utilities/SerialInterface.h"
 #include "Localization/KalmanLocalization.h"
 #include "PathPlanning/GridMap.h"
@@ -34,6 +36,12 @@ public:
     KalmanLocalization *getLocalization() const;
     Odom * getOdom();
 
+    void setCmdVel(double linear_x, double angular_z);
+
+    double getLinearX() const;
+
+    double getAngularZ() const;
+
 private:
     KalmanLocalization * localization;
     Odom * odom;
@@ -53,6 +61,9 @@ private:
     void build();
     void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
     void updateMapWithObstacleSafeDistance();
+
+    double linear_x;
+    double angular_z;
 };
 
 

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <string>
 
-#define RECORD_DURATION_SECONDS 500
+#define RECORD_DURATION_SECONDS 1000
 
 ControllerNode::ControllerNode(SerialInterface *serialInterface):
 Node("reading_laser"),
@@ -28,6 +28,10 @@ scanReady(false)
     laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
             std::bind(&ControllerNode::topic_callback, this, placeholders::_1));
 
+    cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
+    "/cmd_vel", default_qos,
+    [](const geometry_msgs::msg::Twist::SharedPtr){ /* no-op so middleware exposes the endpoint */ });
+
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     odom_pub_ =this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
@@ -45,13 +49,22 @@ void ControllerNode::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr
 }
 
 void ControllerNode::timer_callback(){
+    // Poll cmd_vel messages synchronously
+    geometry_msgs::msg::Twist twist_msg;
+    rclcpp::MessageInfo msg_info;
+    // use while() to drain all available messages; use if() to take only one
+    while (cmd_vel_->take(twist_msg, msg_info)) {
+        // handle twist_msg here (example: pass to missionController or driver)
+        missionController->setCmdVel(twist_msg.linear.x, twist_msg.angular.z);
+    }
+
     if(scanReady) {
         scanReady = false;
         missionController->getSensorData()->update(currentScan);
         missionController->update();
         broadCastTF();
         publishOdom();
-        printSlamTecLocalization();
+        printSlamAndNav2Data();
         recorder->update(missionController->getSensorData());
         if(recorder->hasRecordTimeExceeded() || missionController->isMissionComplete()){
             timer_->cancel();
@@ -123,14 +136,30 @@ void ControllerNode::publishOdom() const {
     odom_pub_->publish(odom_msg);
 }
 
-void ControllerNode::printSlamTecLocalization() {
+void ControllerNode::printSlamAndNav2Data() {
     // Get SLAM-corrected pose
     try {
         auto transform = tf_buffer_->lookupTransform("map", "base_link", tf2::TimePointZero);
+
+        // Extract yaw from quaternion
+        tf2::Quaternion q(
+            transform.transform.rotation.x,
+            transform.transform.rotation.y,
+            transform.transform.rotation.z,
+            transform.transform.rotation.w
+        );
+        tf2::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+
         cout << "SLAM Pose x: " << transform.transform.translation.x * 100.0
-             << " cm, y: " << transform.transform.translation.y * 100.0 << " cm" << endl;
+             << " cm, y: " << transform.transform.translation.y * 100.0
+             << " cm, heading: " << yaw << " rad"
+             << " v=" << missionController->getLinearX()
+             << " w=" << missionController->getAngularZ() << endl;
     } catch (tf2::TransformException &ex) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
             "Could not get SLAM pose: %s", ex.what());
     }
 }
+

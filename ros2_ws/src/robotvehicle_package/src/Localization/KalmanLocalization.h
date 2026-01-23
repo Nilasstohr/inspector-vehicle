@@ -7,7 +7,6 @@
 
 #include "PredictionDifferentialDrive.h"
 #include "MeasurementPrediction.h"
-#include "Odom.h"
 #include "Observations.h"
 #include "Matching.h"
 #include "Estimation.h"
@@ -38,7 +37,6 @@ private:
     void init();
     PredictionDifferentialDrive * differentialDrive;
     PredictionDifferentialDrive * differentialDriveNoKalman;
-    Odom * odom;
     MeasurementPrediction *measurementPrediction;
     Observations *observations;
     Matching * matching;

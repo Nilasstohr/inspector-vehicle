@@ -338,5 +338,7 @@ Nav2
 read about input configuration parameters to yaml file to launch nav2: https://docs.nav2.org/configuration/index.html
 
 
+ros2 topic pub /initialpose geometry_msgs/PoseWithCovarianceStamped "<header: { frame_id: 'map' }, pose: { pose: { position: { x: 40.0, y: 40.0, z: 0.0 }, orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 } }, covariance: [0.0004, 0, 0, 0, 0, 0, 0, 0.0004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } }" -1
+
 
 

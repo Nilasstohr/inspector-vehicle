@@ -59,6 +59,20 @@ controller_server:
       RotateToGoal.scale: 32.0
       RotateToGoal.slowing_factor: 5.0
       RotateToGoal.lookahead_time: -1.0
+      # ----added params----
+      rotate_to_heading_angular_vel: 2.0
+      rotate_to_heading_min_angle: 0.1
+      allow_reversing: false
+      # Ensure angular velocity is allowed
+      max_vel_theta: 1.0  # rad/s
+      min_vel_theta: 0.1
+      # Goal tolerance
+      xy_goal_tolerance: 0.10
+      yaw_goal_tolerance: 0.2  # radians
+      # Path alignment
+      path_distance_bias: 32.0
+      goal_distance_bias: 20.0
+      prefer_forward: true
 
 local_costmap:
   local_costmap:
@@ -126,6 +140,17 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
       tolerance: 0.5
-      use_astar: false
+      use_astar: true
       allow_unknown: true
-
+      
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: false
+    mode: "localization"
+    map_start_pose: [0.40, 0.40, 0.0]
+    initial_pose_covariance: [0.0004, 0.0, 0.0, 0.0, 0.0, 0.0,
+                              0.0, 0.0004, 0.0, 0.0, 0.0, 0.0,
+                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                              0.0, 0.0, 0.0, 0.0, 0.0, 0.001215]

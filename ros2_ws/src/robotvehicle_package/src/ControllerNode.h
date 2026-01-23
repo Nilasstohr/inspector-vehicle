@@ -20,6 +20,7 @@ public:
     ControllerNode(SerialInterface *serialInterface);
 protected:
     virtual void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
+
     virtual void timer_callback();
 
     void broadCastTF() const;
@@ -32,8 +33,9 @@ protected:
     MissionController * missionController;
 
 private:
-    void printSlamTecLocalization();
+    void printSlamAndNav2Data();
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laserScanSubscription_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;

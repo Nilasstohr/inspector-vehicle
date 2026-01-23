@@ -25,6 +25,7 @@ public:
     void forwardSlow();
     void stop();
     NavigationPath* getNavigationPath();
+    void setNav2Velocities(double w, double v);
 
 private:
     void setLowerVelocityLimit(double wMin);
