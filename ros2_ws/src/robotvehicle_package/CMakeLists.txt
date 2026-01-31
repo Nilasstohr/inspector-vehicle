@@ -10,7 +10,7 @@ endif()
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -36,6 +36,8 @@ add_executable(controller_node
         src/ControllerNode.h
         test/ControllerNode/ExceptionIncorrectEndPosition.cpp
         test/ControllerNode/ExceptionIncorrectEndPosition.h
+        src/DiffDriveBaseNode.cpp
+        src/DiffDriveBaseNode.h
 )
 ament_target_dependencies(controller_node rclcpp sensor_msgs nav_msgs tf2_ros)
 

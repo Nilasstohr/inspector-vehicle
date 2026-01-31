@@ -63,12 +63,12 @@ void MissionController::build() {
 }
 
 void MissionController::update(){
-    //if (!hasMapBeenBuild) {
-    //   build();
-   // }
-    //localization->update(sensorData);
-    odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
-    navigator->setNav2Velocities(angular_z,linear_x);
+    if (!hasMapBeenBuild) {
+       build();
+    }
+    localization->update(sensorData);
+    //odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
+    //navigator->setNav2Velocities(angular_z,linear_x);
     //updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
 
     // ./StartLidar.sh
@@ -77,7 +77,7 @@ void MissionController::update(){
     // ./StoreSlamToolboxMapNav2.sh
     // ./StartSlamToolBoxLocalization.sh
 
-/*
+
     navigator->update(localization);
 
     if(navigator->isDestinationReached()) {
@@ -89,7 +89,6 @@ void MissionController::update(){
             missionComplete=true;
         }
     }
-*/
 
 
 
