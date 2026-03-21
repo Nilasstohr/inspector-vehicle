@@ -106,12 +106,12 @@ void Navigator::setNav2Velocities(double w, double v){
 
     cout << "in(nav2): v=" << v << " m/s w=" << w << " rad/s -> out: wl=" << wl << " wr=" << wr << endl;
 
-    /*
+
     if(wl < wMin)
         wl = wMin;
     else if(wl > MAX_W_NORMAL)
         wl = MAX_W_NORMAL;
-    */
+
     if(wr < wMin)
         wr = wMin;
     else if(wr > MAX_W_NORMAL)

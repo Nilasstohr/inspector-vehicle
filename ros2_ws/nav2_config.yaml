@@ -34,20 +34,20 @@ controller_server:
       max_vel_x: 0.3
       min_vel_y: 0.0
       max_vel_y: 0.0
-      min_speed_xy: -0.3
-      max_speed_xy: 0.3
+      min_speed_xy: -0.2
+      max_speed_xy: 0.2
       min_speed_theta: -1.0
       max_speed_theta: 1.0
-      acc_lim_x: 2.5
+      acc_lim_x: 0.3
       acc_lim_y: 0.0
-      acc_lim_theta: 3.2
+      acc_lim_theta: 0.4
       decel_lim_x: -2.5
       decel_lim_y: 0.0
       decel_lim_theta: -3.2
-      vx_samples: 20
+      vx_samples: 10
       vy_samples: 0
-      vtheta_samples: 40
-      sim_time: 1.5
+      vtheta_samples: 20
+      sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
@@ -64,14 +64,19 @@ controller_server:
       rotate_to_heading_min_angle: 0.1
       allow_reversing: false
       # Ensure angular velocity is allowed
-      max_vel_theta: 1.0  # rad/s
+      max_vel_theta: 0.4  # rad/s
       min_vel_theta: 0.1
       # Goal tolerance
       xy_goal_tolerance: 0.10
       yaw_goal_tolerance: 0.2  # radians
       # Path alignment
-      path_distance_bias: 32.0
-      goal_distance_bias: 20.0
+      # Path alignment
+      # How much the robot prioritizes staying on the planned path Higher values
+      # Higher values → robot follows path more strictly
+      path_distance_bias: 40.0 
+      # How much the robot prioritizes reaching the goal quickly
+      # Higher values → robot moves more aggressively toward goal
+      goal_distance_bias: 10.0
       prefer_forward: true
 
 local_costmap:
@@ -101,7 +106,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        inflation_radius: 0.40
 
 global_costmap:
   global_costmap:
