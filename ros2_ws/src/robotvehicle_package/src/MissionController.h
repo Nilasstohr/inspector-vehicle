@@ -5,8 +5,7 @@
 #ifndef ROBOTVEHICLE_PACKAGE_MISSIONCONTROLLER_H
 #define ROBOTVEHICLE_PACKAGE_MISSIONCONTROLLER_H
 
-#include <Odom.h>
-
+#include "Localization/Odom.h"
 #include "Utilities/SerialInterface.h"
 #include "Localization/KalmanLocalization.h"
 #include "PathPlanning/GridMap.h"

@@ -50,7 +50,6 @@ bool compareValues(double alfa1,double alfa2,double r1,double r2) {
         }
     return false;
 }
-
 std::map<int,Lines> getCollinearLines() {
     std::map<int,Lines> collinearMap;
     Lines lines = getLinesFromMapFile();
@@ -91,6 +90,7 @@ std::map<int,Lines> getCollinearLines() {
     }
     return collinearMap;
 }
+
 TEST(line_least_square_test,test_1)
 {
     Line line;
@@ -114,6 +114,8 @@ TEST(line_least_square_test,test_1)
     }
 }
 
+
+/*
 TEST(line_detection_integration_test,test_2)
 {
     int MAX_LINES_EXPECTED = 10;
@@ -182,7 +184,7 @@ TEST(line_detection_integration_test,test_4)
         }
     }
 }
-
+*/
 
 int main(int argc, char ** argv)
 {

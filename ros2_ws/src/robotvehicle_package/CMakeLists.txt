@@ -193,7 +193,7 @@ if(BUILD_TESTING)
           ${SrcRootPath}/MissionController.cpp
           ${SrcRootPath}/MissionController.h
   )
-  ament_target_dependencies(LineDetectionIntegrationTest rclcpp sensor_msgs)
+  ament_target_dependencies(LineDetectionIntegrationTest rclcpp sensor_msgs nav_msgs tf2_ros)
   target_link_libraries(LineDetectionIntegrationTest
           TestUtilitiesLib
           HostLib
