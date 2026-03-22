@@ -99,7 +99,7 @@ void MissionController::update(){
 
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    //publishRobotData();
+    publishRobotData();
     /*
     if(gripMap->getObstacleDetection()->isObstacleTooClose()){
         if(!obstacleAvoidanceInProgress){

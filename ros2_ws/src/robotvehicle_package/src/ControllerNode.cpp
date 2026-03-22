@@ -7,7 +7,7 @@
 #include <fstream>
 #include <string>
 
-#define RECORD_DURATION_SECONDS 1000
+#define RECORD_DURATION_SECONDS 300
 
 ControllerNode::ControllerNode(SerialInterface *serialInterface):
 Node("reading_laser"),
