@@ -29,9 +29,9 @@ int main(const int argc, char ** argv)
     std::set_terminate(termination_handler);
 
     rclcpp::init(argc, argv);
-    const auto node = std::make_shared<ControllerNode>(new SerialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME));
+    SerialInterface serialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME);
+    const auto node = std::make_shared<ControllerNode>(serialInterface);
     //const auto node = std::make_shared<DiffDriveBaseNode>(new SerialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME));
-
     spin(node);
     rclcpp::shutdown();
     return 0;

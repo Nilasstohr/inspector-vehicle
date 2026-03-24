@@ -6,39 +6,42 @@
 #include "rclcpp/rclcpp.hpp"
 #define ROS_INFO RCUTILS_LOG_INFO
 
-MissionController::MissionController(rclcpp::Node * node,SerialInterface * serialInterface) {
+MissionController::MissionController(rclcpp::Node * node, SerialInterface &serialInterface):
+driverInterface(serialInterface),
+navigator(driverInterface),
+sensorData(driverInterface),
+linear_x(0),
+angular_z(0)
+{
     obstacleAvoidanceInProgress=false;
     hasMapBeenBuild=false;
     missionComplete = false;
-    auto *driverInterface = new DriverInterface(serialInterface);
-    sensorData = new SensorData(driverInterface);
-    localization = new KalmanLocalization();
-    odom = new Odom();
+    localization = KalmanLocalization();
+    odom = Odom();
     gripMap = new GridMap(CONFIG_GRID_VALUE_FULL_AVAILABLE,
                           CONFIG_GRID_VALUE_FULL_OCCUPIED,
                           CONFIG_GRID_VALUE_UPDATE_INTERVAL);
-    navigator = new Navigator(driverInterface);
     aStar = new AStar();
     //gripMap->loadGridMap();
-    if (serialInterface->hasResponse()) {
-        ROS_INFO(serialInterface->getResponse()->c_str());
+    if (serialInterface.hasResponse()) {
+        ROS_INFO(serialInterface.getResponse()->c_str());
     }
     posePublisher_ = node->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
     gridMapPublisher_ = node->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
-    serialInterface->sendRequest("r");
+    serialInterface.sendRequest("r");
 }
 
-SensorData * MissionController::getSensorData(){
+SensorData & MissionController::getSensorData(){
     return sensorData;
 }
 
-Navigator * MissionController::getNavigator(){
+Navigator & MissionController::getNavigator(){
     return navigator;
 }
 
 void MissionController::updateMapWithObstacleSafeDistance() {
     gripMap->updateMapWithObstacleSafeDistance2(
-       localization->getObservations()->getLines(),localization->getPose());
+       localization.getObservations()->getLines(),localization.getPose());
 }
 
 void MissionController::generateNewPathToDestination(){
@@ -47,17 +50,17 @@ void MissionController::generateNewPathToDestination(){
     auto *endPoint = new PathPoint();
     endPoint->set(x,y);
     //try {
-        aStar->update(localization->getPose(),endPoint,gripMap->getMapWithSafetyDistance());
+        aStar->update(localization.getPose(),endPoint,gripMap->getMapWithSafetyDistance());
     //}   catch (const std::exception& e) {
     //    cout << "A* pathfinding exception: " << e.what() << endl;
     //}
-    navigator->setNavigationPath(aStar->getNavigationPath());
+    navigator.setNavigationPath(aStar->getNavigationPath());
 }
 
 void MissionController::build() {
-    localization->build(sensorData);
+    localization.build(sensorData);
     gripMap->updateMapWithObstacleSafeDistance2(
-       localization->getMeasurementPrediction()->getObservations()->getLines(),localization->getStarPose());
+       localization.getMeasurementPrediction()->getObservations()->getLines(),localization.getStarPose());
     generateNewPathToDestination();
     hasMapBeenBuild = true;
 }
@@ -66,10 +69,10 @@ void MissionController::update(){
     if (!hasMapBeenBuild) {
        build();
     }
-    localization->update(sensorData);
+    localization.update(sensorData);
     //odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
     //navigator->setNav2Velocities(angular_z,linear_x);
-    //updateMapAndPath(sensorData->getScanPolarForm(),localization->getPose());
+    updateMapAndPath(sensorData.getScanPolarForm(),localization.getPose());
 
     // ./StartLidar.sh
     // ./StartSlamTF.sh
@@ -78,18 +81,17 @@ void MissionController::update(){
     // ./StartSlamToolBoxLocalization.sh
 
 
-    navigator->update(localization);
+    navigator.update(localization);
 
-    if(navigator->isDestinationReached()) {
+    if(navigator.isDestinationReached()) {
         if(missionPath->isNextPointAvailable()) {
             missionPath->setNextGoToPoint();
             generateNewPathToDestination();
         }else {
-            navigator->stopAndResetDisplacement();
+            navigator.stopAndResetDisplacement();
             missionComplete=true;
         }
     }
-
 
 
     // this used for larger gripmap, because transmitting large data takes time
@@ -99,51 +101,23 @@ void MissionController::update(){
 
     //posMessage.data = localization->getPoseLastString()->c_str();
     //posePublisher_->publish(posMessage);
-    publishRobotData();
-    /*
-    if(gripMap->getObstacleDetection()->isObstacleTooClose()){
-        if(!obstacleAvoidanceInProgress){
-            navigator->stop();
-            gripMap->updateMapWithObstacleSafeDistance();
-            if(gripMap->getObstacleDetection()->getObstacleLocation()==ObstacleLocationType::FRONT){
-                navigator->backwardSlow();
-                cout << "--------Obstacle detected (FRONT)----------- \n" << endl;
-            }else{
-                navigator->forwardSlow();
-                cout << "--------Obstacle detected (BACK)----------- \n" << endl;
-            }
-        }
-        obstacleAvoidanceInProgress = true;
-    }else{
-        if(obstacleAvoidanceInProgress){
-            if(gripMap->isPoseInSafeZone(localization->getPose())){
-                navigator->stop();
-                cout << "######################### Obstacle cleared ########################" << endl;
-                generateNewPathToDestination(DESTINATION_X, DESTINATION_Y);
-                obstacleAvoidanceInProgress=false;
-            }
-        }else{
-            navigator->update(localization);
-        }
-        posMessage.data = localization->getPoseLastString()->c_str();
-        posePublisher_->publish(posMessage);
-    }*/
+    //publishRobotData();
 }
 
 
 void MissionController::updateMapAndPath(vector<PointPolarForm> *scan, Pose *pose) {
     gripMap->update(scan,pose);
     updateMapWithObstacleSafeDistance();
-    if(gripMap->isPathBlocked(navigator->getNavigationPath())) {
+    if(gripMap->isPathBlocked(navigator.getNavigationPath())) {
         generateNewPathToDestination();
     }
 }
 
 double MissionController::getCurrentPoseX() {
-    return localization->getPose()->getX();
+    return localization.getPose()->getX();
 }
 double MissionController::getCurrentPoseY() {
-    return localization->getPose()->getY();
+    return localization.getPose()->getY();
 }
 
 
@@ -156,9 +130,9 @@ void MissionController::endMission(){
 }
 
 void MissionController::publishRobotData() {
-    Lines * matchedlines = localization->getMatching()->getMatchedLines()->toGlobalReferenceFrame(localization->getPose());
-    Lines * unmatchedlines = localization->getMatching()->getUnMatchedLines()->toGlobalReferenceFrame(localization->getPose());
-    Lines * maplines = localization->getMeasurementPrediction()->getMapLines();
+    Lines * matchedlines = localization.getMatching()->getMatchedLines()->toGlobalReferenceFrame(localization.getPose());
+    Lines * unmatchedlines = localization.getMatching()->getUnMatchedLines()->toGlobalReferenceFrame(localization.getPose());
+    Lines * maplines = localization.getMeasurementPrediction()->getMapLines();
     string robotDataString;
     robotDataString.append(gripMap->obstacleSafeDistanceMapToString()->c_str());
     if(!aStar->getNavigationPath()->getPath()->empty()) {
@@ -166,10 +140,10 @@ void MissionController::publishRobotData() {
         robotDataString.append(aStar->pathToString());
     }
     robotDataString.append("\npose\n");
-    robotDataString.append(localization->getPoseLastString()->c_str());
+    robotDataString.append(localization.getPoseLastString()->c_str());
     robotDataString.append("\nscan\n");
-    robotDataString.append(gripMap->scanEndPointsToString(sensorData->getScanPolarForm(),
-        localization->getPose())->c_str());
+    robotDataString.append(gripMap->scanEndPointsToString(sensorData.getScanPolarForm(),
+        localization.getPose())->c_str());
     robotDataString.append("\nmatchedlines\n");
     robotDataString.append(matchedlines->toString()->c_str());
     if(unmatchedlines->size()>0){
@@ -191,7 +165,7 @@ void MissionController::resetRobotData() const {
 }
 
 void MissionController::printMap() {
-    Lines * mapLines = localization->getMeasurementPrediction()->getMapLines();
+    Lines * mapLines = localization.getMeasurementPrediction()->getMapLines();
     for(int i=0; i<mapLines->size(); i++) {
         Line * line = mapLines->getLine(i);
         //cout << line->getM() << ";" << line->getB() << " ";
@@ -219,12 +193,12 @@ void MissionController::setMissionPath(NavigationPath * missionPath) {
     this->missionPath = missionPath;
 }
 
-KalmanLocalization *MissionController::getLocalization() const {
+const KalmanLocalization & MissionController::getLocalization() const {
     return localization;
 }
 
-Odom * MissionController::getOdom() {
-    return odom;
+const Odom * MissionController::getOdom() const {
+    return &odom;
 }
 
 void MissionController::setCmdVel(const double linear_x, const double angular_z) {

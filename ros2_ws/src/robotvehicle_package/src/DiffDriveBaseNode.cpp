@@ -14,7 +14,7 @@
 #define MIN_W_TURN -4
 
 
-DiffDriveBaseNode::DiffDriveBaseNode(SerialInterface *serialInterface):
+DiffDriveBaseNode::DiffDriveBaseNode(SerialInterface serialInterface):
 Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
 {
     auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
@@ -30,8 +30,8 @@ Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-    if (serialInterface->hasResponse()) {
-        ROS_INFO(serialInterface->getResponse()->c_str());
+    if (serialInterface.hasResponse()) {
+        ROS_INFO(serialInterface.getResponse()->c_str());
     }
     control_timer_ = this->create_wall_timer(std::chrono::milliseconds (15),
                                 std::bind(&DiffDriveBaseNode::control_timer_callback, this));
@@ -42,7 +42,7 @@ Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
     cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", default_qos,
     std::bind(&DiffDriveBaseNode::cmd_vel_subscriber_callback, this, std::placeholders::_1));
 
-    serialInterface->sendRequest("r");
+    serialInterface.sendRequest("r");
 }
 
 void DiffDriveBaseNode::control_timer_callback(){

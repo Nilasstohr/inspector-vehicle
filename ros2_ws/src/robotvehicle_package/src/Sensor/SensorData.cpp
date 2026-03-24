@@ -5,13 +5,13 @@
 #include "SensorData.h"
 #include <math.h>
 
-SensorData::SensorData(DriverInterface * driverInterface): driverInterface(driverInterface) {
+SensorData::SensorData(DriverInterface & driverInterface): driverInterface(driverInterface) {
     scanPolarForm = new std::vector<PointPolarForm>;
 }
 
 void SensorData::update(sensor_msgs::msg::LaserScan::SharedPtr currentScan) {
     scanPolarForm->clear();
-    driverInterface->getWheelsTraveled(posLeft, posRight);
+    driverInterface.getWheelsTraveled(posLeft, posRight);
     int scanPointsNum = currentScan->scan_time / currentScan->time_increment;
     for(int i = 0; i < scanPointsNum; i++) {
         angle = (currentScan->angle_min + currentScan->angle_increment * i)+M_PI;

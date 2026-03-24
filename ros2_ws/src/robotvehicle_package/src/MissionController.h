@@ -7,6 +7,7 @@
 
 #include "Localization/Odom.h"
 #include "Utilities/SerialInterface.h"
+#include "Host/DriverInterface.h"
 #include "Localization/KalmanLocalization.h"
 #include "PathPlanning/GridMap.h"
 #include "Navigation/Navigator.h"
@@ -18,9 +19,9 @@
 
 class MissionController {
 public:
-    MissionController(rclcpp::Node *node,SerialInterface * serialInterface);
-    SensorData *getSensorData();
-    Navigator *getNavigator();
+    MissionController(rclcpp::Node *node, SerialInterface &serialInterface);
+    SensorData & getSensorData();
+    Navigator  & getNavigator();
     void endMission();
     void update();
     double getCurrentPoseX();
@@ -32,8 +33,8 @@ public:
     bool isMissionComplete() const;
     void setMissionPath(NavigationPath * navigation_path);
 
-    KalmanLocalization *getLocalization() const;
-    Odom * getOdom();
+    const KalmanLocalization & getLocalization() const;
+    const Odom * getOdom() const;
 
     void setCmdVel(double linear_x, double angular_z);
 
@@ -42,13 +43,16 @@ public:
     double getAngularZ() const;
 
 private:
-    KalmanLocalization * localization;
-    Odom * odom;
-    Navigator * navigator;
-    NavigationPath * missionPath;
+    DriverInterface  driverInterface;
+    Navigator navigator;
+    SensorData sensorData;
+    KalmanLocalization localization;
+    Odom odom;
+    NavigationPath * missionPath{};
     GridMap * gripMap;
     AStar * aStar;
-    SensorData * sensorData;
+
+
     bool hasMapBeenBuild;
     bool obstacleAvoidanceInProgress;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr posePublisher_;

@@ -9,10 +9,10 @@
 #define TOLERANCES_CM 3
 
 
-ControllerNodeStub::ControllerNodeStub(SerialInterface *serialInterface):
+ControllerNodeStub::ControllerNodeStub(SerialInterface & serialInterface):
 ControllerNode(serialInterface) {
     recordHandler = new RecordHandler();
-    missionController->resetRobotData();
+    missionController.resetRobotData();
 }
 
 void ControllerNodeStub::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
@@ -22,8 +22,8 @@ void ControllerNodeStub::topic_callback(const sensor_msgs::msg::LaserScan::Share
 void ControllerNodeStub::timer_callback() {
     static int i=1;
     if(recordHandler->hasRecordsToProcess()){
-        recordHandler->update(missionController->getSensorData());
-        missionController->update();
+        recordHandler->update(&missionController.getSensorData());
+        missionController.update();
         //broadCastTF();
         publishOdom();
         //cout << i << endl;
@@ -35,9 +35,9 @@ void ControllerNodeStub::timer_callback() {
     }else{
         //missionController->printMap();
         timer_->cancel();
-        missionController->endMission();
+        missionController.endMission();
         rclcpp::shutdown();
-        verifyPosition(missionController->getCurrentPoseX(),missionController->getCurrentPoseY());
+        verifyPosition(missionController.getCurrentPoseX(),missionController.getCurrentPoseY());
     }
 }
 

@@ -17,9 +17,9 @@
 
 class ControllerNode: public rclcpp::Node {
 public:
-    ControllerNode(SerialInterface *serialInterface);
+    explicit ControllerNode(SerialInterface &serialInterface);
 protected:
-    virtual void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
+    virtual void topic_callback(sensor_msgs::msg::LaserScan::SharedPtr scan);
 
     virtual void timer_callback();
 
@@ -30,7 +30,7 @@ protected:
     void throwIfNotWithinRange(double current,double expected);
 
     rclcpp::TimerBase::SharedPtr timer_;
-    MissionController * missionController;
+    MissionController missionController;
 
 private:
     void printSlamAndNav2Data();
@@ -43,8 +43,8 @@ private:
 
     sensor_msgs::msg::LaserScan::SharedPtr currentScan;
     bool scanReady;
-    SensorRecorder * recorder;
-    NavigationPath * missionPath;
+    SensorRecorder recorder;
+    NavigationPath  missionPath;
 };
 
 #endif //CONTROLLERNODE_H

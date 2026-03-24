@@ -23,7 +23,7 @@ def generate_launch_description():
         Node(
             package='robotvehicle_package',
             executable='controller_node',
-            name='controller_nodt',
+            name='controller_node',
         ),
     ])
 

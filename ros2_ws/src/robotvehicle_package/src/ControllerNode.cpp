@@ -9,21 +9,19 @@
 
 #define RECORD_DURATION_SECONDS 300
 
-ControllerNode::ControllerNode(SerialInterface *serialInterface):
-Node("reading_laser"),
+ControllerNode::ControllerNode(SerialInterface &serialInterface):Node("reading_laser"),
+missionController(MissionController(this,serialInterface)),
 scanReady(false)
 {
-    recorder = new SensorRecorder();
-    missionPath = new NavigationPath();
+    recorder = SensorRecorder();
+    missionPath =  NavigationPath();
     auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
-    missionController = new MissionController(this,serialInterface);
-    //missionPath->addPathPoint(40,200,0);
-    missionPath->addPathPoint(170,65,0);
-    missionPath->addPathPoint(40,40,0);
-    //missionPath->addPathPoint(170,65,0);
-    //missionPath->addPathPoint(40,40,0);
-    missionController->setMissionPath(missionPath);
-    recorder->startRecord(RECORD_DURATION_SECONDS);
+    missionPath.addPathPoint(170,65,0);
+    missionPath.addPathPoint(100,140,0);
+    missionPath.addPathPoint(40,40,0);
+    missionController.setMissionPath(&missionPath);
+    recorder.startRecord(RECORD_DURATION_SECONDS);
+
     cout << "starting run" << endl;
     laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
             std::bind(&ControllerNode::topic_callback, this, placeholders::_1));
@@ -50,6 +48,7 @@ void ControllerNode::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr
 
 void ControllerNode::timer_callback(){
     // Poll cmd_vel messages synchronously
+    /*
     geometry_msgs::msg::Twist twist_msg;
     rclcpp::MessageInfo msg_info;
     // use while() to drain all available messages; use if() to take only one
@@ -57,27 +56,28 @@ void ControllerNode::timer_callback(){
         // handle twist_msg here (example: pass to missionController or driver)
         missionController->setCmdVel(twist_msg.linear.x, twist_msg.angular.z);
     }
+    */
 
     if(scanReady) {
         scanReady = false;
-        missionController->getSensorData()->update(currentScan);
-        missionController->update();
-        broadCastTF();
-        publishOdom();
-        printSlamAndNav2Data();
-        recorder->update(missionController->getSensorData());
-        if(recorder->hasRecordTimeExceeded() || missionController->isMissionComplete()){
+        missionController.getSensorData().update(currentScan);
+        missionController.update();
+        //broadCastTF();
+        //publishOdom();
+        //printSlamAndNav2Data();
+        recorder.update(missionController.getSensorData());
+        if(recorder.hasRecordTimeExceeded() || missionController.isMissionComplete()){
             timer_->cancel();
             laserScanSubscription_.reset();
-            recorder->endRecord();
-            missionController->endMission();
+            recorder.endRecord();
+            missionController.endMission();
             rclcpp::shutdown();
         }
     }
 }
 
 void ControllerNode::broadCastTF() const {
-    const Odom* odom = missionController->getOdom();
+    const Odom * odom = missionController.getOdom();
     geometry_msgs::msg::TransformStamped odom_tf;
     odom_tf.header.stamp = this->now();
     odom_tf.header.frame_id = "odom";
@@ -98,7 +98,7 @@ void ControllerNode::broadCastTF() const {
 }
 
 void ControllerNode::publishOdom() const {
-    const Odom* odom = missionController->getOdom();
+    const Odom* odom = missionController.getOdom();
 
     nav_msgs::msg::Odometry odom_msg;
     odom_msg.header.stamp = this->now();
@@ -155,8 +155,8 @@ void ControllerNode::printSlamAndNav2Data() {
         cout << "SLAM Pose x: " << transform.transform.translation.x * 100.0
              << " cm, y: " << transform.transform.translation.y * 100.0
              << " cm, heading: " << yaw << " rad"
-             << " v=" << missionController->getLinearX()
-             << " w=" << missionController->getAngularZ() << endl;
+             << " v=" << missionController.getLinearX()
+             << " w=" << missionController.getAngularZ() << endl;
     } catch (tf2::TransformException &ex) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
             "Could not get SLAM pose: %s", ex.what());

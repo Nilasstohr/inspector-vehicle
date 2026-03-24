@@ -10,7 +10,7 @@
 
 class ControllerNodeStub: public ControllerNode{
 public:
-    explicit ControllerNodeStub(SerialInterface * serialInterface);
+    explicit ControllerNodeStub(SerialInterface & serialInterface);
 private:
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) override;
     void timer_callback() override;
