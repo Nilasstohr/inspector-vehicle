@@ -5,16 +5,16 @@
 #include "SensorRecorder.h"
 
 SensorRecorder::SensorRecorder() {
-    awaitTimer = new AwaitTimer();
+    awaitTimer = AwaitTimer();
 }
 
 void SensorRecorder::startRecord(uint64_t seconds) {
     out = std::ofstream("../../../doc/Measurements/realtime/record.txt");
-    awaitTimer->setTimeout(seconds,AwaitTimer::TimeUnit::seconds);
-    awaitTimer->start();
+    awaitTimer.setTimeout(seconds,AwaitTimer::TimeUnit::seconds);
+    awaitTimer.start();
 }
 
-void SensorRecorder::update(SensorData *sensorData) {
+void SensorRecorder::update(const SensorData & sensorData) {
     /*
     cout << "new" << endl;
     cout << sensorData->getPosLeft() << "," << sensorData->getPosRight() << endl;
@@ -23,8 +23,8 @@ void SensorRecorder::update(SensorData *sensorData) {
     cout << sensorData->getScanPolarForm()->at(51).getAngle() << ","
          << sensorData->getScanPolarForm()->at(51).getDistance() << endl;
     */
-    writeNewRecord(sensorData->getPosLeft(),sensorData->getPosRight());
-    for(PointPolarForm scanPoint: *sensorData->getScanPolarForm()){
+    writeNewRecord(sensorData.getPosLeft(),sensorData.getPosRight());
+    for(PointPolarForm scanPoint: *sensorData.getScanPolarForm()){
         writeScanPoint(scanPoint.getAngle(),scanPoint.getDistance());
     }
 }
@@ -44,7 +44,7 @@ void SensorRecorder::endRecord() {
 }
 
 bool SensorRecorder::hasRecordTimeExceeded() {
-    return awaitTimer->hasWaitingTimeExceeded();
+    return awaitTimer.hasWaitingTimeExceeded();
 }
 
 void SensorRecorder::writeNewKeyWord(){

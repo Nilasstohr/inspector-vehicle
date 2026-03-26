@@ -12,7 +12,7 @@
 
 #define DEG2RAD(x) ((x)*M_PI/180)
 
-Navigator::Navigator(DriverInterface *driverInterface):
+Navigator::Navigator(DriverInterface & driverInterface):
         driverInterface(driverInterface){
     l=14.5;
     r=4.5;
@@ -27,7 +27,7 @@ bool Navigator::validNavigationPath() {
     return validPath;
 }
 
-void Navigator::update(KalmanLocalization * localization) {
+void Navigator::update(KalmanLocalization & localization) {
 
     if(navigationPath->getPath()->empty()) {
         validPath = false;
@@ -40,7 +40,7 @@ void Navigator::update(KalmanLocalization * localization) {
     if(destinationReached){
         return;
     }
-    xt = localization->getPose();
+    xt = localization.getPose();
     xtGoal = &navigationPath->getPath()->at(navigationPointIndex);
     //cout << "at: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
     //cout << "goal: " << xtGoal->getX() << " " << xtGoal->getY() << " " << xtGoal->getTheta() << endl;
@@ -86,7 +86,7 @@ void Navigator::update(KalmanLocalization * localization) {
     else if(wr > MAX_W_NORMAL)
         wr=MAX_W_NORMAL;
     //cout << "wl= "<< wl << " wr= " << wr  << endl;
-    driverInterface->setAngularVelocity(wl,wr);
+    driverInterface.setAngularVelocity(wl,wr);
 }
 
 void Navigator::setNav2Velocities(double w, double v){
@@ -96,7 +96,7 @@ void Navigator::setNav2Velocities(double w, double v){
     static double r =0.045;
 
     if(w==0 && v==0){
-        driverInterface->stop();
+        driverInterface.stop();
         return;
     }
 
@@ -117,7 +117,7 @@ void Navigator::setNav2Velocities(double w, double v){
     else if(wr > MAX_W_NORMAL)
         wr = MAX_W_NORMAL;
 
-    driverInterface->setAngularVelocity(wl,wr);
+    driverInterface.setAngularVelocity(wl,wr);
 }
 
 void Navigator::update() {
@@ -161,7 +161,7 @@ void Navigator::update() {
         cout << "faulty output" << endl;
         return;
     }
-    driverInterface->setAngularVelocity(wl,wr);
+    driverInterface.setAngularVelocity(wl,wr);
 }
 
 void Navigator::setNavigationPath(NavigationPath *navigationPath) {
@@ -170,7 +170,7 @@ void Navigator::setNavigationPath(NavigationPath *navigationPath) {
     destinationReached =false;
 }
 
-bool Navigator::isDestinationReached() {
+bool Navigator::isDestinationReached() const {
     return destinationReached;
 }
 
@@ -178,22 +178,22 @@ void Navigator::setLowerVelocityLimit(double wMin) {
     this->wMin = wMin;
 }
 
-void Navigator::stopAndResetDisplacement() {
-    driverInterface->stopAndResetDisplacement();
+void Navigator::stopAndResetDisplacement() const {
+    driverInterface.stopAndResetDisplacement();
 }
 
-void Navigator::backwardSlow() {
-    driverInterface->setAngularVelocity(-MAX_W_NORMAL,-MAX_W_NORMAL);
+void Navigator::backwardSlow() const {
+    driverInterface.setAngularVelocity(-MAX_W_NORMAL,-MAX_W_NORMAL);
 }
 
-void Navigator::forwardSlow() {
-    driverInterface->setAngularVelocity(MAX_W_NORMAL,MAX_W_NORMAL);
+void Navigator::forwardSlow() const {
+    driverInterface.setAngularVelocity(MAX_W_NORMAL,MAX_W_NORMAL);
 }
 
-void Navigator::stop() {
-    driverInterface->stop();
+void Navigator::stop() const {
+    driverInterface.stop();
 }
 
-NavigationPath * Navigator::getNavigationPath() {
+NavigationPath * Navigator::getNavigationPath() const {
     return navigationPath;
 }

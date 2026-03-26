@@ -19,8 +19,8 @@
 class KalmanLocalization: MatrixHelper {
 public:
     KalmanLocalization();
-    void update(SensorData *sensorData);
-    void build(SensorData * sensorData);
+    void update(SensorData &sensorData);
+    void build(SensorData  &sensorData);
     string *getPoseLastString();
     Pose * getPose() const;
     SensorData *getSensorDate();

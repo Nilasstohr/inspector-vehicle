@@ -94,8 +94,8 @@ class MinimalSubscriber(Node):
 
     def setup_plot_window(self):
         plt.cla()
-        xm = np.array([40, 170, 105])
-        ym = np.array([40, 57.5, 90])
+        xm = np.array([40, 170, 100])
+        ym = np.array([40, 57.5, 140])
         plt.scatter(xm, ym, s=50, color='green')
         plt.axis([-20, 300, -20, 300])
 

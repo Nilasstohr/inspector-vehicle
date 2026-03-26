@@ -4,13 +4,13 @@
 
 #include "DriverInterface.h"
 
-DriverInterface::DriverInterface(SerialInterface *serialInterface): serialInterface(serialInterface) {
+DriverInterface::DriverInterface(SerialInterface& serialInterface): serialInterface(serialInterface) {
     response = new std::string();
 }
 
 void DriverInterface::getWheelsTraveled(double &left, double &right) {
-    serialInterface->sendRequest("p");
-    response->append(serialInterface->getResponse()->c_str());
+    serialInterface.sendRequest("p");
+    response->append(serialInterface.getResponse()->c_str());
     //ROS_INFO(odomStr->c_str());
     left = std::stod(response->substr(0, response->find(" ")));
     right = std::stod(response->substr(response->find(" "), response->size()));
@@ -18,7 +18,7 @@ void DriverInterface::getWheelsTraveled(double &left, double &right) {
 }
 
 void DriverInterface::reset() {
-    serialInterface->sendRequest("r");
+    serialInterface.sendRequest("r");
 }
 
 void DriverInterface::setAngularVelocity(double wl, double wr) {
@@ -29,18 +29,18 @@ void DriverInterface::setAngularVelocity(double wl, double wr) {
     request.append(" ");
     request.append(std::to_string(wr));
     request.append(";");
-    serialInterface->sendRequest(&request);
+    serialInterface.sendRequest(&request);
 }
 
 void DriverInterface::stopAndResetDisplacement() {
-    serialInterface->sendRequest("s");
-    serialInterface->sendRequest("r");
+    serialInterface.sendRequest("s");
+    serialInterface.sendRequest("r");
 }
 
 void DriverInterface::stop() {
-    serialInterface->sendRequest("s");
+    serialInterface.sendRequest("s");
 }
 
-SerialInterface *DriverInterface::getSerialInterface() {
+SerialInterface & DriverInterface::getSerialInterface() {
     return serialInterface;
 }

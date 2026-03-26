@@ -13,7 +13,8 @@ TEST(controller_node_integration_test,test_1)
 {
     rclcpp::init(argcTest,argvTest);
     try {
-        auto node = std::make_shared<ControllerNodeStub>(new SerialInterfaceStub(CONFIG_ROBOT_DRIVER_DEVICE_NAME));
+        SerialInterfaceStub serialInterfaceStub(CONFIG_ROBOT_DRIVER_DEVICE_NAME);
+        auto node = std::make_shared<ControllerNodeStub>(serialInterfaceStub);
         rclcpp::spin(node);
         rclcpp::shutdown();
     }catch (runtime_error *e) {

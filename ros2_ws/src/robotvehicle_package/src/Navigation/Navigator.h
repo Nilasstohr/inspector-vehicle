@@ -12,24 +12,24 @@
 
 class Navigator {
 public:
-    Navigator(DriverInterface * driverInterface);
+    Navigator(DriverInterface & driverInterface);
 
     bool validNavigationPath();
 
-    void update(KalmanLocalization *localization);
+    void update(KalmanLocalization & localization);
     void update();
     void setNavigationPath(NavigationPath * navigationPath);
-    bool isDestinationReached();
-    void stopAndResetDisplacement();
-    void backwardSlow();
-    void forwardSlow();
-    void stop();
-    NavigationPath* getNavigationPath();
+    bool isDestinationReached() const;
+    void stopAndResetDisplacement() const;
+    void backwardSlow() const;
+    void forwardSlow() const;
+    void stop() const;
+    NavigationPath* getNavigationPath() const;
     void setNav2Velocities(double w, double v);
 
 private:
     void setLowerVelocityLimit(double wMin);
-    DriverInterface* driverInterface;
+    DriverInterface & driverInterface;
     Pose *xt;
     NavigationPath * navigationPath;
     NavigationPoint *xtGoal;

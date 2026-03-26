@@ -13,7 +13,7 @@
 class SensorData {
 public:
 
-    SensorData(DriverInterface *driverInterface);
+    SensorData(DriverInterface & driverInterface);
 
     void update(sensor_msgs::msg::LaserScan::SharedPtr currentScan);
     void update(std::vector<PointPolarForm> *scan, double posLeft, double posRight); // used for testing
@@ -24,7 +24,7 @@ public:
     double getPosRight() const;
 
 private:
-    DriverInterface * driverInterface;
+    DriverInterface & driverInterface;
     std::vector<PointPolarForm> * scanPolarForm;
     double posLeft;
     double posRight;

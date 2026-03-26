@@ -18,7 +18,7 @@ class DriverInterface;
 
 class   DiffDriveBaseNode final : public rclcpp::Node {
 public:
-    explicit DiffDriveBaseNode(SerialInterface *serialInterface);
+    explicit DiffDriveBaseNode(SerialInterface serialInterface);
 
 private:
     void control_timer_callback();

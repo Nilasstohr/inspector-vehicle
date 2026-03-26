@@ -16,10 +16,10 @@ public:
     void startRecord(uint64_t seconds);
     void endRecord();
     bool hasRecordTimeExceeded();
-    void update(SensorData *sensorData);
+    void update(const SensorData & sensorData);
 private:
     std::ofstream out;
-    AwaitTimer * awaitTimer;
+    AwaitTimer awaitTimer;
     void writeNewRecord(double wheelTravelLeft, double wheelTravelRight);
     void writeScanPoint(float scanAngleRad, float scanDistanceCm);
     void writeNewKeyWord();
