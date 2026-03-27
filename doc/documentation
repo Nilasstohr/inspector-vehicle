@@ -298,6 +298,11 @@ https://docs.ros.org/en/humble/How-To-Guides/Run-2-nodes-in-single-or-separate-d
 
 
 
+Github workflow
+-----------------------------
+find github token: settings -> Developer Settings -> Personal access tokens (classic)
+find secrets : be in repo root -> settings (tab) -> secrets and variables (side menu) -> Actions
+
 Slam-toolbox
 -----------------------------
 
