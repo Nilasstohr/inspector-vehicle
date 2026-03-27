@@ -303,6 +303,21 @@ Github workflow
 find github token: settings -> Developer Settings -> Personal access tokens (classic)
 find secrets : be in repo root -> settings (tab) -> secrets and variables (side menu) -> Actions
 
+
+Git flow
+--------
+1. from main "git checkout -b ID"
+2. make changes and add "git add ."
+3. commit "git commit -m "ID: change include..."
+4. pull "git pull --rebase origin main"
+5. push "git push origin ID --force-with-lease -> here in want a github action - build, precommit tests
+6. make a pull request in GitHub 
+7. if more changes are requireed on the branch 
+8. "git add ." 
+9 "git commit --amend --no-edit
+10 push "git push origin ID --force-with-lease -> here in want a github action - build, precommit tests
+11 when done merge pull request in github
+
 Slam-toolbox
 -----------------------------
 
