@@ -1,6 +1,9 @@
 name: Precommit
 run-name: ${{ github.actor }} is running precommit checks 🚀
-on: [push]
+on:
+  push:
+  # Allows this workflow to be called as a dependency from other workflows (e.g. release.yaml)
+  workflow_call:
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
