@@ -16,16 +16,19 @@ jobs:
       - name: Checkout repository code
         uses: actions/checkout@v4
 
+      - name: Set lowercase owner name
+        run: echo "OWNER=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build ROS2 Humble base Docker image
-        run: docker build -t ros2_humble_image -f Docker/humble/Dockerfile .
+        run: docker build -t ros2-humble-image -f Docker/humble/Dockerfile .
 
       - name: Tag Docker image for GitHub Container Registry
-        run: docker tag ros2_humble_image ghcr.io/${{ github.actor }}/ros2_humble_image:${{ github.event.inputs.image_tag }}
+        run: docker tag ros2-humble-image ghcr.io/${{ env.OWNER }}/ros2-humble-image:${{ github.event.inputs.image_tag }}
 
       - name: Push ROS2 Humble base Docker image
-        run: docker push ghcr.io/${{ github.actor }}/ros2_humble_image:${{ github.event.inputs.image_tag }}
+        run: docker push ghcr.io/${{ env.OWNER }}/ros2-humble-image:${{ github.event.inputs.image_tag }}
 
-      - run: echo "✅ Image pushed to ghcr.io/${{ github.actor }}/ros2_humble_image:${{ github.event.inputs.image_tag }}"
+      - run: echo "✅ Image pushed to ghcr.io/${{ env.OWNER }}/ros2-humble-image:${{ github.event.inputs.image_tag }}"
