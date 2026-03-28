@@ -1,0 +1,51 @@
+name: Release
+run-name: ${{ github.actor }} is releasing 🚀
+on:
+  # Only triggered manually from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  # Run the full precommit workflow first (build + tests must pass before release)
+  precommit:
+    uses: ./.github/workflows/precommit.yaml
+    # Pass all repository secrets (e.g. CR_PAT) into the reusable precommit workflow
+    secrets: inherit
+
+  release:
+    # Only run this job if precommit passed
+    needs: precommit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts from precommit
+        # Artifacts uploaded by the precommit job are available in this same workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: ros2-build-artifacts
+          path: artifacts/
+
+      - name: Set lowercase owner name
+        run: echo "OWNER=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull ROS2 Humble base image from registry
+        run: |
+          docker pull ghcr.io/${{ env.OWNER }}/ros2-humble-image:latest
+          docker tag ghcr.io/${{ env.OWNER }}/ros2-humble-image:latest ros2-humble-image
+
+      - name: Build release Docker image
+        # Build context is artifacts/ so the Dockerfile COPY commands can find:
+        #   ros2_ws/install  and  ros2_ws/Run.sh
+        # The Dockerfile itself comes from the artifacts/Docker folder (copied in precommit)
+        run: docker build -t inspector-vehicle-image -f artifacts/Docker/Dockerfile artifacts/
+
+      - name: Tag Docker image for GitHub Container Registry
+        run: docker tag inspector-vehicle-image ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest
+
+      - name: Push release Docker image to registry
+        run: docker push ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest
+
+      - run: echo "✅ Released ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest"
+
