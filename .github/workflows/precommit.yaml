@@ -41,9 +41,10 @@ jobs:
 
       - name: Extract artifacts from container
         run: |
-          mkdir -p artifacts
-          docker cp precommit-container:/ros2_ws/install artifacts/install
-          docker cp precommit-container:/ros2_ws/Run.sh artifacts/Run.sh
+          mkdir -p artifacts/ros2_ws
+          docker cp precommit-container:/ros2_ws/install artifacts/ros2_ws/install
+          docker cp precommit-container:/ros2_ws/Run.sh artifacts/ros2_ws/Run.sh
+          cp -r Docker artifacts/Docker
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
