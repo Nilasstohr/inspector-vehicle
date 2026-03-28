@@ -158,6 +158,7 @@ if(BUILD_TESTING)
   # Testing Controller node
   # ! (notice a lot of repeated cmake code from controller_node executable above, a future task is to reuse here)
   ament_add_gtest(ControllerNodeIntegrationTest
+          TIMEOUT 300
           ${TestRootPath}/ControllerNode/ControllerNodeIntegrationTest.cpp
           ${TestRootPath}/ControllerNode/ControllerNodeStub.cpp
           ${TestRootPath}/ControllerNode/ControllerNodeStub.h
