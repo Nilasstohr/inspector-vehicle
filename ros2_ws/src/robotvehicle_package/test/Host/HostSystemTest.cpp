@@ -34,7 +34,7 @@ TEST(host_system_test,confirm_position_increase) {
 
 int main(int argc, char ** argv)
 {
-    auto * serial_interface = new SerialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME);
+    auto serial_interface =  SerialInterface(CONFIG_ROBOT_DRIVER_DEVICE_NAME);
     driver_interface = new DriverInterface(serial_interface);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

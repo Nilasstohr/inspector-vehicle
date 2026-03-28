@@ -1,5 +1,5 @@
 # Base image: ROS2 Humble pre-installed (built from Docker/experimental/humble/)
-FROM ros2_humble_image
+FROM ros2-humble-image
 
 # Working directory inside the container
 ARG WD=/app
