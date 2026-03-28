@@ -1,0 +1,55 @@
+name: Precommit
+run-name: ${{ github.actor }} is running precommit checks 🚀
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+
+      - name: Set lowercase owner name
+        run: echo "OWNER=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull ROS2 Humble base image from registry
+        run: |
+          docker pull ghcr.io/${{ env.OWNER }}/ros2-humble-image:latest
+          docker tag ghcr.io/${{ env.OWNER }}/ros2-humble-image:latest ros2-humble-image
+
+      - name: Build Precommit Docker image
+        run: docker build -t precommit-image -f Docker/precommit/Dockerfile .
+
+      - name: Run precommit Docker container
+        # --name precommit-container : gives the container a fixed name so we can
+        #                              reference it by name in the steps below
+        #                              (docker cp and docker rm).
+        #                              Without this, Docker assigns a random name.
+        # precommit-image            : the image to run, built in the step above.
+        #                              Its CMD runs Build.sh then RunPrecommitTests.sh
+        # Note: intentionally NO --rm flag, so the container is kept after it stops
+        #       and we can copy files out of it in the next step.
+        run: docker run --name precommit-container precommit-image
+
+      - name: Extract artifacts from container
+        run: |
+          mkdir -p artifacts
+          docker cp precommit-container:/ros2_ws/install artifacts/install
+          docker cp precommit-container:/ros2_ws/Run.sh artifacts/Run.sh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros2-build-artifacts
+          path: artifacts/
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
