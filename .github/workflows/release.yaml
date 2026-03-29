@@ -24,6 +24,12 @@ jobs:
           name: ros2-build-artifacts
           path: artifacts/
 
+      - name: Restore executable permissions on binaries
+        # actions/download-artifact strips the executable bit from binaries.
+        # All compiled ROS2 node executables live under lib/<package>/ and must
+        # be executable otherwise ros2 launch reports "executable not found".
+        run: find artifacts/ros2_ws/install -path "*/lib/*/*" -type f -exec chmod +x {} \;
+
       - name: Set lowercase owner name
         run: echo "OWNER=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
@@ -36,10 +42,10 @@ jobs:
           docker tag ghcr.io/${{ env.OWNER }}/ros2-humble-image:latest ros2-humble-image
 
       - name: Build release Docker image
-        # Build context is artifacts/ so the Dockerfile COPY commands can find:
-        #   ros2_ws/install  and  ros2_ws/Run.sh
-        # The Dockerfile itself comes from the artifacts/Docker folder (copied in precommit)
         run: docker build -t inspector-vehicle-image -f artifacts/Docker/Dockerfile artifacts/
+
+      - name: Verify sllidar_node in built image
+        run: docker run --rm inspector-vehicle-image ls -la /app/install/sllidar_ros2/lib/sllidar_ros2/
 
       - name: Tag Docker image for GitHub Container Registry
         run: docker tag inspector-vehicle-image ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest
@@ -48,4 +54,58 @@ jobs:
         run: docker push ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest
 
       - run: echo "✅ Released ghcr.io/${{ env.OWNER }}/inspector-vehicle-image:latest"
+
+  deploy:
+    # Only run if release (build + push) succeeded
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to Tailscale
+        # Joins the GitHub Actions runner to the Tailscale network so it can
+        # reach the robot on its private 100.x.x.x address
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Deploy to robot1
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.ROBOT1_HOST }}
+          username: ${{ secrets.ROBOT1_USER }}
+          key: ${{ secrets.ROBOT1_SSH_KEY }}
+          script: |
+            OWNER=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
+
+            echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker pull ghcr.io/$OWNER/inspector-vehicle-image:latest
+
+            docker stop inspector-vehicle || true
+            docker rm   inspector-vehicle || true
+
+            DEVICES=""
+            for dev in /dev/ttyUSB0 /dev/ttyACM0; do
+              if [ -e "$dev" ]; then
+                DEVICES="$DEVICES --device=$dev"
+              else
+                echo "Warning: $dev not found, skipping"
+              fi
+            done
+
+            docker run -d \
+              --name inspector-vehicle \
+              --privileged \
+              --network=host \
+              $DEVICES \
+              ghcr.io/$OWNER/inspector-vehicle-image:latest
+
+            echo "--- docker ps (running containers) ---"
+            docker ps
+
+            echo "--- docker logs (container output) ---"
+            sleep 5
+            docker logs inspector-vehicle
+
+            echo "✅ Robot is running the latest inspector-vehicle-image"
 

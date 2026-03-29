@@ -2,9 +2,13 @@
 FROM ros2-humble-image
 
 # Copy the ROS2 workspace (includes source, Build.sh, RunPrecommitTests.sh)
-COPY ros2_ws /ros2_ws
+# Use /app to match the release container (Docker/Dockerfile uses ARG WD=/app).
+# colcon build writes hardcoded absolute paths into install/setup.bash,
+# so the build location must match where the release container will use install/.
+COPY ros2_ws /app
+COPY Docker /Docker
 
-WORKDIR /ros2_ws
+WORKDIR /app
 
 # Build first, then run the precommit tests
 CMD ["bash", "-c", "bash Build.sh && bash RunPrecommitTests.sh"]

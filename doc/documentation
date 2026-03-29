@@ -179,6 +179,23 @@ follow guide below:
 https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent (!!! remember to type in a passphase, important )
 
 
+Ssh from dev to robot
+----------------------------------------------
+install and enable on both dev and robot
+1. sudo apt update && sudo apt install -y openssh-server
+2. sudo systemctl enable ssh
+   sudo systemctl start ssh
+3. ip a (look for port 22)
+4. ssh robot1@192.168.68.60
+
+Generate a private/public key and exchange them 
+1. Generae keys (dev machine):  "ssh-keygen -t ed25519 -C "my-key-name" -f ~/.ssh/my_key_folder"
+2. Transfer public key to robot: "ssh-copy-id -i ~/.ssh/my_key_folder.pub robot1@192.168.68.60"
+3. Test connection: "ssh -i ~/.ssh/my_key_folder robot1@192.168.68.60" (no password should be needed)
+
+
+
+
 PWM on teeensy
 ---------------------------------------------
 https://www.pjrc.com/teensy/td_pulse.html
