@@ -33,7 +33,7 @@ int Line::getPointCount() const {
     return pointsNum;
 }
 
-double Line::perpendicularDistance(PointPolarForm *point) {
+double Line::perpendicularDistance(const PointPolarForm *point) {
     updateOriginLineNormal();
     double d;
     double xp = getXFromPolarForm(point->getAngle(),point->getDistance());

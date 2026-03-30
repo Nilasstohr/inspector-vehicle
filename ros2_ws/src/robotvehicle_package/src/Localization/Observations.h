@@ -16,7 +16,7 @@ using Eigen::MatrixXd;
 class Observations{
 public:
     Observations(double eps, const MatrixXd &r);
-    void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
+    void update(const std::vector<PointPolarForm> & scan,int scanPointsNum);
     LineStack * getLinesStack();
     Lines *getLines();
     MatrixXd * z(int i) ;

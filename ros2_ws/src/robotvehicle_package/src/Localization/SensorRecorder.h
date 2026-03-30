@@ -16,7 +16,7 @@ public:
     void startRecord(uint64_t seconds);
     void endRecord();
     bool hasRecordTimeExceeded();
-    void update(const SensorData & sensorData);
+    void update(const vector<PointPolarForm> & lidarScanPolarPoints, double posLeft, double posRight);
 private:
     std::ofstream out;
     AwaitTimer awaitTimer;

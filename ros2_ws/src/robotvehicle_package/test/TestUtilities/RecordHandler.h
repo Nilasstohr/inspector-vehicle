@@ -16,7 +16,7 @@ class RecordHandler {
 public:
     RecordHandler();
     bool hasRecordsToProcess();
-    void update(SensorData *sensorData);
+    void update(std::vector<PointPolarForm> & lidarScanPointsPolarForm, double & posLeft, double & posRight);
 
 private:
     vector<SensorRecord> *recording;

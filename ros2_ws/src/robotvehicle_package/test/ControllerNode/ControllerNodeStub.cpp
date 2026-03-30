@@ -10,8 +10,11 @@
 
 
 ControllerNodeStub::ControllerNodeStub(SerialInterface & serialInterface):
-ControllerNode(serialInterface) {
-    recordHandler = new RecordHandler();
+ControllerNode(serialInterface),
+recordHandler(RecordHandler()),
+posLeft(0),
+posRight(0)
+{
     missionController.resetRobotData();
 }
 
@@ -19,19 +22,14 @@ void ControllerNodeStub::topic_callback(const sensor_msgs::msg::LaserScan::Share
     (void)scan;
 }
 
+
 void ControllerNodeStub::timer_callback() {
-    static int i=1;
-    if(recordHandler->hasRecordsToProcess()){
-        recordHandler->update(&missionController.getSensorData());
-        missionController.update();
+    if(recordHandler.hasRecordsToProcess()){
+        recordHandler.update(lidarScanPointsPolarForm, posLeft, posRight);
+        missionController.update(lidarScanPointsPolarForm,posLeft,posRight);
         //broadCastTF();
-        publishOdom();
-        //cout << i << endl;
-        if(i==227) {
-            i=227;
-        }
-        i++;
-        //missionController->publishRobotData();
+        //publishOdom();
+        missionController.publishRobotData(lidarScanPointsPolarForm);
     }else{
         //missionController->printMap();
         timer_->cancel();

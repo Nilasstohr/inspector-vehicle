@@ -21,6 +21,8 @@ public:
 protected:
     virtual void topic_callback(sensor_msgs::msg::LaserScan::SharedPtr scan);
 
+    void updateSensorData();
+
     virtual void timer_callback();
 
     void broadCastTF() const;
@@ -41,10 +43,16 @@ private:
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
-    sensor_msgs::msg::LaserScan::SharedPtr currentScan;
+    sensor_msgs::msg::LaserScan::SharedPtr rawLidarScan;
     bool scanReady;
     SensorRecorder recorder;
     NavigationPath  missionPath;
+    DriverInterface driverInterface;
+
+    std::vector<PointPolarForm> lidarScanPointsPolarForm;
+    double posLeft;
+    double posRight;
+
 };
 
 #endif //CONTROLLERNODE_H

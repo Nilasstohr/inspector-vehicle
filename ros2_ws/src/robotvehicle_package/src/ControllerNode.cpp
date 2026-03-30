@@ -9,41 +9,60 @@
 
 #define RECORD_DURATION_SECONDS 300
 
-ControllerNode::ControllerNode(SerialInterface &serialInterface):Node("reading_laser"),
-missionController(MissionController(this,serialInterface)),
-scanReady(false)
+ControllerNode::ControllerNode(SerialInterface &serialInterface): Node("reading_laser"),
+missionController(MissionController(this, serialInterface)),
+scanReady(false),
+driverInterface(serialInterface),
+posLeft(0),
+posRight(0)
 {
     recorder = SensorRecorder();
-    missionPath =  NavigationPath();
+    missionPath = NavigationPath();
     auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
-    missionPath.addPathPoint(170,65,0);
-    missionPath.addPathPoint(100,140,0);
-    missionPath.addPathPoint(40,40,0);
+
+    missionPath.addPathPoint(170, 65, 0);
+    missionPath.addPathPoint(100, 140, 0);
+    missionPath.addPathPoint(40, 40, 0);
     missionController.setMissionPath(&missionPath);
     recorder.startRecord(RECORD_DURATION_SECONDS);
 
     cout << "starting run" << endl;
-    laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",default_qos,
-            std::bind(&ControllerNode::topic_callback, this, placeholders::_1));
+    laserScanSubscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan", default_qos,
+        std::bind(&ControllerNode::topic_callback, this, placeholders::_1));
 
     cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
-    "/cmd_vel", default_qos,
-    [](const geometry_msgs::msg::Twist::SharedPtr){ /* no-op so middleware exposes the endpoint */ });
+        "/cmd_vel", default_qos,
+        [](const geometry_msgs::msg::Twist::SharedPtr) {
+            /* no-op so middleware exposes the endpoint */
+        });
 
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-    odom_pub_ =this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+    odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
     // Initialize TF2 listener
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-    timer_ = this->create_wall_timer(std::chrono::milliseconds (1),
-                                std::bind(&ControllerNode::timer_callback, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(1),
+                                     std::bind(&ControllerNode::timer_callback, this));
 }
 
 void ControllerNode::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
-    currentScan = scan;
+    rawLidarScan = scan;
     scanReady=true;
+}
+
+void ControllerNode::updateSensorData() {
+    lidarScanPointsPolarForm.clear();
+    int scanPointsNum = rawLidarScan->scan_time / rawLidarScan->time_increment;
+    for(int i = 0; i < scanPointsNum; i++) {
+        float angle = (rawLidarScan->angle_min + rawLidarScan->angle_increment * i) + M_PI;
+        float distance = rawLidarScan->ranges[i]*100;
+        if(!std::isinf(distance)){
+            lidarScanPointsPolarForm.push_back(PointPolarForm(angle,distance));
+        }
+    }
+    driverInterface.getWheelsTraveled(posLeft,posRight);
 }
 
 void ControllerNode::timer_callback(){
@@ -60,12 +79,12 @@ void ControllerNode::timer_callback(){
 
     if(scanReady) {
         scanReady = false;
-        missionController.getSensorData().update(currentScan);
-        missionController.update();
+        updateSensorData();
+        missionController.update(lidarScanPointsPolarForm,posLeft,posRight);
         //broadCastTF();
         //publishOdom();
         //printSlamAndNav2Data();
-        recorder.update(missionController.getSensorData());
+        recorder.update(lidarScanPointsPolarForm,posLeft,posRight);
         if(recorder.hasRecordTimeExceeded() || missionController.isMissionComplete()){
             timer_->cancel();
             laserScanSubscription_.reset();

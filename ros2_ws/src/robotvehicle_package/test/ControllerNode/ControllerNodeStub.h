@@ -15,8 +15,10 @@ private:
     void topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) override;
     void timer_callback() override;
     void verifyPosition(double currentPoseX, double currentPoseY);
-
-    RecordHandler * recordHandler;
+    RecordHandler recordHandler;
+    std::vector<PointPolarForm> lidarScanPointsPolarForm;
+    double posLeft;
+    double posRight;
 };
 
 

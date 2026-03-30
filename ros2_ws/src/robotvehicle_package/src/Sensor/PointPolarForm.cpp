@@ -6,10 +6,12 @@
 
 PointPolarForm::PointPolarForm(double angle, double distance): angle(angle), distance(distance) {}
 
+PointPolarForm::PointPolarForm() {}
+
 double PointPolarForm::getAngle() const {
     return angle;
 }
-PointPolarForm::PointPolarForm() {}
+
 
 double PointPolarForm::getDistance() const {
     return distance;

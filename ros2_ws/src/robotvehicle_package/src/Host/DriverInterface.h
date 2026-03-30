@@ -13,12 +13,11 @@ public:
     void getWheelsTraveled(double &left, double &right);
     void reset();
     void setAngularVelocity(double wl, double wr);
-    void stopAndResetDisplacement();
-    void stop();
-    SerialInterface& getSerialInterface();
+    void stopAndResetDisplacement() const;
+    void stop() const;
 private:
     SerialInterface& serialInterface;
-    std::string *response;
+    std::string response;
     std::string request;
 
 

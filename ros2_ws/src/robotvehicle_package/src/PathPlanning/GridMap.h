@@ -10,7 +10,6 @@
 #include "Localization/Line.h"
 #include "Utilities/Pose.h"
 #include "LinePoints.h"
-#include "Sensor/SensorData.h"
 #include <iomanip>
 #include <fstream>
 #include <Navigation/Navigator.h>
@@ -21,7 +20,7 @@
 class GridMap: MatrixHelper {
 public:
     GridMap(double gridMapValueAvailable, double gridMapValueOccupied, double gridMapValueUpdateInterval);
-    void update(std::vector<PointPolarForm> * scan, Pose *currentPose);
+    void update(const vector<PointPolarForm> & lidarScanPolarPoints, Pose *currentPose);
     string * obstacleSafeDistanceMapToString();
     void storeMap();
     void loadGridMap();
@@ -32,7 +31,7 @@ public:
     bool isPoseInSafeZone(Pose *currentPose);
     bool isPathBlocked(NavigationPath *navigationPath);
     MatrixXd * getMapWithSafetyDistance();
-    string * scanEndPointsToString(vector<PointPolarForm> *scan, Pose *pose);
+    string * scanEndPointsToString(const vector<PointPolarForm> & scan, Pose *pose);
 private:
     MatrixXd gridMap;
     MatrixXd gridMapWithSafetyDistance;

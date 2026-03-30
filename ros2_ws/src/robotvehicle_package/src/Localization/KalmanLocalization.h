@@ -11,7 +11,6 @@
 #include "Matching.h"
 #include "Estimation.h"
 #include "Utilities/Pose.h"
-#include "Sensor/SensorData.h"
 #include <Utilities/MathConversions.h>
 #include "Configurations.h"
 
@@ -19,29 +18,29 @@
 class KalmanLocalization: MatrixHelper {
 public:
     KalmanLocalization();
-    void update(SensorData &sensorData);
-    void build(SensorData  &sensorData);
+    void update(const std::vector<PointPolarForm> &lidarScanPolarPoints, double posLeft, double posRight);
+    void build(const std::vector<PointPolarForm> & lidarScanPolarPoints);
+
+    static MatrixXd makeObservationNoiseR();
+
     string *getPoseLastString();
     Pose * getPose() const;
-    SensorData *getSensorDate();
+
     Observations *getObservations();
-
-    Matching *getMatching();
-
-    MeasurementPrediction* getMeasurementPrediction();
+    Matching & getMatching();
+    MeasurementPrediction & getMeasurementPrediction();
 
     const Pose * getStarPose();
 
     PredictionDifferentialDrive *getPrediction();
 private:
     void init();
-    PredictionDifferentialDrive * differentialDrive;
-    PredictionDifferentialDrive * differentialDriveNoKalman;
-    MeasurementPrediction *measurementPrediction;
-    Observations *observations;
-    Matching * matching;
+    PredictionDifferentialDrive differentialDrive;
+    PredictionDifferentialDrive  differentialDriveNoKalman;
+    MeasurementPrediction measurementPrediction;
+    Observations observations;
+    Matching  matching;
     Estimation *estimation;
-    SensorData *sensorData;
     Pose * pose;
     string poseString;
     Pose startPose;
