@@ -53,12 +53,14 @@ void RecordHandler::LoadRecords(){
     file.close();
 }
 
-void RecordHandler::update(SensorData * sensorData){
-    SensorRecord * record = &recording->at(recordNum++);
-    sensorData->update(record->getScan(),
-                       record->getPosLeft(),
-                       record->getPosRight());
+void RecordHandler::update(std::vector<PointPolarForm> & lidarScanPointsPolarForm, double & posLeft, double & posRight){
+    SensorRecord & record = recording->at(recordNum++);
+    lidarScanPointsPolarForm = *record.getScan();
+    posLeft = record.getPosLeft();
+    posRight = record.getPosRight();
 }
+
+
 
 void RecordHandler::getValuesFromLine(string line, float &val1, float &val2){
     int val1Size =line.find(",");

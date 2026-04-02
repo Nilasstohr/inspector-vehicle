@@ -18,7 +18,7 @@ gridMapValueUpdateInterval(gridMapValueUpdateInterval){
     obstacleDetection = ObstacleDetection();
 }
 
-void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
+void GridMap::update(const vector<PointPolarForm> & lidarScanPolarPoints, Pose *currentPose) {
     double xp;
     double yp;
     double xPos = currentPose->getX();
@@ -26,13 +26,13 @@ void GridMap::update(std::vector<PointPolarForm> * scan, Pose *currentPose) {
     // since the robot is at the position it must be available.
     updateMapPointValue(xPos,yPos,CONFIG_GRID_VALUE_FULL_AVAILABLE);
     obstacleDetection.clear();
-    for(int i=0; static_cast<long unsigned int>(i)<scan->size(); i++){
+    for(int i=0; static_cast<long unsigned int>(i)<lidarScanPolarPoints.size(); i++){
         linePoints.reset();
         Transformations::polarPointToCartesian(xp,yp,currentPose,
-                                               scan->at(i).getAngle(),
-                                   scan->at(i).getDistance());
+                                               lidarScanPolarPoints.at(i).getAngle(),
+                                   lidarScanPolarPoints.at(i).getDistance());
         //cout << scan->at(i).getAngle() << " " << scan->at(i).getDistance() << endl;
-        obstacleDetection.update(scan->at(i).getDistance(),scan->at(i).getAngle());
+        obstacleDetection.update(lidarScanPolarPoints.at(i).getDistance(),lidarScanPolarPoints.at(i).getAngle());
         //printf("at angle %.2f endpoint x=%.2f y=%.2f\n",
         //    MathConversions::rad2deg(scan->at(i).getAngle()),xp,yp);
         // the target point of the laser is most likely occupied.
@@ -312,16 +312,16 @@ MatrixXd * GridMap::getMapWithSafetyDistance() {
     return &gridMapWithSafetyDistance;
 }
 
-string * GridMap::scanEndPointsToString(vector<PointPolarForm> *scan, Pose *pose) {
+string * GridMap::scanEndPointsToString(const vector<PointPolarForm> & scan, Pose *pose) {
     scanEndPointsString.clear();
     stringstream stream;
     double xp;
     double yp;
-    for(int i=0; static_cast<long unsigned int>(i)<scan->size(); i++) {
+    for(int i=0; static_cast<long unsigned int>(i)<scan.size(); i++) {
         Transformations::polarPointToCartesian(xp,yp,pose,
-                                               scan->at(i).getAngle(),
-                                   scan->at(i).getDistance());
-        stream << MathConversions::rad2deg(scan->at(i).getAngle())<< " " << xp << " "<< yp << endl;
+                                               scan.at(i).getAngle(),
+                                   scan.at(i).getDistance());
+        stream << MathConversions::rad2deg(scan.at(i).getAngle())<< " " << xp << " "<< yp << endl;
         scanEndPointsString.append(stream.str());
         stream.str(std::string());
     }

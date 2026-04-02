@@ -17,11 +17,11 @@ public:
     MeasurementPrediction(const LineStack *lines);
 
     MeasurementPrediction(double eps, const MatrixXd &r);
-    void buildMap(std::vector<PointPolarForm> *scan,Pose * currentPose);
+    void buildMap(const std::vector<PointPolarForm> &scan,Pose * currentPose);
 
     void addLinesToMap(Lines *unmatchedLines, double x, double y, double theta);
 
-    void update(const PredictionDifferentialDrive *  prediction);
+    void update(const PredictionDifferentialDrive &  prediction);
     void transformToRobotReferenceFrame(
             double alfaW, double rW, double xEst, double yEst, double thetaEst, double &alfaR, double &rR);
     void transformToWorldReferenceFrame(

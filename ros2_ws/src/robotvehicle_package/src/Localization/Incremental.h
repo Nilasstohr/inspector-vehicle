@@ -15,7 +15,7 @@ class Incremental{
 public:
     explicit Incremental(double d);
     int size();
-    void update(std::vector<PointPolarForm> *scan,int scanPointsNum);
+    void update(const std::vector<PointPolarForm> & scan,int scanPointsNum);
     LineStack * getLineStack();
     Lines * getLines();
     void reset();
@@ -29,7 +29,7 @@ private:
     Lines lines;
 
     void addLine(Line * line);
-    void executeAlgoritm(std::vector<PointPolarForm> *scan);
+    void executeAlgoritm(const std::vector<PointPolarForm> *scan);
 
     void addPointToLine(Line *line,PointPolarForm point);
     int  next();

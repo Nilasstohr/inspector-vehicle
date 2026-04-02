@@ -27,13 +27,13 @@ void Incremental::reset() {
     lines.reset();
 }
 
-void Incremental::update(std::vector<PointPolarForm> *scan,int scanPointsNum) {
+void Incremental::update(const std::vector<PointPolarForm> & scan,int scanPointsNum) {
     reset();
     this->scanPointsNum = scanPointsNum;
-    executeAlgoritm(scan);
+    executeAlgoritm(&scan);
 }
 
-void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
+void Incremental::executeAlgoritm(const std::vector<PointPolarForm> *scan) {
     // add first to point to linePoints;
     addPointToLine(line,scan->at(next()));
     addPointToLine(line,scan->at(next()));
@@ -42,7 +42,7 @@ void Incremental::executeAlgoritm(std::vector<PointPolarForm> *scan) {
         addLine(line);
         return;
     }
-    PointPolarForm *point;
+    const PointPolarForm *point;
     while(true){
         point = &scan->at(current());
         if(line->perpendicularDistance(point) < esp ){

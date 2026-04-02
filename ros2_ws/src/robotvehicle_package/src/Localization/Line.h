@@ -17,7 +17,7 @@ public:
     Line();
     void addRecPointFromPolar(double theta,double d);
     void addRecPoint(double x, double y);
-    double perpendicularDistance(PointPolarForm *point);
+    double perpendicularDistance(const PointPolarForm *point);
     void updateOriginLineNormal();
     void updateOriginalLineNormalFromSlopeForm();
 

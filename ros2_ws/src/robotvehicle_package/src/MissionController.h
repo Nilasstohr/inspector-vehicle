@@ -20,14 +20,13 @@
 class MissionController {
 public:
     MissionController(rclcpp::Node *node, SerialInterface &serialInterface);
-    SensorData & getSensorData();
     Navigator  & getNavigator();
     void endMission();
-    void update();
+    void update(const std::vector<PointPolarForm> & scan, double posLeft, double posRight);
     double getCurrentPoseX();
     double getCurrentPoseY();
 
-    void publishRobotData();
+    void publishRobotData(const std::vector<PointPolarForm> & lidarScanPolarPoints);
     void resetRobotData() const;
     void printMap();
     bool isMissionComplete() const;
@@ -45,12 +44,11 @@ public:
 private:
     DriverInterface  driverInterface;
     Navigator navigator;
-    SensorData sensorData;
+    GridMap  gripMap;
     KalmanLocalization localization;
     Odom odom;
     NavigationPath * missionPath{};
-    GridMap * gripMap;
-    AStar * aStar;
+    AStar  aStar;
 
 
     bool hasMapBeenBuild;
@@ -61,8 +59,8 @@ private:
     bool missionComplete;
 
     void generateNewPathToDestination();
-    void build();
-    void updateMapAndPath(vector<PointPolarForm> * scan, Pose * pose);
+    void build(const std::vector<PointPolarForm> & lidarScanPolarPoints);
+    void updateMapAndPath(const vector<PointPolarForm> &scan, Pose *pose);
     void updateMapWithObstacleSafeDistance();
 
     double linear_x;

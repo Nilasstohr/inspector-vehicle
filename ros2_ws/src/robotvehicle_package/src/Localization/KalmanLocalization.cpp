@@ -5,19 +5,24 @@
 #include <iostream>
 #include "KalmanLocalization.h"
 
-KalmanLocalization::KalmanLocalization() {
-    init();
+MatrixXd KalmanLocalization::makeObservationNoiseR() {
+    MatrixXd R(2, 2);
+    R(0, 0) = pow(MathConversions::deg2rad(2), 2); R(0, 1) = 0;
+    R(1, 0) = 0;                                   R(1, 1) = pow(1, 2);
+    return R;
 }
 
-void KalmanLocalization::init(){
+KalmanLocalization::KalmanLocalization():
+measurementPrediction(CONFIG_ESP,makeObservationNoiseR()),
+observations(CONFIG_ESP, makeObservationNoiseR()),
+matching(CONFIG_MAX_NUMBER_OF_MATCHES)
+
+{
     startPose = Pose();
     startPose.update(CONFIG_START_POSE_X,CONFIG_START_POSE_Y,CONFIG_START_POSE_THETA);
 
-    differentialDrive =
-            new PredictionDifferentialDrive();
-
-    differentialDriveNoKalman =
-            new PredictionDifferentialDrive();
+    differentialDrive = PredictionDifferentialDrive();
+    differentialDriveNoKalman = PredictionDifferentialDrive();
 
     // for prediction step
     MatrixXd pEst(3, 3);
@@ -33,21 +38,7 @@ void KalmanLocalization::init(){
     xEst(2,0)=startPose.getTheta();
     //printMatrix(pEst,"pEst");
     //printVector(xEst,"xEst");
-    differentialDriveNoKalman->init(&xEst,&pEst);
-
-    // for observations step
-    double eps = CONFIG_ESP;
-    MatrixXd R(2, 2);
-    R(0, 0)= pow(MathConversions::deg2rad(2),2); R(0, 1)= 0;
-    R(1, 0)= 0; R(1, 1)= pow(1,2);
-    observations = new Observations(eps,R);
-    //printMatrix(&R,"----R init----");
-    // measurement prediction
-    measurementPrediction = new MeasurementPrediction(eps,R);
-
-    // matching
-    //matching = new Matching(15);
-    matching = new Matching(CONFIG_MAX_NUMBER_OF_MATCHES);
+    differentialDriveNoKalman.init(&xEst,&pEst);
 
     // Estimation
     estimation = new Estimation(xEst,pEst);
@@ -55,21 +46,22 @@ void KalmanLocalization::init(){
     pose = new Pose();
 }
 
-void KalmanLocalization::update(SensorData & sensorData) {
-    measurementPrediction->reset();
-    observations->reset();
-    matching->reset();
+
+void KalmanLocalization::update(const std::vector<PointPolarForm> & lidarScanPolarPoints, double posLeft, double posRight) {
+    measurementPrediction.reset();
+    observations.reset();
+    matching.reset();
     //differentialDriveNoKalman->update(posLeft,posRight,
     //                      differentialDriveNoKalman->getXEst(),differentialDriveNoKalman->getPEst());
     //printMatrix(differentialDriveNoKalman->getXEst(),"---x_est (no kalman)--");
     //printMatrix(differentialDriveNoKalman->getPEst(),"---P_est (no kalman)--");
-    differentialDrive->update(sensorData.getPosLeft(),sensorData.getPosRight(),estimation->getXt(),estimation->getPt());
-    observations->update(sensorData.getScanPolarForm(),sensorData.getScanPolarForm()->size());
-    measurementPrediction->update(differentialDrive);
-    matching->update(differentialDrive,measurementPrediction,observations);
-    estimation->update(matching,differentialDrive->getXEst(),differentialDrive->getPEst());
-    measurementPrediction->addLinesToMap(matching->getUnmatchedVerified(),
-      estimation->getX(),estimation->getY(),estimation->getTheta());
+    differentialDrive.update(posLeft,posRight,estimation->getXt(),estimation->getPt());
+    observations.update(lidarScanPolarPoints,lidarScanPolarPoints.size());
+    measurementPrediction.update(differentialDrive);
+    matching.update(&differentialDrive,&measurementPrediction,&observations);
+    estimation->update(&matching,differentialDrive.getXEst(),differentialDrive.getPEst());
+    measurementPrediction.addLinesToMap(matching.getUnmatchedVerified(),estimation->getX(),
+        estimation->getY(),estimation->getTheta());
 }
 
 
@@ -78,8 +70,8 @@ Pose * KalmanLocalization::getPose() const{
     return pose;
 }
 
-void KalmanLocalization::build(SensorData & sensorData) {
-    measurementPrediction->buildMap(sensorData.getScanPolarForm(),&startPose);
+void KalmanLocalization::build(const std::vector<PointPolarForm> & lidarScanPolarPoints) {
+    measurementPrediction.buildMap(lidarScanPolarPoints,&startPose);
 }
 
 string *KalmanLocalization::getPoseLastString() {
@@ -90,18 +82,15 @@ string *KalmanLocalization::getPoseLastString() {
     return &poseString;
 }
 
-SensorData *KalmanLocalization::getSensorDate() {
-    return sensorData;
-}
 
 Observations * KalmanLocalization::getObservations() {
-    return observations;
+    return &observations;
 }
-Matching * KalmanLocalization::getMatching()  {
+Matching & KalmanLocalization::getMatching()  {
     return matching;
 }
 
-MeasurementPrediction * KalmanLocalization::getMeasurementPrediction() {
+MeasurementPrediction & KalmanLocalization::getMeasurementPrediction() {
     return measurementPrediction;
 }
 
@@ -109,8 +98,5 @@ const Pose * KalmanLocalization::getStarPose() {
     return &startPose;
 }
 
-PredictionDifferentialDrive * KalmanLocalization::getPrediction() {
-    return differentialDrive;
-}
 
 

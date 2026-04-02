@@ -14,7 +14,7 @@ void SensorRecorder::startRecord(uint64_t seconds) {
     awaitTimer.start();
 }
 
-void SensorRecorder::update(const SensorData & sensorData) {
+void SensorRecorder::update(const vector<PointPolarForm> & lidarScanPolarPoints, double posLeft, double posRight) {
     /*
     cout << "new" << endl;
     cout << sensorData->getPosLeft() << "," << sensorData->getPosRight() << endl;
@@ -23,8 +23,8 @@ void SensorRecorder::update(const SensorData & sensorData) {
     cout << sensorData->getScanPolarForm()->at(51).getAngle() << ","
          << sensorData->getScanPolarForm()->at(51).getDistance() << endl;
     */
-    writeNewRecord(sensorData.getPosLeft(),sensorData.getPosRight());
-    for(PointPolarForm scanPoint: *sensorData.getScanPolarForm()){
+    writeNewRecord(posLeft,posRight);
+    for(PointPolarForm scanPoint: lidarScanPolarPoints){
         writeScanPoint(scanPoint.getAngle(),scanPoint.getDistance());
     }
 }

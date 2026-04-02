@@ -24,6 +24,10 @@ public:
 
     void flush();
 
+    // Prevent copying and assignment
+    SerialInterface(const SerialInterface&)            = delete;
+    SerialInterface& operator=(const SerialInterface&) = delete;
+
 private:
     UsbSerial Serial;
     std::string *m_buffer;

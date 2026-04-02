@@ -11,8 +11,8 @@ MeasurementPrediction::MeasurementPrediction(double eps, const MatrixXd &R){
     H = MatrixXd(2,3);
 }
 
-void MeasurementPrediction::buildMap(std::vector<PointPolarForm> *scan,Pose * currentPose) {
-    observations->update(scan,scan->size());
+void MeasurementPrediction::buildMap(const std::vector<PointPolarForm> & scan,Pose * currentPose) {
+    observations->update(scan,scan.size());
     //observations->printLineStack();
     // transform lines from robot to world reference
     for(int j=0; j<observations->size(); j++){
@@ -39,7 +39,7 @@ void MeasurementPrediction::addLinesToMap(Lines * unmatchedLines, double x, doub
     //std::cout<<"addLinesToMap: "<<linesW->size()<<"\n";
 }
 
-void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction) {
+void MeasurementPrediction::update(const PredictionDifferentialDrive &prediction) {
     double xESt;
     double yEst;
     double thetaEst;
@@ -67,9 +67,9 @@ void MeasurementPrediction::update(const PredictionDifferentialDrive *prediction
         alfaW = lineWorldMap.getLine(j)->getAlfa();
         rW = lineWorldMap.getLine(j)->getR();
 
-        xESt     = prediction->getX();
-        yEst     = prediction->getY();
-        thetaEst = prediction->getTheta();
+        xESt     = prediction.getX();
+        yEst     = prediction.getY();
+        thetaEst = prediction.getTheta();
         transformToRobotReferenceFrame(alfaW, rW, xESt, yEst, thetaEst, alfaR, rR);
 
         z_est->add(alfaR, rR);
