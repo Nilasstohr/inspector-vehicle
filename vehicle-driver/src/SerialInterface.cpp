@@ -71,10 +71,10 @@ void SerialInterface::printMessage(SerialType type)
 	restoreSerialType();
 }
 
-String* SerialInterface::getMessage() {
-	String * s = new String();
+String SerialInterface::getMessage() {
+	auto s = String();
 	for(int i=0; i<readSize; i++){
-		s->append(buffer[i]);
+		s.append(buffer[i]);
 	}
 	return s;
 }

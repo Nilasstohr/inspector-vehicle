@@ -1,97 +1,155 @@
 bt_navigator:
   ros__parameters:
-    use_sim_time: false
-    global_frame: map
-    robot_base_frame: base_link
-    odom_topic: /odom
-    bt_loop_duration: 10
-    default_server_timeout: 20
-    
+    use_sim_time: false         # Using real hardware clock, not simulation
+    global_frame: map           # All navigation goals are expressed in the map frame
+    robot_base_frame: base_link # The robot's body frame, origin of the TF tree for the robot
+    odom_topic: /odom           # Topic where odometry messages are published by DiffDriveBaseNode
+    bt_loop_duration: 10        # Behaviour Tree ticks every 10ms — fast enough for smooth recovery
+    default_server_timeout: 20  # How long (ms) the BT waits for an action server to respond before failing
+
 controller_server:
   ros__parameters:
     use_sim_time: false
-    controller_frequency: 20.0
+    # How often the controller computes and sends a new cmd_vel command.
+    # 10 Hz is a good balance: fast enough for smooth driving, not so fast it overloads our small robot.
+    controller_frequency: 10.0
+    # Thresholds below which the robot is considered "stopped" for progress checking.
+    # Very small values so that even tiny movements count as progress.
     min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.0
+    min_y_velocity_threshold: 0.0    # Differential drive cannot move sideways
     min_theta_velocity_threshold: 0.001
+    # How many seconds old a TF transform can be and still be used.
+    # Set to 1.0s to tolerate the occasional TF delay seen in the logs:
+    #   "Transform data too old ... Data time: Xs, Transform time: X-0.13s"
+    # Without this, nav2 would abort the goal on any small TF hiccup.
+    transform_tolerance: 1.0
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["goal_checker"]
     controller_plugins: ["FollowPath"]
-    
+
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
+      # The robot must move at least 0.5m within movement_time_allowance seconds, otherwise
+      # nav2 declares the robot stuck and triggers a recovery behavior.
       required_movement_radius: 0.5
-      movement_time_allowance: 10.0
-      
+      movement_time_allowance: 10.0  # 10s — generous window to handle slow or spinning moves
+
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
+      # How close the robot must be to the goal position (metres) to declare success.
+      # 10cm is fine for an indoor inspection robot.
       xy_goal_tolerance: 0.10
+      # How close the heading must match the goal heading (radians) ~8.6°.
       yaw_goal_tolerance: 0.15
-      
+
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
+      # --- Velocity limits (m/s) ---
+      # Negative min_vel_x allows reversing when needed for recovery.
+      # Max 0.3 m/s is conservative for a small indoor robot (37cm wide).
       min_vel_x: -0.3
       max_vel_x: 0.3
-      min_vel_y: 0.0
+      min_vel_y: 0.0   # Differential drive: no lateral movement
       max_vel_y: 0.0
-      min_speed_xy: -0.2
-      max_speed_xy: 0.2
+      min_speed_xy: -0.2  # Minimum combined speed (allows very slow creep)
+      max_speed_xy: 0.2   # Cap on combined linear speed
+      # Angular velocity limits (rad/s) — allows fast in-place turns for goal alignment
       min_speed_theta: -1.0
       max_speed_theta: 1.0
+
+      # --- Acceleration limits ---
+      # Low acc_lim_x (0.3 m/s²) = gentle acceleration → smoother wheel encoder data → better odometry.
+      # High decel_lim_x (-2.5 m/s²) = robot can brake quickly to avoid overshooting.
       acc_lim_x: 0.3
       acc_lim_y: 0.0
-      acc_lim_theta: 0.4
-      decel_lim_x: -2.5
+      acc_lim_theta: 0.4    # Angular acceleration — moderate to avoid wheel slip during turns
+      decel_lim_x: -2.5     # Fast braking
       decel_lim_y: 0.0
-      decel_lim_theta: -3.2
+      decel_lim_theta: -3.2 # Fast angular braking to stop spinning promptly
+
+      # --- Trajectory sampling ---
+      # DWB samples vx_samples × vtheta_samples velocity combinations and scores them.
+      # 10 linear × 20 angular = 200 trajectories per cycle — good resolution without CPU overload.
       vx_samples: 10
-      vy_samples: 0
+      vy_samples: 0       # No lateral samples (differential drive)
       vtheta_samples: 20
+
+      # How far ahead (seconds) to simulate each candidate trajectory.
+      # 1.7s gives enough lookahead to score trajectories around obstacles.
       sim_time: 1.7
-      linear_granularity: 0.05
-      angular_granularity: 0.025
+      linear_granularity: 0.05    # Simulation step size along linear axis (5cm)
+      angular_granularity: 0.025  # Simulation step size for rotation (0.025 rad ≈ 1.4°)
+
+      # --- Scoring critics ---
+      # Each critic scores every candidate trajectory; highest total score wins.
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      # BaseObstacle: penalises trajectories near obstacles — kept low (0.02) so path/goal tracking
+      # dominates and the robot is not over-cautious in tight spaces.
       BaseObstacle.scale: 0.02
+      # PathAlign (32) + PathDist (32): high weight to keep the robot on the global plan.
+      # This prevents the robot from taking shortcuts that confuse slam_toolbox.
       PathAlign.scale: 32.0
-      GoalAlign.scale: 24.0
       PathDist.scale: 32.0
+      # GoalAlign (24) + GoalDist (24): slightly lower than path critics so the robot follows
+      # the path to the goal rather than cutting straight to it through obstacles.
+      GoalAlign.scale: 24.0
       GoalDist.scale: 24.0
+      # RotateToGoal (32): high weight so the robot rotates cleanly to face the goal before
+      # approaching — important for our differential-drive robot that cannot strafe.
       RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
-      RotateToGoal.lookahead_time: -1.0
-      # ----added params----
+      RotateToGoal.slowing_factor: 5.0    # Slow down while rotating to goal heading
+      RotateToGoal.lookahead_time: -1.0   # -1 = use full sim_time for lookahead
+
+      # ---- Added params ----
+      # Angular velocity used during in-place rotation to goal (rad/s).
+      # Matches max_speed_theta so the robot spins at full allowed speed.
       rotate_to_heading_angular_vel: 2.0
+      # Only trigger rotate-to-heading if heading error is larger than 0.1 rad (~5.7°).
+      # Avoids micro-corrections that cause oscillation.
       rotate_to_heading_min_angle: 0.1
-      allow_reversing: false
-      # Ensure angular velocity is allowed
-      max_vel_theta: 0.4  # rad/s
+      allow_reversing: false   # Prevents confusing backward motion during normal navigation
+
+      # Maximum/minimum angular velocity (rad/s) enforced by the velocity iterator.
+      # max 0.4 rad/s keeps turns slow enough for reliable odometry.
+      # min 0.1 rad/s ensures the robot actually rotates when a turn command is issued.
+      max_vel_theta: 0.4
       min_vel_theta: 0.1
-      # Goal tolerance
+
+      # Duplicate goal tolerance here (also set in goal_checker above) — some DWB versions
+      # read these directly from the planner config rather than from goal_checker.
       xy_goal_tolerance: 0.10
-      yaw_goal_tolerance: 0.2  # radians
-      # Path alignment
-      # Path alignment
-      # How much the robot prioritizes staying on the planned path Higher values
-      # Higher values → robot follows path more strictly
-      path_distance_bias: 40.0 
-      # How much the robot prioritizes reaching the goal quickly
-      # Higher values → robot moves more aggressively toward goal
+      yaw_goal_tolerance: 0.2
+
+      # How strongly the robot is pulled toward the global path (higher = closer path following).
+      # 40.0 keeps the robot on the planned route which is important for slam_toolbox
+      # to correlate laser scans to the known map.
+      path_distance_bias: 40.0
+      # How strongly the robot is pulled toward the goal position.
+      # Lower than path_distance_bias (10 vs 40) so the robot follows the path rather
+      # than cutting directly to the goal through unmapped space.
       goal_distance_bias: 10.0
-      prefer_forward: true
+      prefer_forward: true  # Differential drive: prefer driving forward, only reverse in recovery
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.0
-      global_frame: odom
+      # Local costmap is a rolling window around the robot used by the controller (DWB)
+      # for immediate obstacle avoidance. It uses the odom frame so it tracks the robot
+      # using odom→base_link (your fast, high-frequency odometry TF — no SLAM correction).
+      # This keeps the local costmap smooth and jitter-free even when SLAM makes a map jump.
+      update_frequency: 5.0    # Rebuild obstacle grid 5 times/sec — enough for 10Hz controller
+      publish_frequency: 2.0   # Publish visualisation at 2Hz to save bandwidth
+      global_frame: odom        # Uses odom frame: smooth, no SLAM jumps, perfect for local planning
       robot_base_frame: base_link
       use_sim_time: false
-      rolling_window: true
-      width: 3
+      rolling_window: true      # Window stays centred on the robot as it moves
+      width: 3                  # 3m × 3m window — covers stopping distance + margins
       height: 3
-      resolution: 0.05
-      robot_radius: 0.185  # 37cm diameter / 2
+      resolution: 0.05          # 5cm cells — matches global costmap and slam_toolbox map resolution
+      # Must match controller_server transform_tolerance — both set to 1.0s so TF age errors
+      # that were crashing navigation are now tolerated.
+      transform_tolerance: 1.0
+      robot_radius: 0.185       # 37cm diameter robot / 2 = 0.185m
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -99,28 +157,40 @@ local_costmap:
         observation_sources: scan
         scan:
           topic: /scan
-          max_obstacle_height: 2.0
-          clearing: true
-          marking: true
+          max_obstacle_height: 2.0  # Accept all laser returns up to 2m high
+          clearing: true   # Remove obstacles from cells when the laser sees through them
+          marking: true    # Add obstacles to cells when the laser hits something
           data_type: "LaserScan"
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
+        # cost_scaling_factor: how sharply the cost falls off with distance from an obstacle.
+        # 3.0 gives a moderate gradient — robot is gently pushed away rather than hard-stopped.
         cost_scaling_factor: 3.0
+        # Inflate obstacles by 0.40m in the local map.
+        # Larger than global (0.25m) so the controller keeps more clearance during driving.
         inflation_radius: 0.40
 
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 1.0
-      publish_frequency: 1.0
-      global_frame: map
+      # Global costmap uses the map frame and is updated from the static SLAM map + live laser.
+      # It is used by the planner (NavFn/A*) to compute the long-range path.
+      # Slow update rate is fine — we only need a new global path occasionally.
+      update_frequency: 0.5    # Rebuild global costmap every 2 seconds — slow is OK for planning
+      publish_frequency: 0.5   # Publish visualisation every 2 seconds
+      global_frame: map         # Uses map frame: SLAM-corrected, accurate long-range positions
       robot_base_frame: base_link
       use_sim_time: false
-      robot_radius: 0.185
-      resolution: 0.05
+      robot_radius: 0.185       # Same as local costmap — consistent robot footprint
+      resolution: 0.05          # Must match slam_toolbox map resolution (set there to 0.05)
+      # 1.0s tolerance here prevents the global costmap from stalling when there is a brief
+      # delay in the map→base_link transform chain (map→odom from SLAM + odom→base_link from us).
+      transform_tolerance: 1.0
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
+        # transient_local QoS: re-sends the last map message to any late-joining subscriber.
+        # Ensures the global costmap always has the SLAM map even after a node restart.
         map_subscribe_transient_local: true
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -135,24 +205,38 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
+        # Smaller inflation radius than local costmap (0.25 vs 0.40m) — the global planner
+        # only needs to route around walls/furniture, not fine-tune clearance.
         inflation_radius: 0.25
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 20.0
+    # How often the planner should recompute the global path (Hz).
+    # 1.0 Hz is enough — global path only changes when the map changes or goal changes.
+    expected_planner_frequency: 1.0
     use_sim_time: false
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
+      # How far from the exact goal pose the planner accepts as a valid plan end (metres).
+      # 0.5m is generous — the local controller handles the final approach precisely.
       tolerance: 0.5
-      use_astar: true
-      allow_unknown: true
-      
+      use_astar: true      # A* is faster and more deterministic than Dijkstra for our map size
+      allow_unknown: true  # Allow planning through cells not yet seen by the laser —
+                           # important during first exploration or after map updates
+
 slam_toolbox:
   ros__parameters:
     use_sim_time: false
-    mode: "localization"
+    mode: "localization"  # Localisation only — map is pre-built and saved, not being updated
+    # Starting pose in the map (metres, metres, radians).
+    # This is where slam_toolbox assumes the robot is at startup.
+    # Must match the robot's actual starting position in the saved map.
     map_start_pose: [0.40, 0.40, 0.0]
+    # Initial uncertainty around the starting pose (6×6 covariance matrix, row-major).
+    # x variance = 0.0004 m² (σ = 2cm), y variance = 0.0004 m² (σ = 2cm)
+    # yaw variance = 0.001215 rad² (σ ≈ 2°) — confident start, matches a known map origin.
+    # All cross-terms and unused 3D axes are zero (robot is planar).
     initial_pose_covariance: [0.0004, 0.0, 0.0, 0.0, 0.0, 0.0,
                               0.0, 0.0004, 0.0, 0.0, 0.0, 0.0,
                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,

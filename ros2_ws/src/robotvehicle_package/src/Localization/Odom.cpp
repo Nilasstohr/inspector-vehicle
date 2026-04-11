@@ -23,6 +23,9 @@ Odom::Odom()
     pEst(1, 0)= 0; pEst(1, 1)= pow(sigmaXY,2); pEst(1, 2)= 0;
     pEst(2, 0)= 0; pEst(2, 1)= 0; pEst(2, 2)=  pow(sigmaTheta,2);
     //printMatrix(&pEst,"---Pest init---");
+    // xEst is pose within the odom frame.
+    // The odom frame origin IS where the robot starts, so initial pose is always (0,0,0).
+    // The start pose (40,40,0) belongs to the map->odom TF, managed by slam_toolbox.
     MatrixXd xEst(3,1);
     xEst(0,0)=startPose.getX();
     xEst(1,0)=startPose.getY();

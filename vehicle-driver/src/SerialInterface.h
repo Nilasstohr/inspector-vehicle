@@ -18,7 +18,7 @@ public:
 	SerialInterface(SerialType type,uint32_t baudrate);
 	bool hasMessage();
 	bool hasMessage(SerialType type);
-	String* getMessage();
+	String getMessage();
 	void printMessage(SerialType type);
 	void printMessage();
 	void sendMessage(String &message,SerialType type);
