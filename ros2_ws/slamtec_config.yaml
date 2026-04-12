@@ -1,50 +1,105 @@
 slam_toolbox:
   ros__parameters:
-    # Plugin params
+    # --- Solver / optimisation back-end ---
+    # CeresSolver is the standard choice: robust, well-tested, handles large pose graphs.
     solver_plugin: solver_plugins::CeresSolver
+    # SPARSE_NORMAL_CHOLESKY: efficient sparse linear solver for the least-squares problem.
+    # Good default for pose graphs where most nodes are only connected to nearby nodes.
     ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    # SCHUR_JACOBI preconditioner speeds up convergence of the iterative solver by
+    # exploiting the block structure of the pose-graph Hessian.
     ceres_preconditioner: SCHUR_JACOBI
+    # LEVENBERG_MARQUARDT trust region: blends Gauss-Newton and gradient descent,
+    # robust to poor initial guesses and handles non-linear scan-match residuals well.
     ceres_trust_strategy: LEVENBERG_MARQUARDT
-    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_dogleg_type: TRADITIONAL_DOGLEG  # Classic dogleg step within the trust region
+    # HUBER loss: reduces the influence of outlier laser points (e.g. glass, moving people)
+    # on the optimisation — makes localisation more robust in imperfect environments.
     ceres_loss_function: HUBER
 
-    # ROS Parameters
-    odom_frame: odom
-    map_frame: map
-    base_frame: base_link
-    scan_topic: /scan
-    
-    # Map file (required for localization mode)
+    # --- ROS TF frame names ---
+    # These must exactly match the frame IDs published by DiffDriveBaseNode and your laser driver.
+    odom_frame: odom        # Frame published by DiffDriveBaseNode (odom → base_link TF)
+    map_frame: map          # slam_toolbox publishes the map → odom correction into this frame
+    base_frame: base_link   # Robot body frame — root of the robot's TF subtree
+    scan_topic: /scan       # LaserScan topic from the LIDAR driver
+
+    # --- Map file ---
+    # Commented out: in localization mode slam_toolbox loads the map from the serialised
+    # .posegraph file specified on the command line, not from a pgm/yaml pair.
     #map_file_name: /path/to/your/saved_map
+
+    # Starting pose estimate in the map (x metres, y metres, yaw radians).
+    # slam_toolbox uses this to seed the first scan-match before it has enough data
+    # to self-localise. Must match where the robot physically is when launched.
     map_start_pose: [40.0, 40.0, 0.0]
+    # Initial covariance (6×6 row-major) expressing confidence in the starting pose.
+    # x variance = 0.0004 m² (σ = 2 cm), y variance = 0.0004 m² (σ = 2 cm)
+    # yaw variance = 0.001215 rad² (σ ≈ 2°) — tight, because we start from a known position.
+    # All other entries are zero: cross-terms and unused 3D axes (robot is planar).
     initial_pose_covariance: [
-      0.0004, 0.0, 0.0, 0.0, 0.0, 0.0,        # x variance (4 cm² = 0.0004 m²)
-      0.0, 0.0004, 0.0, 0.0, 0.0, 0.0,        # y variance (4 cm² = 0.0004 m²)
+      0.0004, 0.0, 0.0, 0.0, 0.0, 0.0,        # x variance (σ = 2 cm)
+      0.0, 0.0004, 0.0, 0.0, 0.0, 0.0,        # y variance (σ = 2 cm)
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,           # z (unused in 2D)
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,           # roll (unused in 2D)
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,           # pitch (unused in 2D)
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.001215       # yaw variance (~2° = 0.001215 rad²)
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.001215       # yaw variance (σ ≈ 2°)
     ]
 
-    debug_logging: false
+    debug_logging: false     # Set true only when diagnosing scan-match failures (very verbose)
+    # Process every Nth scan. 1 = process every scan.
+    # Increasing this reduces CPU but degrades localisation accuracy in fast turns.
     throttle_scans: 1
-    transform_publish_period: 0.1
-    map_update_interval: 5.0
-    max_laser_range: 10.0  # Conservative, below 12m max
-    resolution: 0.01  # 1cm map resolution
-    minimum_time_interval: 0.1
-    transform_timeout: 0.2
-    tf_buffer_duration: 30.0
+    # How often (seconds) slam_toolbox broadcasts the map → odom TF.
+    # 0.02s = 50 Hz — frequent enough that nav2's transform_tolerance (1.0s) is never exceeded.
+    transform_publish_period: 0.02
+    # How often the occupancy grid is rebuilt and published (seconds).
+    # In localization mode the map does not change, so 10s is fine and saves CPU.
+    map_update_interval: 10.0
+    # Maximum laser range to use for scan matching (metres).
+    # Set conservatively to 10m (below the sensor's 12m max) to avoid noisy long-range returns
+    # that would degrade scan-match quality.
+    max_laser_range: 10.0
+    # Map cell size in metres. 0.05 = 5cm resolution.
+    # Finer resolution (e.g. 0.01) caused CPU starvation: the global costmap grew to
+    # 579 × 990 cells and could not update fast enough. 5cm is the safe minimum.
+    resolution: 0.05
+    # Minimum time between processed scans (seconds).
+    # 0.2s = max 5 scans/sec sent to the scan matcher — prevents CPU spikes when the robot
+    # is stationary and the laser publishes at high rate.
+    minimum_time_interval: 0.2
+    # How long (seconds) slam_toolbox waits for a TF transform before giving up.
+    # 0.5s is enough headroom given our 50Hz TF publish rate.
+    transform_timeout: 0.5
+    # How far back (seconds) the internal TF buffer holds transforms.
+    # 60s is generous: ensures slam_toolbox can always find the odom → base_link transform
+    # even if there was a brief pause or high system load.
+    tf_buffer_duration: 60.0
 
-    # Scan matching
-    use_scan_matching: true
-    use_scan_barycenter: true
-    minimum_travel_distance: 0.01  # 5 cm - process scan every 5cm traveled
-    minimum_travel_heading: 0.017  # ~5 degrees in radians
+    # --- Scan matching ---
+    use_scan_matching: true       # Enable ICP/correlation scan matching (core of SLAM)
+    use_scan_barycenter: true     # Match against the centroid of the scan cluster — more stable
+    # Only run scan matching after the robot has moved at least this far (metres).
+    # 0.01m = 1cm: process almost every scan, giving high-frequency pose corrections.
+    minimum_travel_distance: 0.01
+    # Only run scan matching after the robot has rotated at least this much (radians).
+    # 0.017 rad ≈ 1° — trigger on any meaningful rotation, keeping heading estimate tight.
+    minimum_travel_heading: 0.017
+    # Number of recent scans kept in the scan buffer for loop-closure matching.
+    # 10 scans gives enough history without excessive memory use.
     scan_buffer_size: 10
+    # Maximum distance (metres) between scan buffer entries considered for loop closure.
+    # 10m matches max_laser_range — only attempt loop closure if the scans overlap.
     scan_buffer_maximum_scan_distance: 10.0
 
-    # Correlation parameters
-    correlation_search_space_dimension: 0.4  # 40cm - tighter search
-    correlation_search_space_resolution: 0.01  # Keep at 1cm
-    correlation_search_space_smear_deviation: 0.08  # 8cm - slightly tighter
+    # --- Correlation (brute-force) search parameters ---
+    # These control the exhaustive search used to find the best scan alignment.
+    # search_space_dimension: size of the 2D search area (metres) around the predicted pose.
+    # 0.4m = ±20cm — tight enough to avoid false matches, wide enough for odometry drift.
+    correlation_search_space_dimension: 0.4
+    # Resolution of the search grid within the search space.
+    # 0.01m = 1cm steps — fine resolution for accurate alignment.
+    correlation_search_space_resolution: 0.01
+    # Gaussian smear applied to the map during correlation to bridge small gaps.
+    # 0.08m = 8cm — slightly loose to handle thin walls and sparse scan returns.
+    correlation_search_space_smear_deviation: 0.08

@@ -14,7 +14,7 @@
 #define MIN_W_TURN -4
 
 
-DiffDriveBaseNode::DiffDriveBaseNode(SerialInterface serialInterface):
+DiffDriveBaseNode::DiffDriveBaseNode(SerialInterface & serialInterface):
 Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
 {
     auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
@@ -26,8 +26,11 @@ Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     odom_pub_ =this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
-    // Initialize TF2 listener
-    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+    // Initialize TF2 listener with a 30-second cache to avoid "timestamp earlier than all data" drops
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock(), tf2::durationFromSec(30.0));
+
+    // f_listener_ is not called directly anywhere — it has no methods you invoke. Its sole purpose is to populate tf_buffer_ in the background.
+    // It subscribes to the /tf and /tf_static topics and automatically stores every incoming transform into tf_buffer_.
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
     if (serialInterface.hasResponse()) {
@@ -36,7 +39,7 @@ Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
     control_timer_ = this->create_wall_timer(std::chrono::milliseconds (15),
                                 std::bind(&DiffDriveBaseNode::control_timer_callback, this));
 
-    tf_odom_timer_ = this->create_wall_timer(std::chrono::milliseconds (20),
+    tf_odom_timer_ = this->create_wall_timer(std::chrono::milliseconds (10),
                                 std::bind(&DiffDriveBaseNode::tf_odom_timer_callback, this));
 
     cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", default_qos,
@@ -46,8 +49,13 @@ Node("tf_odom_node"),posLeft(0.0),posRight(0.0),linearX(0.0),angularZ(0.0)
 }
 
 void DiffDriveBaseNode::control_timer_callback(){
-    std::lock_guard lock_pos(pos_mutex);
-    driverInterface->getWheelsTraveled(posLeft, posRight);
+    double tmpLeft = 0.0, tmpRight = 0.0;
+    driverInterface->getWheelsTraveled(tmpLeft, tmpRight);
+    {
+        std::lock_guard lock_pos(pos_mutex);
+        posLeft  = tmpLeft;
+        posRight = tmpRight;
+    }
     double linearX, angularZ;
     {
         std::lock_guard lock_vel(vel_mutex);
@@ -55,6 +63,9 @@ void DiffDriveBaseNode::control_timer_callback(){
         angularZ =this->angularZ;
     }
     setVelocities( linearX,angularZ);
+    // Print debug info here (slower 15ms timer) rather than in the 10ms TF timer
+    // to avoid blocking TF publishing with the TF lookup inside printSlamAndNav2Data
+    printSlamAndNav2Data();
 }
 
 void DiffDriveBaseNode::tf_odom_timer_callback(){
@@ -67,7 +78,6 @@ void DiffDriveBaseNode::tf_odom_timer_callback(){
     odom->update(left, right);
     broadCastTF();
     publishOdom();
-    printSlamAndNav2Data();
 }
 
 void DiffDriveBaseNode::cmd_vel_subscriber_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg) {
@@ -148,9 +158,11 @@ void DiffDriveBaseNode::printSlamAndNav2Data() {
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
 
-        cout << "SLAM Pose x: " << transform.transform.translation.x * 100.0
-             << " cm, y: " << transform.transform.translation.y * 100.0
-             << " cm, heading: " << yaw << " rad" << endl;
+        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
+            "SLAM Pose x: %.2f cm, y: %.2f cm, heading: %.4f rad",
+            transform.transform.translation.x * 100.0,
+            transform.transform.translation.y * 100.0,
+            yaw);
     } catch (tf2::TransformException &ex) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
             "Could not get SLAM pose: %s", ex.what());

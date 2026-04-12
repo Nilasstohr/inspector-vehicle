@@ -30,6 +30,7 @@
 /ros2_ws/GridMap.txt
 /doc/vehicle control design/python/venv/
 /doc/vehicle control design/python/.idea/
+/doc/logs/
 # Python cache files
 __pycache__/
 *.pyc
