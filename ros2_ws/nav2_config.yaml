@@ -202,6 +202,17 @@ global_costmap:
           clearing: true
           marking: true
           data_type: "LaserScan"
+          # How far (metres) the laser raytrace extends to CLEAR free space in the costmap.
+          # Default is only 3.0m — if the robot is further than that from a removed obstacle
+          # (e.g. a vacuum cleaner that is now gone), the raytrace never reaches it and the
+          # costmap cell stays marked as LETHAL forever.
+          # Set to match max_laser_range in slam_toolbox so clearing covers the full sensor range.
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.0
+          # How far to MARK new obstacles. Slightly less than raytrace range so the last
+          # cell in a beam is always cleared, not marked.
+          obstacle_max_range: 9.5
+          obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0

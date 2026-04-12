@@ -25,14 +25,14 @@ slam_toolbox:
     scan_topic: /scan       # LaserScan topic from the LIDAR driver
 
     # --- Map file ---
-    # Commented out: in localization mode slam_toolbox loads the map from the serialised
-    # .posegraph file specified on the command line, not from a pgm/yaml pair.
-    #map_file_name: /path/to/your/saved_map
+    # The serialized map (.posegraph + .data) to load on startup.
+    # In lifelong mode, slam_toolbox loads this map and continues building on top of it.
+    map_file_name: /home/robot1/devrepo/inspector-vehicle/ros2_ws/second_floor
 
     # Starting pose estimate in the map (x metres, y metres, yaw radians).
     # slam_toolbox uses this to seed the first scan-match before it has enough data
     # to self-localise. Must match where the robot physically is when launched.
-    map_start_pose: [40.0, 40.0, 0.0]
+    map_start_pose: [0.40, 0.40, 0.0]
     # Initial covariance (6×6 row-major) expressing confidence in the starting pose.
     # x variance = 0.0004 m² (σ = 2 cm), y variance = 0.0004 m² (σ = 2 cm)
     # yaw variance = 0.001215 rad² (σ ≈ 2°) — tight, because we start from a known position.
@@ -54,8 +54,10 @@ slam_toolbox:
     # 0.02s = 50 Hz — frequent enough that nav2's transform_tolerance (1.0s) is never exceeded.
     transform_publish_period: 0.02
     # How often the occupancy grid is rebuilt and published (seconds).
-    # In localization mode the map does not change, so 10s is fine and saves CPU.
-    map_update_interval: 10.0
+    # 1.0s gives responsive map updates in RViz (e.g. doors opening/closing)
+    # without excessive CPU cost. Lower values (e.g. 0.5s) are possible but
+    # increase CPU load on large maps.
+    map_update_interval: 1.0
     # Maximum laser range to use for scan matching (metres).
     # Set conservatively to 10m (below the sensor's 12m max) to avoid noisy long-range returns
     # that would degrade scan-match quality.
@@ -75,6 +77,69 @@ slam_toolbox:
     # 60s is generous: ensures slam_toolbox can always find the odom → base_link transform
     # even if there was a brief pause or high system load.
     tf_buffer_duration: 60.0
+
+    # --- Lifelong / map-update behaviour ---
+    # These control how aggressively slam_toolbox overwrites existing map cells
+    # when new laser scans contradict the stored map (e.g. a door is now closed/open).
+
+    # Use the raw laser scan (not the smoothed map) when deciding whether a stored
+    # node's scan still matches the current environment. Needed for reliable updates.
+    lifelong_search_use_raw_map: true
+
+    # Minimum scan-match score [0–1] a stored node must reach before its cells
+    # are considered for update. Lower = more willing to update old cells.
+    # Default is often 0.1; we use 0.10 explicitly.
+    lifelong_minimum_score: 0.10
+
+    # Intersection-over-Union threshold: how much the new scan must overlap the
+    # stored scan before the stored scan's map cells are refreshed.
+    # Lower value → updates happen even with partial overlap (e.g. half a door).
+    lifelong_iou_match: 0.70
+
+    # Score below which a stored node's map cells are actively removed/replaced.
+    # Raising this means more nodes get their cells cleared when the env changes.
+    lifelong_node_removal_score: 0.04
+
+    # Scales how much the overlap score influences whether a node is updated.
+    # Higher = environment changes spread across more nodes quickly.
+    lifelong_overlap_score_scale: 0.03
+
+    # Weight applied to constraints linking the current pose to stored nodes.
+    # Higher = stronger "memory" — keeps the robot anchored to the existing map.
+    lifelong_constraint_multiplier: 0.10
+
+    # Penalty applied to nearby candidate nodes to avoid over-writing fresh data.
+    # Smaller = less penalty, so fresh scans update the map sooner.
+    lifelong_nearby_penalty: 0.001
+
+    # Scales the pool of candidate nodes considered for map update.
+    # Higher = more nodes evaluated per scan, better coverage of changed areas.
+    lifelong_candidates_scale: 0.03
+
+    # --- Loop-closure search ---
+    # How far (metres) slam_toolbox searches for stored nodes to match against.
+    # This is the key parameter: stored nodes (including those near the door)
+    # must fall within this radius of the robot to be considered for update.
+    # 15m = robot sees door changes from across the room, not just when touching it.
+    loop_search_maximum_distance: 15.0
+
+    # Minimum chain length of consecutive nodes that must agree before a loop
+    # closure (and therefore a map-cell update) is accepted.
+    # 1 = accept a single matching node — more responsive for dynamic changes.
+    loop_match_minimum_chain_size: 1
+
+    # Coarse pass: minimum scan-match response [0–1] to accept a candidate.
+    # Lower = accept weaker matches → update triggered from further away.
+    loop_match_minimum_response_coarse: 0.25
+
+    # Fine pass: minimum response after high-resolution refinement.
+    # Lower = accept updates where the environment has genuinely changed.
+    loop_match_minimum_response_fine: 0.35
+
+    # Maximum distance (metres) a stored node may be from its predicted position
+    # and still be used for a loop-closure match.
+    # 4.5m = generous enough to catch nodes near a door visible from ~3–4 m away.
+    loop_match_maximum_variance_coarse: 4.5
 
     # --- Scan matching ---
     use_scan_matching: true       # Enable ICP/correlation scan matching (core of SLAM)
