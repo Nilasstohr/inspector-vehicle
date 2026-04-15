@@ -30,7 +30,7 @@ public:
     void resetRobotData() const;
     void printMap();
     bool isMissionComplete() const;
-    void setMissionPath(NavigationPath * navigation_path);
+    void setMissionPath(NavigationPath && navigation_path);
 
     const KalmanLocalization & getLocalization() const;
     const Odom * getOdom() const;
@@ -47,7 +47,7 @@ private:
     GridMap  gripMap;
     KalmanLocalization localization;
     Odom odom;
-    NavigationPath * missionPath{};
+    NavigationPath missionPath;
     AStar  aStar;
 
 

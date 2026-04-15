@@ -23,7 +23,7 @@ posRight(0)
     missionPath.addPathPoint(170, 65, 0);
     missionPath.addPathPoint(100, 140, 0);
     missionPath.addPathPoint(40, 40, 0);
-    missionController.setMissionPath(&missionPath);
+    missionController.setMissionPath(std::move(missionPath));
     recorder.startRecord(RECORD_DURATION_SECONDS);
 
     cout << "starting run" << endl;

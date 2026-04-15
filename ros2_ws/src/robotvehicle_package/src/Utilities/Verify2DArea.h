@@ -10,7 +10,7 @@
 
 class Verify2DArea {
 public:
-    static bool isPointWithinSquareArea(Pose *pose, int x, int y, double size);
+    static bool isPointWithinSquareArea( double xp,  double yp,  int x,  int y,  double size);
 
     static double distanceBetweenPoints(double x1, double y1, int x2, int y2);
 };

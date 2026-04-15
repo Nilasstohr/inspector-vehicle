@@ -40,12 +40,12 @@ void MissionController::updateMapWithObstacleSafeDistance() {
 }
 
 void MissionController::generateNewPathToDestination(){
-    const int x = missionPath->getCurrentGoToPoint()->getX();
-    const int y = missionPath->getCurrentGoToPoint()->getY();
+    const int x = missionPath.getCurrentGoToPoint().getX();
+    const int y = missionPath.getCurrentGoToPoint().getY();
     auto *endPoint = new PathPoint();
     endPoint->set(x,y);
     //try {
-        aStar.update(localization.getPose(),endPoint,gripMap.getMapWithSafetyDistance());
+        aStar.update(localization.getPose()->getX(),localization.getPose()->getY(),x,y,gripMap.getMapWithSafetyDistance());
     //}   catch (const std::exception& e) {
     //    cout << "A* pathfinding exception: " << e.what() << endl;
     //}
@@ -79,8 +79,8 @@ void MissionController::update(const std::vector<PointPolarForm> & lidarScanPola
     navigator.update(localization);
 
     if(navigator.isDestinationReached()) {
-        if(missionPath->isNextPointAvailable()) {
-            missionPath->setNextGoToPoint();
+        if(missionPath.isNextPointAvailable()) {
+            missionPath.setNextGoToPoint();
             generateNewPathToDestination();
         }else {
             navigator.stopAndResetDisplacement();
@@ -90,7 +90,7 @@ void MissionController::update(const std::vector<PointPolarForm> & lidarScanPola
 
     // this used for larger gripmap, because transmitting large data takes time
     //if(!navigator->validNavigationPath()) {
-    //    publishRobotData();
+    //publishRobotData(lidarScanPolarPoints);
     //
 
     //posMessage.data = localization->getPoseLastString()->c_str();
@@ -128,7 +128,7 @@ void MissionController::publishRobotData(const std::vector<PointPolarForm> & lid
     Lines * maplines = localization.getMeasurementPrediction().getMapLines();
     string robotDataString;
     robotDataString.append(gripMap.obstacleSafeDistanceMapToString()->c_str());
-    if(!aStar.getNavigationPath()->getPath()->empty()) {
+    if(!aStar.getNavigationPath().isEmpty()) {
         robotDataString.append( "\npath\n");
         robotDataString.append(aStar.pathToString());
     }
@@ -182,8 +182,8 @@ bool MissionController::isMissionComplete() const {
     return missionComplete;
 }
 
-void MissionController::setMissionPath(NavigationPath * missionPath) {
-    this->missionPath = missionPath;
+void MissionController::setMissionPath(NavigationPath && missionPath) {
+    this->missionPath = std::move(missionPath);
 }
 
 const KalmanLocalization & MissionController::getLocalization() const {

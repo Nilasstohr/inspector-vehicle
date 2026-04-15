@@ -12,18 +12,22 @@ class NavigationPath {
 public:
     NavigationPath();
     void addPathPoint(double x, double y, double theta);
-    std::vector<NavigationPoint> *getPath() const;
 
+    [[nodiscard]] const std::vector<NavigationPoint> & getPath() const;
+    void overrideBack(int x,  int y);
+
+    [[nodiscard]] bool isEmpty() const;
+    [[nodiscard]] unsigned int size() const;
     void clear();
 
-    NavigationPoint * getCurrentGoToPoint() const;
+    [[nodiscard]] const NavigationPoint & getCurrentGoToPoint() const;
 
     void setNextGoToPoint();
 
     bool isNextPointAvailable() const;
 
 private:
-    std::vector<NavigationPoint> *path;
+    std::vector<NavigationPoint> path;
     int pathIndex;
 
 };

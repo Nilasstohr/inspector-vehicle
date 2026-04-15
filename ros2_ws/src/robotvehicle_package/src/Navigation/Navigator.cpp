@@ -29,7 +29,7 @@ bool Navigator::validNavigationPath() {
 
 void Navigator::update(KalmanLocalization & localization) {
 
-    if(navigationPath->getPath()->empty()) {
+    if(navigationPath->isEmpty()) {
         validPath = false;
         cout << "Navigation path is empty, trying again!" << endl;
         return;
@@ -41,14 +41,14 @@ void Navigator::update(KalmanLocalization & localization) {
         return;
     }
     xt = localization.getPose();
-    xtGoal = &navigationPath->getPath()->at(navigationPointIndex);
+    xtGoal = &navigationPath->getPath().at(navigationPointIndex);
     //cout << "at: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
     //cout << "goal: " << xtGoal->getX() << " " << xtGoal->getY() << " " << xtGoal->getTheta() << endl;
     dx = xtGoal->getX() - xt->getX();
     dy = xtGoal->getY() - xt->getY();
 
     if(abs(dx) < GOAL_ACCEPTANCE_TRESHOLD_CM && abs(dy) < GOAL_ACCEPTANCE_TRESHOLD_CM){
-        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()-1){
+        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath().size()-1){
             destinationReached = true;
             return;
         }
@@ -126,13 +126,13 @@ void Navigator::update() {
     }
     xt = new Pose();
     xt->update(40.156, 40.244, 0.000284356);
-    xtGoal = &navigationPath->getPath()->at(navigationPointIndex);
+    xtGoal = &navigationPath->getPath().at(navigationPointIndex);
     cout << "in: " << xt->getX() << " " << xt->getY() << " " << xt->getTheta() << endl;
     dx = xtGoal->getX() - xt->getX();
     dy = xtGoal->getY() - xt->getY();
 
     if(abs(dx) < 2 && abs(dy) < 2){
-        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->getPath()->size()){
+        if(static_cast<long unsigned int>(navigationPointIndex)>=navigationPath->size()){
             destinationReached = true;
             stopAndResetDisplacement();
             return;
@@ -164,8 +164,8 @@ void Navigator::update() {
     driverInterface.setAngularVelocity(wl,wr);
 }
 
-void Navigator::setNavigationPath(NavigationPath *navigationPath) {
-    this->navigationPath = navigationPath;
+void Navigator::setNavigationPath(const NavigationPath &navigationPath) {
+    this->navigationPath = &navigationPath;
     navigationPointIndex = 0 ;
     destinationReached =false;
 }
@@ -194,6 +194,6 @@ void Navigator::stop() const {
     driverInterface.stop();
 }
 
-NavigationPath * Navigator::getNavigationPath() const {
+const NavigationPath *Navigator::getNavigationPath() const {
     return navigationPath;
 }
