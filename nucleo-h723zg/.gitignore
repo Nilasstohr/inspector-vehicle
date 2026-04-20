@@ -1,0 +1,44 @@
+# CMake build output
+build/
+build-tests/
+cmake-build-*/
+
+# CLion - keep run configs and cmake profiles, ignore local/user-specific files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+.idea/dictionaries/
+.idea/sonarlint/
+.idea/*.iml
+
+# VS Code - keep .vscode tracked (tasks, launch, c_cpp_properties) but ignore local user settings
+.vscode/settings.json
+.vscode/ipch/
+
+# Compiled / generated binaries
+*.elf
+*.bin
+*.hex
+*.map
+*.a
+*.o
+*.d
+
+# CMake generated files (if ever placed outside build/)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Dependency download cache (FetchContent re-downloads as needed)
+_deps/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor temp files
+*.swp
+*.swo
+*~
+
