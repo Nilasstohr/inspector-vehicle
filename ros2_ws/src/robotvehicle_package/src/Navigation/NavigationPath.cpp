@@ -10,36 +10,50 @@
 #include "NavigationExceptionPathPointAlreadyCompleted.h"
 
 NavigationPath::NavigationPath(): pathIndex(0) {
-    path = new std::vector<NavigationPoint>;
 }
 
 void NavigationPath::addPathPoint(double x, double y, double theta) {
-    path->push_back(NavigationPoint(x,y,theta));
+    path.push_back(NavigationPoint(x,y,theta));
 }
 
-std::vector<NavigationPoint> *NavigationPath::getPath() const {
+const std::vector<NavigationPoint> & NavigationPath::getPath() const {
     return path;
 }
 
-void NavigationPath::clear() {
-    path->clear();
-}
-
-NavigationPoint * NavigationPath::getCurrentGoToPoint() const {
-    if(path->empty()){
+void NavigationPath::overrideBack(const  int x, const int y) {
+    if(path.empty()){
         throw NavigationExceptionNoPathPoints();
     }
-    return &path->at(pathIndex);
+    path.back().override(x,y);
+}
+
+bool NavigationPath::isEmpty() const {
+    return path.empty();
+}
+
+unsigned int NavigationPath::size() const {
+    return path.size();
+}
+
+void NavigationPath::clear() {
+    path.clear();
+}
+
+NavigationPoint const & NavigationPath::getCurrentGoToPoint() const {
+    if(path.empty()){
+        throw NavigationExceptionNoPathPoints();
+    }
+    return path.at(pathIndex);
 }
 
 void NavigationPath::setNextGoToPoint() {
-    if(pathIndex + 1 == path->size()){
+    if(pathIndex + 1 == path.size()){
         throw NavigationExceptionPathPointAlreadyCompleted();
     }
     pathIndex++;
 }
 
 bool NavigationPath::isNextPointAvailable() const {
-    return  pathIndex + 1 < path->size();
+    return  pathIndex + 1 < path.size();
 }
 

@@ -5,12 +5,12 @@
 #include <valarray>
 #include "Verify2DArea.h"
 
-bool Verify2DArea::isPointWithinSquareArea(Pose *pose, int x, int y, double size) {
+bool Verify2DArea::isPointWithinSquareArea(const double xp, const double yp,const  int x, const int y, const double size) {
     double yMax = y + double(size/2);
     double yMin = y - double(size/2);
     double xMax = x + double(size/2);
     double xMin = x - double(size/2);
-    if(pose->getX()<xMax && pose->getX()>xMin && pose->getY()<yMax && pose->getY()>yMin){
+    if(xp<xMax && xp>xMin && yp<yMax && yp>yMin){
         return true;
     }
     return false;

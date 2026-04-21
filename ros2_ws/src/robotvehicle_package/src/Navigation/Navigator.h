@@ -18,21 +18,21 @@ public:
 
     void update(KalmanLocalization & localization);
     void update();
-    void setNavigationPath(NavigationPath * navigationPath);
+    void setNavigationPath(const NavigationPath & navigationPath);
     bool isDestinationReached() const;
     void stopAndResetDisplacement() const;
     void backwardSlow() const;
     void forwardSlow() const;
     void stop() const;
-    NavigationPath* getNavigationPath() const;
+    const NavigationPath * getNavigationPath() const;
     void setNav2Velocities(double w, double v);
 
 private:
     void setLowerVelocityLimit(double wMin);
     DriverInterface & driverInterface;
     Pose *xt;
-    NavigationPath * navigationPath;
-    NavigationPoint *xtGoal;
+    const NavigationPath * navigationPath;
+    const NavigationPoint *xtGoal;
     int navigationPointIndex;
     double dx;
     double dy;

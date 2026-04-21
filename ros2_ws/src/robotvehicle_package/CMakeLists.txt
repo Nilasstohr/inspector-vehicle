@@ -214,7 +214,7 @@ if(BUILD_TESTING)
           ${TestRootPath}/Navigator/TestNavigationUnitTest.cpp
 
   )
-  target_link_libraries(TestNavigationUnitTest UtilitiesLib NavigationLib)
+  target_link_libraries(TestNavigationUnitTest UtilitiesLib NavigationLib PathPlanningLib)
   target_include_directories(TestNavigationUnitTest PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<INSTALL_INTERFACE:include>

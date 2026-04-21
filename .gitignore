@@ -25,6 +25,7 @@
 /vehicle-joy-stick/.project
 /vehicle-joy-stick/.settings/language.settings.xml
 /ros2_ws/build/
+/nucleo-h723zg/
 /ros2_ws/install/
 /ros2_ws/log/
 /ros2_ws/GridMap.txt

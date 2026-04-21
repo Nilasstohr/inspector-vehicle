@@ -25,25 +25,25 @@ struct cell {
     int parent_i, parent_j;
     // f = g + h
     double f, g, h;
+    // Whether this cell has been finalized (Closed Set)
+    bool closed;
 };
 
 class AStar: public MatrixHelper {
 public:
     AStar();
-    void update(Pose *currentPose, PathPoint *destination, MatrixXd *gridMap);
-    NavigationPath * getNavigationPath();
+    void update(double xs,double ys,int xd,int yd, const MatrixXd & gridMap);
+    const NavigationPath & getNavigationPath();
     string pathToString();
 private:
     bool isValid(int row, int col);
     bool isDestination(int row, int col, Pair dest);
     double calculateHValue(int row, int col, Pair dest);
-    void tracePath(cell cellDetails[][CONFIG_GRID_COL_SIZE], Pair dest);
     //bool isUnBlocked(int grid[][CONFIG_GRID_COL_SIZE], int row, int col);
-    bool isUnBlocked(MatrixXd *grid, int row, int col);
-    void downSampleNavigationPath(stack<Pair> *path);
-    NavigationPath * navigationPath;
+    bool isUnBlocked(const MatrixXd &grid, int row, int col);
+    void downSampleNavigationPath(const Pair &start, stack<Pair> &&input_path);
+    NavigationPath navigationPath;
     string pathString;
-    Pose *currentPose;
 
 
 };

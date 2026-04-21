@@ -286,11 +286,11 @@ bool GridMap::isPoseInSafeZone(Pose *currentPose) {
             static_cast<int>(currentPose->getX()), static_cast<int>(currentPose->getX()))!=CONFIG_GRID_VALUE_SAFETY;
 }
 
-bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
+bool GridMap::isPathBlocked(const NavigationPath *navigationPath) {
     int x;
     int y;
     int radius = CONFIG_OBSTACLE_SAFETY_CHECK_RADIUS;
-    for(NavigationPoint point: *navigationPath->getPath()){
+    for(const NavigationPoint &point: navigationPath->getPath()){
         x = point.getX();
         y = point.getY();
         for(int k=y-radius; k<y+radius; k++){
@@ -308,8 +308,8 @@ bool GridMap::isPathBlocked(NavigationPath *navigationPath) {
     return false;
 }
 
-MatrixXd * GridMap::getMapWithSafetyDistance() {
-    return &gridMapWithSafetyDistance;
+MatrixXd & GridMap::getMapWithSafetyDistance() {
+    return gridMapWithSafetyDistance;
 }
 
 string * GridMap::scanEndPointsToString(const vector<PointPolarForm> & scan, Pose *pose) {
