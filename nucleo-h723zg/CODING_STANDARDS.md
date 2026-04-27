@@ -48,6 +48,30 @@ if (schedulerRunning) {
 
 ## 3. General
 
+### 3.1 Const correctness
+**Rule:** Apply `const` rigorously throughout the codebase:
+- Mark every variable, parameter, or return value `const` when it is not modified after initialisation.
+- Mark member functions `const` whenever they do not mutate object state.
+- Prefer `const T&` over `T` for non-trivial pass-by-value parameters that are not modified.
+- Avoid `const_cast` — its use should be treated as a code smell and require a comment justifying the exception.
+
+**Rationale:** Const correctness prevents accidental mutation, serves as machine-checked documentation of intent, and can enable compiler optimisations. It is consistent with MISRA-C++ Rule 7-1-1 and AUTOSAR A7-1-1.
+
+✅ **Good:**
+```cpp
+void Foo::process(const Bar& input) const {
+    const uint32_t scaled = input.value() * kScale;
+    transmit(scaled);
+}
+```
+
+❌ **Bad:**
+```cpp
+void Foo::process(Bar input) {   // unnecessary copy, non-const parameter
+    uint32_t scaled = input.value() * kScale;  // scaled never changes
+    transmit(scaled);
+}
+```
 ### 3.1 Prefer `const` where possible
 Mark variables and parameters `const` whenever they are not modified.
 

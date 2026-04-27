@@ -31,8 +31,14 @@ typedef uint32_t FlagStatus;
 
 #define UART_FLAG_RXNE  (0x0020U)
 
+// Clear-flag constants (ICR register bits)
+#define UART_CLEAR_IDLEF  (0x00000010U)  // Idle line detected clear flag
+
 // Stub: always reports no data available; tests can override via mock_impl
 extern FlagStatus mock_uart_rxne_flag;
 #define __HAL_UART_GET_FLAG(__HANDLE__, __FLAG__) \
     ((__FLAG__) == UART_FLAG_RXNE ? mock_uart_rxne_flag : RESET)
+
+// No-op clear flag stub for host builds
+#define __HAL_UART_CLEAR_FLAG(__HANDLE__, __FLAG__)  ((void)0)
 

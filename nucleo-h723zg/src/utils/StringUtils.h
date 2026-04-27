@@ -14,11 +14,14 @@ namespace utils {
      */
     inline std::optional<float> parseFloat(std::string_view sv) {
         char buf[32] = {};
-        if (sv.empty() || sv.size() >= sizeof(buf)) return std::nullopt;
+        if ( sv.empty() || sv.size() >= sizeof(buf)) {
+            return std::nullopt;
+        }
         sv.copy(buf, sv.size());   // zero-init guarantees null termination
         char* end = nullptr;
         const float result = std::strtof(buf, &end);
-        if (end == buf) return std::nullopt;  // no digits consumed
+        if (end == buf)
+            return std::nullopt;  // no digits consumed
         return result;
     }
 

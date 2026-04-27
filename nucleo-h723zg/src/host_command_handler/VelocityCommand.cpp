@@ -11,9 +11,9 @@ VelocityCommand::VelocityCommand(std::span<const std::string_view> args) {
     const auto left  = utils::parseFloat(args[0]);
     const auto right = utils::parseFloat(args[1]);
 
-    if (left && right) {
-        m_left  = *left;
-        m_right = *right;
+    if (left.has_value() && right.has_value()) {
+        m_left  = left.value();
+        m_right = right.value();
         m_valid = true;
     }
 }
