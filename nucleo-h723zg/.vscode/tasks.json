@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure",
+            "type": "shell",
+            "command": "cmake -B ${workspaceFolder}/build -DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/stm32_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build --parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32h7x.cfg -c \"program ${workspaceFolder}/build/nucleo-h723zg.elf verify reset exit\"",
+            "group": "build",
+            "dependsOn": "Build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Build & Flash",
+            "dependsOrder": "sequence",
+            "dependsOn": ["Build", "Flash"],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Configure Tests",
+            "type": "shell",
+            "command": "cmake -B ${workspaceFolder}/tests/build ${workspaceFolder}/tests -DCMAKE_BUILD_TYPE=Debug",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Tests",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/tests/build --parallel",
+            "group": "build",
+            "dependsOn": "Configure Tests",
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+//
+// Created by robotcentral on 4/23/26.
+
+#include "HostCommandHandlerFreeTOSTask.h"
+#include <uart/UartTransceiver.h>
+#include "ReceiveCommand.h"
+#include "VelocityCommand.h"
+
+/**
+ *
+ * @param transceiver
+ * @param intervalMs
+ */
+HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver,const uint32_t intervalMs):
+m_intervalMs(intervalMs), m_uart(Uart(transceiver)){}
+
+void HostCommandHandlerFreeTOSTask::start(const UBaseType_t priority, const uint16_t stackWords)
+{
+    xTaskCreate(taskEntry, "HostHandler", stackWords, this, priority, &m_handle);
+}
+
+/* ── taskEntry() — static trampoline ────────────────────────────────────── */
+void HostCommandHandlerFreeTOSTask::taskEntry(void* arg)
+{
+    /* Recover the object pointer and call the member function */
+    static_cast<HostCommandHandlerFreeTOSTask*>(arg)->run();
+}
+
+/* ── run() — the actual task loop ──────────────────────────────────────── */
+void HostCommandHandlerFreeTOSTask::run() const {
+    char buf[128];
+    for (;;) {
+        auto result = m_uart.getTransceiver().receive(buf, sizeof(buf));
+        if (result.has_value() && result.value() > 0) {
+            auto received = std::string_view(buf, result.value());
+            if (ReceiveCommand cmd(received); cmd.valid()) {
+                if (cmd.command() == HostCommandName::Vel) {
+                    if (VelocityCommand velocity_command(cmd.args()); velocity_command.valid()) {
+                        m_uart.getTransceiver().transmit("ack", 3);
+                    } else {
+                        m_uart.logf("Invalid velocity args: %s\n", received.data());
+                    }
+                } else {
+                    m_uart.logf("Unrecognized command\n");
+                }
+            } else {
+                m_uart.logf("Invalid command: %s\n", received.data());
+            }
+        }
+        // no vTaskDelay — receive() blocks waiting for data
+    }
+}

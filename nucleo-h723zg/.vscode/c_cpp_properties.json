@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "STM32H723ZG",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Unit Tests (Host)",
+            "compileCommands": "${workspaceFolder}/tests/build/compile_commands.json",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
+

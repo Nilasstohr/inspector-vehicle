@@ -1,0 +1,61 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "🐛 Debug (STM32H723ZG)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/nucleo-h723zg.elf",
+            "openOCDLaunchCommands": [
+                "tpiu config internal - uart off 64000000"
+            ],
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32h7x.cfg"
+            ],
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "rtos": "FreeRTOS",
+            "preLaunchTask": "Build"
+        },
+        {
+            "name": "🧪 Debug Unit Tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/build/unit_tests",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/tests",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "targetArchitecture": "x64",
+            "setupCommands": [
+                {
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Tests",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "🚀 Flash Only (no debug)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/nucleo-h723zg.elf",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32h7x.cfg"
+            ],
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "preLaunchTask": "Build",
+            "postDebugTask": "Resume & Disconnect"
+        }
+    ]
+}

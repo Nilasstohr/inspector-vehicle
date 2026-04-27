@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSettings">
+    <configurations>
+
+      <!-- ── Native host build – unit tests only ── -->
+      <!--   No toolchain file → CMAKE_CROSSCOMPILING=FALSE                   -->
+      <!--   → root CMakeLists.txt adds tests/ via the guard                  -->
+      <!--   The STM32/firmware "Debug" profile is managed by CLion directly  -->
+      <!--   (Settings → CMake) and must pass the toolchain via CMake options -->
+      <configuration PROFILE_NAME="Tests-Native"
+                     CONFIG_NAME="Debug"
+                     ENABLED="true"
+                     GENERATION_DIR="tests/build-tests"
+                     CMAKE_OPTIONS="-DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++"
+                     GENERATION_OPTIONS=""
+                     BUILD_OPTIONS="" />
+
+    </configurations>
+  </component>
+</project>
