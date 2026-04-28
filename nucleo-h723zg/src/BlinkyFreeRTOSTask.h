@@ -1,21 +1,29 @@
 #pragma once
 
+#include <gpio/GpioOutput.h>
+
 #include "FreeRTOS.h"
-#include "stm32h7xx_hal.h"
 #include "task.h"
 
 /**
  * @class BlinkyFreeRTOSTask
  * @brief Encapsulates a FreeRTOS task that blinks a GPIO pin.
  *
+ * Accepts a GpioOutput reference so pin ownership and init remain with the
+ * caller (main). The task only calls toggle() on the provided output.
+ *
  * C++ pattern for FreeRTOS tasks:
- *   - Constructor configures the LED pin and interval
+ *   - Constructor stores the GpioOutput reference and blink interval
  *   - start() creates the FreeRTOS task
  *   - Static taskEntry() bridges C FreeRTOS API → C++ run() method
  */
 class BlinkyFreeRTOSTask {
    public:
-    BlinkyFreeRTOSTask(GPIO_TypeDef* port, uint16_t pin, uint32_t intervalMs);
+    /**
+     * @param pin         GPIO output to blink (caller owns the object)
+     * @param intervalMs  Toggle period in milliseconds
+     */
+    BlinkyFreeRTOSTask(GpioOutput& pin, uint32_t intervalMs);
 
     /* Once 'this' is passed to xTaskCreate, the object address is captured.
      * Copying or moving would leave the running task with a dangling pointer. */
@@ -31,17 +39,16 @@ class BlinkyFreeRTOSTask {
     void setInterval(uint32_t intervalMs);
 
     /* Read current blink interval (used by tests) */
-    uint32_t getInterval() const { return m_intervalMs; }
+    [[nodiscard]] uint32_t getInterval() const { return m_intervalMs; }
 
    private:
     /* Static trampoline: FreeRTOS needs a plain C function pointer */
     static void taskEntry(void* arg);
 
     /* The actual task loop — runs as a member function */
-    void run() const;
+    void run();
 
-    GPIO_TypeDef* m_port;
-    uint16_t m_pin;
-    uint32_t m_intervalMs;
+    GpioOutput&  m_pin;
+    uint32_t     m_intervalMs;
     TaskHandle_t m_handle = nullptr;
 };

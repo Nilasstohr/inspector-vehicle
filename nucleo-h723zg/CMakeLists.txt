@@ -83,6 +83,8 @@ add_executable(${PROJECT_NAME}.elf
     ${hal_h7_SOURCE_DIR}/Src/stm32h7xx_hal_dma.c
     ${hal_h7_SOURCE_DIR}/Src/stm32h7xx_hal_uart.c
     ${hal_h7_SOURCE_DIR}/Src/stm32h7xx_hal_uart_ex.c
+    ${hal_h7_SOURCE_DIR}/Src/stm32h7xx_hal_tim.c
+    ${hal_h7_SOURCE_DIR}/Src/stm32h7xx_hal_tim_ex.c
 
     # CMSIS system init
     ${cmsis_device_h7_SOURCE_DIR}/Source/Templates/system_stm32h7xx.c
@@ -98,6 +100,11 @@ add_executable(${PROJECT_NAME}.elf
         src/host_command_handler/ReceiveCommand.h
         src/host_command_handler/VelocityCommand.cpp
         src/host_command_handler/VelocityCommand.h
+        src/gpio/GpioOutput.cpp
+        src/pwm/PwmOutput.cpp
+        src/pwm/PwmOutput.h
+        src/motors/MotorDriver.cpp
+        src/motors/MotorDriver.h
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE

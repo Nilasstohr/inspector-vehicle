@@ -91,6 +91,7 @@
 #define HAL_FLASH_MODULE_ENABLED   /* Flash access — required internally by HAL_RCC_ClockConfig() */
 #define HAL_DMA_MODULE_ENABLED     /* DMA types — required by UART handle struct  */
 #define HAL_UART_MODULE_ENABLED    /* UART/USART — debug logging via ST-Link VCP  */
+#define HAL_TIM_MODULE_ENABLED     /* Timers — PWM output for motor control        */
 
 /* ── Oscillator frequency values ────────────────────────────────────────────
  * These must match the actual hardware. Used by HAL RCC functions to
@@ -124,6 +125,7 @@
 #include "stm32h7xx_hal_flash.h"
 #include "stm32h7xx_hal_dma.h"
 #include "stm32h7xx_hal_uart.h"
+#include "stm32h7xx_hal_tim.h"
 
 /* ── Parameter assertion — disabled for production ──────────────────────────
  * HAL uses assert_param() throughout to validate arguments.

@@ -1,10 +1,12 @@
-
 /**
  * @file    main.cpp
  * @brief   FreeRTOS blinky for Nucleo-H723ZG (C++)
  */
 
+#include <gpio/GpioOutput.h>
 #include <host_command_handler/HostCommandHandlerFreeTOSTask.h>
+#include <motors/MotorDriver.h>
+#include <pwm/PwmOutput.h>
 
 #include "BlinkyFreeRTOSTask.h"
 #include "CrashHandler.h"
@@ -12,14 +14,8 @@
 #include "stm32h7xx_hal.h"
 #include "task.h"
 
-/* ── LED pin definitions (Nucleo-H723ZG MB1364) ─────────────────────────── */
-#define LD1_PIN GPIO_PIN_0  /* Green  - PB0  */
-#define LD2_PIN GPIO_PIN_1  /* Yellow - PE1  */
-#define LD3_PIN GPIO_PIN_14 /* Red    - PB14 */
-
 /* ── Function prototypes ────────────────────────────────────────────────── */
 static void SystemClock_Config(void);
-static void GPIO_Init(void);
 static void UART3_Init(void);
 
 /* ── UART handle ─────────────────────────────────────────────────────────── */
@@ -27,33 +23,51 @@ static void UART3_Init(void);
 /* Connect a serial terminal on the PC at 115200 8N1 to see log output.    */
 UART_HandleTypeDef huart3;
 
-/* ── Logger task ─────────────────────────────────────────────────────────── */
-/* Runs at the lowest user priority (1). Prints a counter every 2 seconds.  */
 
 /* ── main ───────────────────────────────────────────────────────────────── */
-int main(void) {
+[[noreturn]] int main(void) {
     HAL_Init();
     SystemClock_Config();
-    GPIO_Init();
     UART3_Init();
 
     static UartTransceiver uartTransmitter = UartTransceiver(huart3);
     static HostCommandHandlerFreeTOSTask hostHandler(uartTransmitter, 10);
-    //static LoggerFreeRTOSTask loggerTask(uartTransmitter);
 
     /* Report any fault saved from the previous run before starting tasks */
     CrashHandler_checkAndReport(&hostHandler.getUart());
-     /* Should be caught by HardFault_HandlerC and logged on next boot */
-    //configASSERT(false);  /* Intentional assert → UDF #0 → HardFault (test CrashHandler) */
-    //*reinterpret_cast<volatile uint32_t*>(0x00000000u) = 0xDEAD;  /* NULL write → HardFault */
 
-    static BlinkyFreeRTOSTask greenLed(GPIOB, LD1_PIN, 1000);   /* 1Hz   */
+    /* ── PG12 (CN10 pin 43) — general-purpose output ──────────────────────── */
+    /* Source: UM2407 STM32H7 Nucleo-144 MB1364, Table 20, CN10 connector     */
+    // Motor 1
+    static PwmOutput motor1PWM (TIM1, TIM_CHANNEL_1);  /* PE9  —  D6 (CN10) */
+    static GpioOutput motor1INA(GPIOG, GPIO_PIN_12);  /*  D7 starts LOW */
+    static GpioOutput motor1INB(GPIOE, GPIO_PIN_14);  /*  D4 starts LOW */
+    static MotorDriver motor1(motor1PWM, motor1INA, motor1INB);
+    // Motor 2
+    static PwmOutput motor2PWM(TIM1, TIM_CHANNEL_2);  /* PE11 —  D5 (CN10) */
+    static GpioOutput motor2INA(GPIOE, GPIO_PIN_13);  /* D3  starts LOW */
+    static GpioOutput motor2INB(GPIOG, GPIO_PIN_14);  /* D2 starts LOW */
+    static MotorDriver motor2(motor2PWM, motor2INA, motor2INB);
+
+    /* PSC=0, ARR=3199 → 64MHz / 1 / 3200 = 20 kHz (~11.6-bit, 3200 steps)   */
+    motor1PWM.start();
+    motor2PWM.start();
+    motor1PWM.setPwmRawValue(0);   /* example: ~50 % (1600 / 3200) */
+    motor2PWM.setPwmRawValue(0);
+
+    /* ── User LEDs (Nucleo-H723ZG MB1364) ──────────────────────────────────── */
+    static GpioOutput greenLedPin (GPIOB, GPIO_PIN_0);   /* LD1 — PB0  */
+    //static GpioOutput yellowLedPin(GPIOE, GPIO_PIN_1);   /* LD2 — PE1  */
+    //static GpioOutput redLedPin   (GPIOB, GPIO_PIN_14);  /* LD3 — PB14 */
+    static BlinkyFreeRTOSTask greenLed(greenLedPin, 1000);  /* 1 Hz       */
+
+
 
     greenLed.start("GreenLED", 1);
     hostHandler.start(1, 512);  /* 512 words — extra headroom for float printf */
 
     vTaskStartScheduler();
-    while (1);
+    while (true);
 }
 
 /* ── System clock: keep HSI 64MHz default, no supply change ─────────────── */
@@ -83,24 +97,6 @@ static void SystemClock_Config(void) {
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
 }
 
-/* ── GPIO: init all 3 user LEDs ─────────────────────────────────────────── */
-static void GPIO_Init(void) {
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-    /* PB0 = LD1 green, PB14 = LD3 red */
-    GPIO_InitStruct.Pin = LD1_PIN | LD3_PIN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    /* PE1 = LD2 yellow */
-    GPIO_InitStruct.Pin = LD2_PIN;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-}
 
 /* ── UART3 init: ST-Link VCP on PD8 (TX) / PD9 (RX) @ 115200 8N1 ──────── */
 static void UART3_Init(void) {
@@ -131,6 +127,35 @@ static void UART3_Init(void) {
  * Without it C++ name-mangling renames them and the vector table falls      *
  * back to Default_Handler (infinite loop).                                  */
 extern "C" {
+
+/**
+ * HAL MSP override: configure GPIO pins for TIM1 PWM channels.
+ *   TIM1_CH1 → PE9  (AF1)   Arduino D6 (CN10)
+ *   TIM1_CH2 → PE11 (AF1)   Arduino D5 (CN10)
+ * Called automatically by HAL_TIM_PWM_Init().
+ */
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
+    if (htim->Instance == TIM1) {
+        __HAL_RCC_TIM1_CLK_ENABLE();
+        __HAL_RCC_GPIOE_CLK_ENABLE();
+
+        GPIO_InitTypeDef gpio = {0};
+        gpio.Pin       = GPIO_PIN_9 | GPIO_PIN_11;
+        gpio.Mode      = GPIO_MODE_AF_PP;
+        gpio.Pull      = GPIO_NOPULL;
+        gpio.Speed     = GPIO_SPEED_FREQ_LOW;
+        gpio.Alternate = GPIO_AF1_TIM1;
+        HAL_GPIO_Init(GPIOE, &gpio);
+    }
+}
+
+void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim) {
+    if (htim->Instance == TIM1) {
+        __HAL_RCC_TIM1_FORCE_RESET();
+        __HAL_RCC_TIM1_RELEASE_RESET();
+        HAL_GPIO_DeInit(GPIOE, GPIO_PIN_9 | GPIO_PIN_11);
+    }
+}
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName) {
     (void)xTask;

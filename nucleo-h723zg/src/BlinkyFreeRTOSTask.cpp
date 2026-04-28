@@ -1,10 +1,8 @@
 #include "BlinkyFreeRTOSTask.h"
 
 /* ── Constructor ────────────────────────────────────────────────────────── */
-BlinkyFreeRTOSTask::BlinkyFreeRTOSTask(GPIO_TypeDef* port,
-                                       uint16_t      pin,
-                                       uint32_t      intervalMs)
-    : m_port(port), m_pin(pin), m_intervalMs(intervalMs)
+BlinkyFreeRTOSTask::BlinkyFreeRTOSTask(GpioOutput& pin, uint32_t intervalMs)
+    : m_pin(pin), m_intervalMs(intervalMs)
 {
 }
 
@@ -30,11 +28,10 @@ void BlinkyFreeRTOSTask::taskEntry(void* arg)
 }
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
-void BlinkyFreeRTOSTask::run() const {
+void BlinkyFreeRTOSTask::run() {
     for (;;)
     {
-        HAL_GPIO_TogglePin(m_port, m_pin);
+        m_pin.toggle();
         vTaskDelay(pdMS_TO_TICKS(m_intervalMs));
     }
 }
-
