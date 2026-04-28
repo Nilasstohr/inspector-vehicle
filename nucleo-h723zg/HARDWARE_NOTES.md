@@ -10,7 +10,8 @@
 | Frame shape | **Round** |
 | Motors (×2) | **Pololu 50:1 Metal Gearmotor 37Dx70L mm 12V with 64 CPR Encoder (Helical Pinion)** |
 | Gear ratio | 50 : 1 |
-| Encoder resolution | 64 CPR (counts per revolution) on motor shaft → **3 200 CPR** at gearbox output (64 × 50) |
+| Motor max speed | **200 RPM** at wheel shaft |
+| Encoder resolution | 64 CPR on motor shaft → **3 200 CPR** at wheel shaft (64 × 50) |
 | Supply voltage | 12 V nominal |
 
 > One motor drives the **left** wheel, the other drives the **right** wheel.
@@ -132,6 +133,221 @@ static PwmOutput servo(TIM3, TIM_CHANNEL_1, 63, 19999);
 
 ---
 
+## Encoder GPIO & EXTI Wiring
+
+### Background — EXTI line index equals pin number, not port
+
+On STM32H7 the EXTI multiplexer routes **one port per pin number** to a single EXTI line.
+`PA2`, `PB2`, `PC2` … all compete for **EXTI2** — only one port can be active at a time
+(selected via `SYSCFG_EXTICRx`).  The NVIC vector that fires depends solely on the line
+number, not the port letter.
+
+```
+GPIO pin number   NVIC vector              Type
+────────────────  ───────────────────────  ──────────────────────
+0                 EXTI0_IRQHandler         dedicated ✅
+1                 EXTI1_IRQHandler         dedicated ✅
+2                 EXTI2_IRQHandler         dedicated ✅
+3                 EXTI3_IRQHandler         dedicated ✅
+4                 EXTI4_IRQHandler         dedicated ✅
+5 – 9             EXTI9_5_IRQHandler       shared ⚠️  must demux
+10 – 15           EXTI15_10_IRQHandler     shared ⚠️  must demux
+```
+
+---
+
+### Option A — Dedicated vectors ✅ (current implementation)
+
+Use **pin numbers 0–4** on any free port.  Each channel gets its own vector — no
+pending-flag demux needed.  Current assignment:
+
+| Signal        | Pin | EXTI line | IRQ vector            | Connector |
+|---------------|-----|-----------|-----------------------|-----------|
+| Motor 1 Enc A | PB1 | EXTI1     | `EXTI1_IRQHandler`    | CN12      |
+| Motor 1 Enc B | PB2 | EXTI2     | `EXTI2_IRQHandler`    | CN12      |
+
+**`isr_handlers.cpp`** — one line per channel, zero demux:
+
+```cpp
+void EXTI1_IRQHandler(void) {
+    __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_A_PIN);
+    Encoder::isrChannelA(0);
+}
+
+void EXTI2_IRQHandler(void) {
+    __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_B_PIN);
+    Encoder::isrChannelB(0);
+}
+```
+
+**`main.cpp`** — two separate NVIC enables:
+
+```cpp
+HAL_NVIC_SetPriority(MOTOR1_ENC_A_IRQn, MOTOR1_ENC_IRQ_PRIORITY, 0);
+HAL_NVIC_EnableIRQ(MOTOR1_ENC_A_IRQn);
+HAL_NVIC_SetPriority(MOTOR1_ENC_B_IRQn, MOTOR1_ENC_IRQ_PRIORITY, 0);
+HAL_NVIC_EnableIRQ(MOTOR1_ENC_B_IRQn);
+```
+
+---
+
+### Option B — Shared vector ⚠️ (pin numbers 5–9 or 10–15)
+
+If encoder pins must land on lines 10–15 (e.g. PE10 / PE12), both share
+`EXTI15_10_IRQHandler`.  The pending register must be read to determine which pin
+fired, then cleared before returning — failing to clear causes the CPU to re-enter
+the ISR immediately in a tight loop, starving FreeRTOS.
+
+**`isr_handlers.cpp`** — must demux and clear each flag individually:
+
+```cpp
+void EXTI15_10_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(MOTOR1_ENC_A_PIN) != RESET) {
+        __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_A_PIN);
+        Encoder::isrChannelA(0);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(MOTOR1_ENC_B_PIN) != RESET) {
+        __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_B_PIN);
+        Encoder::isrChannelB(0);
+    }
+}
+```
+
+**`MotorPinConfig.h`** — both channels share one IRQn:
+
+```c
+#define MOTOR1_ENC_A_PORT   GPIOE
+#define MOTOR1_ENC_A_PIN    GPIO_PIN_10   /* EXTI10 */
+#define MOTOR1_ENC_B_PORT   GPIOE
+#define MOTOR1_ENC_B_PIN    GPIO_PIN_12   /* EXTI12 */
+#define MOTOR1_ENC_IRQn     EXTI15_10_IRQn
+```
+
+**`main.cpp`** — single NVIC enable covers both pins:
+
+```cpp
+HAL_NVIC_SetPriority(MOTOR1_ENC_IRQn, MOTOR1_ENC_IRQ_PRIORITY, 0);
+HAL_NVIC_EnableIRQ(MOTOR1_ENC_IRQn);
+```
+
+---
+
+### Encoder interrupt priority (`MOTOR1_ENC_IRQ_PRIORITY`)
+
+#### Step 1 — Hardware priority numbers
+
+The STM32H7 Cortex-M7 core has **4 priority bits**, giving **16 levels numbered 0–15**:
+
+- **0 = most urgent** — this IRQ fires first and can interrupt any lower-priority IRQ.
+- **15 = least urgent** — any higher-priority IRQ can interrupt this one.
+
+You pass this number to `HAL_NVIC_SetPriority()`.  Lower number = higher urgency.
+
+---
+
+#### Step 2 — What is "the FreeRTOS API"?
+
+FreeRTOS is a mini operating system that runs tasks, queues, semaphores, and timers.
+It provides functions your code calls — for example:
+
+| Function | What it does |
+|---|---|
+| `vTaskDelay(100)` | Pause the current task for 100 ms |
+| `xQueueSend(q, &data, 0)` | Put data into a queue from a task |
+| `xQueueSendFromISR(q, &data, &woken)` | Same, but called from inside an **interrupt handler** |
+| `xTaskNotifyFromISR(handle, ...)` | Wake a sleeping task from inside an **interrupt handler** |
+
+The `...FromISR` suffix marks the **interrupt-safe** versions of these functions.
+Regular versions (without `FromISR`) **must never be called from an interrupt** — they
+will corrupt the kernel's internal data structures and cause a crash.
+
+---
+
+#### Step 3 — Why does FreeRTOS need to control which interrupts fire?
+
+FreeRTOS maintains internal linked lists (the ready list, the delayed-task list, etc.).
+When a `FromISR` function updates one of these lists, it must do so **atomically** —
+no other interrupt must be allowed to touch the same list at the same time.
+
+FreeRTOS achieves this on Cortex-M by writing to the **BASEPRI register**, which
+masks (temporarily silences) all interrupts **at or below a given priority level**.
+When BASEPRI is set to 5, priorities 5–15 are silenced; priorities 0–4 still fire.
+
+---
+
+#### Step 4 — The two zones (the critical concept)
+
+`configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY = 5` (set in `FreeRTOSConfig.h`) is
+the dividing line:
+
+```
+ NVIC priority │ Zone            │ Behaviour
+───────────────┼─────────────────┼───────────────────────────────────────────────
+  0            │                 │ e.g. safety hard-stop, zero-latency ADC
+  1            │  UNMANAGED      │
+  2            │  (above limit)  │ FreeRTOS CANNOT mask these — they fire even
+  3            │                 │ while FreeRTOS is editing its own task lists.
+  4            │  ⚡ danger      │ Calling ANY FreeRTOS function here (even FromISR)
+               │                 │ risks reading half-updated data → crash / hang.
+───────────────┼─────────────────┼───────────────────────────────────────────────
+  5  ◄── limit │                 │ Highest urgency where FromISR calls are safe.
+  6            │  MANAGED        │
+  7            │  (at/below      │ FreeRTOS masks priorities 5–15 during its own
+  8            │   limit)        │ critical sections, so its data is always in a
+  ...          │                 │ consistent state when your ISR reads it.
+  14           │  ✅ safe        │
+  15           │                 │ SysTick + PendSV live here (kernel internals)
+───────────────┴─────────────────┴───────────────────────────────────────────────
+```
+
+**"Managed"** means FreeRTOS is aware of the interrupt, can temporarily silence it,
+and guarantees it sees consistent internal state → `FromISR` calls are safe.
+
+**"Unmanaged"** means FreeRTOS is completely blind to the interrupt — it never
+silences it, so it can fire at any moment, even mid-way through a kernel operation.
+These are reserved for bare-metal, zero-OS work (e.g. a microsecond-accurate
+hard-stop triggered by a hardware fault signal).
+
+---
+
+#### Step 5 — Why priority 5 for the encoder?
+
+Priority **5** is the sweet spot:
+
+- It is the **highest urgency** number still in the managed zone.
+- The encoder fires on every quadrature edge at potentially high frequency — it
+  should not sit at a low urgency where a UART or USB IRQ could delay it.
+- Even though the encoder ISR currently does **not** call any FreeRTOS function,
+  setting it to 5 means that adding `xTaskNotifyFromISR()` later (e.g. to wake a
+  PID control task on each tick) requires **zero changes** to the priority config.
+
+> ⚠️ If you change `MOTOR1_ENC_IRQ_PRIORITY` to **4 or lower**, any `FromISR` call
+> inside the handler will silently corrupt the kernel.  In debug builds
+> `configASSERT` will catch this and deliberately trigger a HardFault so the
+> CrashHandler can record the fault frame.
+
+---
+
+#### Further reading
+
+- **FreeRTOS official explanation** (Cortex-M, identical BASEPRI mechanism on M7):
+  https://www.freertos.org/RTOS-Cortex-M3-M4.html
+  → search the page for `configMAX_SYSCALL_INTERRUPT_PRIORITY`
+- **Cortex-M exception model** (ARM):
+  https://developer.arm.com/documentation/100235/latest — Chapter "Exception model"
+
+---
+
+### Common pitfalls
+
+| Pitfall | Symptom | Fix |
+|---------|---------|-----|
+| `GpioInput` constructed as a temporary passed to `Encoder` | Destructor calls `HAL_GPIO_DeInit()` immediately, wiping EXTI config; no interrupts ever fire | Declare `GpioInput` objects as `static` locals so they outlive the constructor call |
+| Pending flag not cleared in ISR | CPU re-enters ISR in a tight loop on every edge; FreeRTOS starved; encoder appears dead | Always call `__HAL_GPIO_EXTI_CLEAR_IT(pin)` at the top of every EXTI handler |
+| Using `GPIO_MODE_INPUT` instead of `GPIO_MODE_IT_RISING_FALLING` | Pin configured for polling only; EXTI trigger never armed | Pass `GPIO_MODE_IT_RISING_FALLING` as the `mode` argument to `GpioInput` |
+| Encoder pin on line 10–15, handler written as `EXTI10_IRQHandler` | Linker resolves to `Default_Handler` (infinite loop); no encoder ticks | Use `EXTI15_10_IRQHandler` with demux for lines 10–15 |
+
+---
 
 
 
