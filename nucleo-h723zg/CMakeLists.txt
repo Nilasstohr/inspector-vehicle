@@ -101,10 +101,15 @@ add_executable(${PROJECT_NAME}.elf
         src/host_command_handler/VelocityCommand.cpp
         src/host_command_handler/VelocityCommand.h
         src/gpio/GpioOutput.cpp
+        src/gpio/GpioBase.cpp
+        src/gpio/GpioInput.cpp
         src/pwm/PwmOutput.cpp
         src/pwm/PwmOutput.h
         src/motors/MotorDriver.cpp
         src/motors/MotorDriver.h
+        src/motors/Encoder.cpp
+        src/motors/Encoder.h
+        src/isr_handlers.cpp
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE

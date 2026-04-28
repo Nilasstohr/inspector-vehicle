@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <motors/Encoder.h>
 #include <uart/Uart.h>
 #include <uart/UartTransceiver.h>
 
@@ -18,8 +19,9 @@
 
 class HostCommandHandlerFreeTOSTask {
 public:
-    HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver, uint32_t intervalMs);
+    HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver, uint32_t intervalMs,const Encoder & encoder);
     HostCommandHandlerFreeTOSTask(const HostCommandHandlerFreeTOSTask&)            = delete;
+;
     HostCommandHandlerFreeTOSTask& operator=(const HostCommandHandlerFreeTOSTask&) = delete;
     HostCommandHandlerFreeTOSTask(HostCommandHandlerFreeTOSTask&&)                 = delete;
     HostCommandHandlerFreeTOSTask& operator=(HostCommandHandlerFreeTOSTask&&)      = delete;
@@ -33,6 +35,7 @@ private:
     TaskHandle_t m_handle = nullptr;
     uint32_t m_intervalMs;
     Uart m_uart;
+    const Encoder &m_encoder;
 };
 
 

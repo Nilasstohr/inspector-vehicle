@@ -25,7 +25,10 @@ add_executable(unit_tests
     unit/test_BlinkyFreeRTOSTask.cpp
     unit/test_UartLogger.cpp
     unit/test_HostCommandInterface.cpp
+    unit/test_EncoderMath.cpp
     ${ROOT}/src/BlinkyFreeRTOSTask.cpp
+    ${ROOT}/src/gpio/GpioBase.cpp
+    ${ROOT}/src/gpio/GpioOutput.cpp
     ${ROOT}/src/uart/Uart.cpp
     ${ROOT}/src/uart/UartTransceiver.cpp
     ${ROOT}/mocks/mock_impl.cpp
@@ -40,6 +43,7 @@ add_executable(unit_tests
 target_include_directories(unit_tests PRIVATE
     ${ROOT}/mocks        # mock headers shadow the real HAL/FreeRTOS headers
     ${ROOT}/src
+    ${ROOT}/src/gpio
     ${ROOT}/src/uart
     ${ROOT}/src/host_command_handler
     ${ROOT}/src/utils
