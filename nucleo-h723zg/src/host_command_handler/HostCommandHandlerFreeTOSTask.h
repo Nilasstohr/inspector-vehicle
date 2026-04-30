@@ -4,40 +4,22 @@
 
 #pragma once
 
+#include <freetos/FreeTOSTask.h>
 #include <motors/Encoder.h>
 #include <uart/Uart.h>
 #include <uart/UartTransceiver.h>
-
-#include "FreeRTOS.h"
-#include "stm32h7xx_hal.h"
-#include "task.h"
-
 
 #ifndef HOSTCOMMANDHANDLERFREETOSTASK_H
 #define HOSTCOMMANDHANDLERFREETOSTASK_H
 
 
-class HostCommandHandlerFreeTOSTask {
+class HostCommandHandlerFreeTOSTask final : public FreeTOSTask {
 public:
-    HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver, uint32_t intervalMs,const Encoder & encoder);
-    HostCommandHandlerFreeTOSTask(const HostCommandHandlerFreeTOSTask&)            = delete;
-;
-    HostCommandHandlerFreeTOSTask& operator=(const HostCommandHandlerFreeTOSTask&) = delete;
-    HostCommandHandlerFreeTOSTask(HostCommandHandlerFreeTOSTask&&)                 = delete;
-    HostCommandHandlerFreeTOSTask& operator=(HostCommandHandlerFreeTOSTask&&)      = delete;
-
-    Uart& getUart() { return m_uart; }
-    void start(UBaseType_t priority = 1, uint16_t stackWords = 512);
-
+    HostCommandHandlerFreeTOSTask(const Uart &uart);
 private:
-    static void taskEntry(void* arg);
-    void run() const;
-    TaskHandle_t m_handle = nullptr;
-    uint32_t m_intervalMs;
-    Uart m_uart;
-    const Encoder &m_encoder;
+    void run() const override;
+    const Uart  &m_uart;
 };
-
 
 
 #endif //HOSTCOMMANDHANDLERFREETOSTASK_H

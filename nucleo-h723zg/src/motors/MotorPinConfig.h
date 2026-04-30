@@ -14,24 +14,24 @@
 #include "stm32h7xx_hal.h"
 
 /* ── Motor 1 ──────────────────────────────────────────────────────────────── */
-#define MOTOR1_PWM_PORT         GPIOE
-#define MOTOR1_PWM_PIN          GPIO_PIN_9    /* TIM1_CH1  — Arduino D6  (CN10) */
+#define MOTOR1_INA_PORT         GPIOE
+#define MOTOR1_INA_PIN          GPIO_PIN_13   /* Direction A             (CN10) */
 
-#define MOTOR1_INA_PORT         GPIOG
-#define MOTOR1_INA_PIN          GPIO_PIN_12   /* Direction A             (CN10) */
-
-#define MOTOR1_INB_PORT         GPIOE
+#define MOTOR1_INB_PORT         GPIOG
 #define MOTOR1_INB_PIN          GPIO_PIN_14   /* Direction B             (CN10) */
 
 #define MOTOR1_ENC_A_PORT       GPIOB
-#define MOTOR1_ENC_A_PIN        GPIO_PIN_1    /* Encoder ch A — PB1 → EXTI1 — CN12 */
+#define MOTOR1_ENC_A_PIN        GPIO_PIN_3    /* Encoder ch A — PB1 → EXTI1 — CN12 */
 
 #define MOTOR1_ENC_B_PORT       GPIOB
-#define MOTOR1_ENC_B_PIN        GPIO_PIN_2    /* Encoder ch B — PB2 → EXTI2 — CN12 */
+#define MOTOR1_ENC_B_PIN        GPIO_PIN_4    /* Encoder ch B — PB2 → EXTI2 — CN12 */
 
 /* Each encoder pin has its own dedicated IRQn — no demux needed. */
-#define MOTOR1_ENC_A_IRQn         EXTI1_IRQn
-#define MOTOR1_ENC_B_IRQn         EXTI2_IRQn
+#define MOTOR1_ENC_A_IRQn         EXTI3_IRQn
+#define MOTOR1_ENC_B_IRQn         EXTI4_IRQn
+
+#define MOTOR1_ENC_IRQ_PRIORITY   5U
+
 
 /* Interrupt priority for encoder EXTI lines.
  *
@@ -55,14 +55,25 @@
  *
  * See FreeRTOSConfig.h: configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY = 5
  */
-#define MOTOR1_ENC_IRQ_PRIORITY   5U
 
 /* ── Motor 2 ──────────────────────────────────────────────────────────────── */
-#define MOTOR2_PWM_PORT         GPIOE
-#define MOTOR2_PWM_PIN          GPIO_PIN_11   /* TIM1_CH2  — Arduino D5  (CN10) */
+#define MOTOR2_INA_PORT         GPIOG
+#define MOTOR2_INA_PIN          GPIO_PIN_12   /* Direction A             (CN10) */
 
-#define MOTOR2_INA_PORT         GPIOE
-#define MOTOR2_INA_PIN          GPIO_PIN_13   /* Direction A             (CN10) */
-
-#define MOTOR2_INB_PORT         GPIOG
+#define MOTOR2_INB_PORT         GPIOE
 #define MOTOR2_INB_PIN          GPIO_PIN_14   /* Direction B             (CN10) */
+
+#define MOTOR2_ENC_A_PORT       GPIOB
+#define MOTOR2_ENC_A_PIN        GPIO_PIN_1    /* Encoder ch A — PB1 → EXTI1 — CN12 */
+
+#define MOTOR2_ENC_B_PORT       GPIOB
+#define MOTOR2_ENC_B_PIN        GPIO_PIN_2    /* Encoder ch B — PB2 → EXTI2 — CN12 */
+
+/* Each encoder pin has its own dedicated IRQn — no demux needed. */
+#define MOTOR2_ENC_A_IRQn         EXTI1_IRQn
+#define MOTOR2_ENC_B_IRQn         EXTI2_IRQn
+
+#define MOTOR2_ENC_IRQ_PRIORITY   5U
+
+
+
