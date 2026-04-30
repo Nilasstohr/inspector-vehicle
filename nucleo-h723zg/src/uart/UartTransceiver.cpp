@@ -9,7 +9,7 @@ UartTransceiver::UartTransceiver(UART_HandleTypeDef & huart) : m_huart(huart) {
     m_mutex = xSemaphoreCreateMutex();
 }
 
-tl::expected<void, TransceiverError> UartTransceiver::transmit(const char *data, const uint16_t len) {
+tl::expected<void, TransceiverError> UartTransceiver::transmit(const char *data, const uint16_t len) const {
     if (len == 0) return {};  // success — nothing to send
 
     /* Skip mutex before the scheduler starts — xSemaphoreTake would assert. */

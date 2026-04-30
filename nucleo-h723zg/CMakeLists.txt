@@ -56,7 +56,7 @@ FetchContent_Declare(freertos_kernel
 )
 # FreeRTOS-Kernel requires a 'freertos_config' target that provides FreeRTOSConfig.h
 add_library(freertos_config INTERFACE)
-target_include_directories(freertos_config INTERFACE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(freertos_config INTERFACE ${CMAKE_SOURCE_DIR}/src/freetos)
 
 set(FREERTOS_PORT GCC_ARM_CM7 CACHE STRING "" FORCE)
 set(FREERTOS_HEAP 4           CACHE STRING "" FORCE)
@@ -110,6 +110,10 @@ add_executable(${PROJECT_NAME}.elf
         src/motors/Encoder.cpp
         src/motors/Encoder.h
         src/isr_handlers.cpp
+        src/freetos/FreeTOSTask.h
+        src/freetos/FreeTOSTask.cpp
+        src/motors/ControllerFreeTOSTask.cpp
+        src/motors/ControllerFreeTOSTask.h
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE

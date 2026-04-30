@@ -20,14 +20,28 @@
 extern "C" {
 
 /* ── Motor 1 encoder ───────────────────────────────────────────────────── */
-void EXTI1_IRQHandler(void) {   /* PB1 — MOTOR1_ENC_A_PIN */
+void EXTI3_IRQHandler(void) {   /* PB1 — MOTOR1_ENC_A_PIN */
     __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_A_PIN);
     Encoder::isrChannelA(0);
 }
 
-void EXTI2_IRQHandler(void) {   /* PB2 — MOTOR1_ENC_B_PIN */
+void EXTI4_IRQHandler(void) {   /* PB2 — MOTOR1_ENC_B_PIN */
     __HAL_GPIO_EXTI_CLEAR_IT(MOTOR1_ENC_B_PIN);
     Encoder::isrChannelB(0);
 }
+
+/* ── Motor 2 ncoder ───────────────────────────────────────────────────── */
+void EXTI1_IRQHandler(void) {   /* PB1 — MOTOR1_ENC_A_PIN */
+    __HAL_GPIO_EXTI_CLEAR_IT(MOTOR2_ENC_A_PIN);
+    Encoder::isrChannelA(1);
+}
+
+void EXTI2_IRQHandler(void) {   /* PB2 — MOTOR1_ENC_B_PIN */
+    __HAL_GPIO_EXTI_CLEAR_IT(MOTOR2_ENC_B_PIN);
+    Encoder::isrChannelB(1);
+}
+
+
+
 
 } // extern "C"

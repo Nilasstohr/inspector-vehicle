@@ -5,6 +5,7 @@
 
 #include <gpio/GpioOutput.h>
 #include <host_command_handler/HostCommandHandlerFreeTOSTask.h>
+#include <motors/ControllerFreeTOSTask.h>
 #include <motors/Encoder.h>
 #include <motors/MotorDriver.h>
 #include <motors/MotorPinConfig.h>
@@ -35,50 +36,63 @@ UART_HandleTypeDef huart3;
     UART3_Init();
 
     // Motor 1
-    static PwmOutput motor1PWM (TIM1, TIM_CHANNEL_1);  /* PE9  —  D6 (CN10) */
-    static GpioOutput motor1INA(GPIOG, GPIO_PIN_12);  /*  D7 starts LOW */
-    static GpioOutput motor1INB(GPIOE, GPIO_PIN_14);  /*  D4 starts LOW */
+    static PwmOutput motor1PWM(TIM1, TIM_CHANNEL_2);  /* PE11 — TIM1_CH2 (AF1) — D5 (CN10) */
+    static GpioOutput motor1INA(MOTOR1_INA_PORT, MOTOR1_INA_PIN);  /* D3  starts LOW */
+    static GpioOutput motor1INB(MOTOR1_INB_PORT, MOTOR1_INB_PIN);  /* D2 starts LOW */
     static MotorDriver motor1Driver(motor1PWM, motor1INA, motor1INB);
     static GpioInput motor1EncA(MOTOR1_ENC_A_PORT, MOTOR1_ENC_A_PIN, GPIO_PULLUP, GPIO_MODE_IT_RISING_FALLING);
     static GpioInput motor1EncB(MOTOR1_ENC_B_PORT, MOTOR1_ENC_B_PIN, GPIO_PULLUP, GPIO_MODE_IT_RISING_FALLING);
     static Encoder motor1Encoder(motor1EncA, motor1EncB);
     Encoder::registerInstance(0, motor1Encoder);  /* register BEFORE enabling IRQs */
-
     /* Each encoder pin is on its own dedicated EXTI line (1 and 2). */
     HAL_NVIC_SetPriority(MOTOR1_ENC_A_IRQn, MOTOR1_ENC_IRQ_PRIORITY, 0);
     HAL_NVIC_EnableIRQ(MOTOR1_ENC_A_IRQn);
     HAL_NVIC_SetPriority(MOTOR1_ENC_B_IRQn, MOTOR1_ENC_IRQ_PRIORITY, 0);
     HAL_NVIC_EnableIRQ(MOTOR1_ENC_B_IRQn);
+
     // Motor 2
-    static PwmOutput motor2PWM(TIM1, TIM_CHANNEL_2);  /* PE11 —  D5 (CN10) */
-    static GpioOutput motor2INA(GPIOE, GPIO_PIN_13);  /* D3  starts LOW */
-    static GpioOutput motor2INB(GPIOG, GPIO_PIN_14);  /* D2 starts LOW */
+    static PwmOutput motor2PWM (TIM1, TIM_CHANNEL_1);  /* PE9  —  D6 (CN10) */
+    static GpioOutput motor2INA(MOTOR2_INA_PORT, MOTOR2_INA_PIN);  /*  D7 starts LOW */
+    static GpioOutput motor2INB(MOTOR2_INB_PORT, MOTOR2_INB_PIN);  /*  D4 starts LOW */
     static MotorDriver motor2Driver(motor2PWM, motor2INA, motor2INB);
+
+    static GpioInput motor2EncA(MOTOR2_ENC_A_PORT, MOTOR2_ENC_A_PIN, GPIO_PULLUP, GPIO_MODE_IT_RISING_FALLING);
+    static GpioInput motor2EncB(MOTOR2_ENC_B_PORT, MOTOR2_ENC_B_PIN, GPIO_PULLUP, GPIO_MODE_IT_RISING_FALLING);
+    static Encoder motor2Encoder(motor2EncA, motor2EncB);
+    Encoder::registerInstance(1, motor2Encoder);  /* register BEFORE enabling IRQs */
+    /* Each encoder pin is on its own dedicated EXTI line (1 and 2). */
+    HAL_NVIC_SetPriority(MOTOR2_ENC_A_IRQn, MOTOR2_ENC_IRQ_PRIORITY, 0);
+    HAL_NVIC_EnableIRQ(MOTOR2_ENC_A_IRQn);
+    HAL_NVIC_SetPriority(MOTOR2_ENC_B_IRQn, MOTOR2_ENC_IRQ_PRIORITY, 0);
+    HAL_NVIC_EnableIRQ(MOTOR2_ENC_B_IRQn);
+
 
     /* PSC=0, ARR=3199 → 64MHz / 1 / 3200 = 20 kHz (~11.6-bit, 3200 steps)   */
     motor1PWM.start();
     motor2PWM.start();
+    motor1Driver.setForward();
+    motor2Driver.setForward();
     motor1PWM.setPwmRawValue(0);   /* example: ~50 % (1600 / 3200) */
     motor2PWM.setPwmRawValue(0);
-
-
-    static UartTransceiver uartTransceiver = UartTransceiver(huart3);
-    static HostCommandHandlerFreeTOSTask hostHandler(uartTransceiver, 10,motor1Encoder);
-
-    /* Report any fault saved from the previous run before starting tasks */
-    CrashHandler_checkAndReport(&hostHandler.getUart());
-
 
     /* ── User LEDs (Nucleo-H723ZG MB1364) ──────────────────────────────────── */
     static GpioOutput greenLedPin (GPIOB, GPIO_PIN_0);   /* LD1 — PB0  */
     //static GpioOutput yellowLedPin(GPIOE, GPIO_PIN_1);   /* LD2 — PE1  */
     //static GpioOutput redLedPin   (GPIOB, GPIO_PIN_14);  /* LD3 — PB14 */
+
+    static auto uartTransceiver = UartTransceiver(huart3);
+    static Uart uart(uartTransceiver);
+    /* Report any fault saved from the previous run before starting tasks */
+    CrashHandler_checkAndReport(&uart);
+
+
+    /* ── FreeTOSTasks ──────────────────────────────────── */
+    //static HostCommandHandlerFreeTOSTask hostHandler(uart);
     static BlinkyFreeRTOSTask greenLed(greenLedPin, 1000);  /* 1 Hz       */
-
-
-    greenLed.start("GreenLED", 1);
-    hostHandler.start(1, 512);  /* 512 words — extra headroom for float printf */
-
+    static ControllerFreeTOSTask controller(uart,motor1Encoder,motor2Encoder);
+    greenLed.start(1,"GreenLED", 512);
+    //hostHandler.start(1, "HostHandler", 512);  /* 512 words — extra headroom for float printf */
+    controller.start(1,"Controller",512);
     vTaskStartScheduler();
     /* Unreachable — scheduler never returns on a correctly configured system */
 }

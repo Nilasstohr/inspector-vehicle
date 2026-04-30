@@ -2,33 +2,12 @@
 
 /* ── Constructor ────────────────────────────────────────────────────────── */
 BlinkyFreeRTOSTask::BlinkyFreeRTOSTask(GpioOutput& pin, uint32_t intervalMs)
-    : m_pin(pin), m_intervalMs(intervalMs)
+    :FreeTOSTask(), m_pin(pin),m_intervalMs(intervalMs)
 {
-}
-
-/* ── start() ────────────────────────────────────────────────────────────── */
-void BlinkyFreeRTOSTask::start(const char* name, UBaseType_t priority,
-                               uint16_t stackWords)
-{
-    /* Pass 'this' as the argument so taskEntry() can call run() */
-    xTaskCreate(taskEntry, name, stackWords, this, priority, &m_handle);
-}
-
-/* ── setInterval() ──────────────────────────────────────────────────────── */
-void BlinkyFreeRTOSTask::setInterval(uint32_t intervalMs)
-{
-    m_intervalMs = intervalMs;  /* atomic on 32-bit ARM */
-}
-
-/* ── taskEntry() — static trampoline ────────────────────────────────────── */
-void BlinkyFreeRTOSTask::taskEntry(void* arg)
-{
-    /* Recover the object pointer and call the member function */
-    static_cast<BlinkyFreeRTOSTask*>(arg)->run();
 }
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
-void BlinkyFreeRTOSTask::run() {
+void BlinkyFreeRTOSTask::run() const {
     for (;;)
     {
         m_pin.toggle();

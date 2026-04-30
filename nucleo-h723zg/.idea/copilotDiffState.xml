@@ -3,11 +3,12 @@
   <component name="CopilotDiffPersistence">
     <option name="pendingDiffs">
       <map>
-        <entry key="$PROJECT_DIR$/.github/copilot-instructions.md">
+        <entry key="$PROJECT_DIR$/src/FreeTOSTask.cpp">
           <value>
             <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/.github/copilot-instructions.md" />
-              <option name="updatedContent" value="# GitHub Copilot – Project Instructions&#10;&#10;Before generating any code, read and follow the rules in these two files:&#10;&#10;- **[`CODING_STANDARDS.md`](../CODING_STANDARDS.md)** — all coding rules (const correctness, control flow, FreeRTOS guards, casts, magic-number comments).&#10;- **[`HARDWARE_NOTES.md`](../HARDWARE_NOTES.md)** — target MCU, robot platform, motor specs, PWM configuration." />
+              <option name="filePath" value="$PROJECT_DIR$/src/FreeTOSTask.cpp" />
+              <option name="originalContent" value="#include &quot;FreeTOSTask.h&quot;&#10;&#10;&#10;void FreeTOSTask::start(const UBaseType_t priority, const char * name, const uint16_t stackWords)&#10;{&#10;    xTaskCreate(taskEntry, name, stackWords, this, priority, &amp;m_handle);&#10;}&#10;void FreeTOSTask::taskEntry(void* arg)&#10;{&#10;    /* Recover the object pointer and call the member function */&#10;    static_cast&lt;FreeTOSTask*&gt;(arg)-&gt;run();&#10;}" />
+              <option name="updatedContent" value="#include &quot;FreeTOSTask.h&quot;&#10;&#10;FreeTOSTask::FreeTOSTask(const uint32_t intervalMs) : m_intervalMs(intervalMs) {}&#10;&#10;void FreeTOSTask::start(const UBaseType_t priority, const char * name, const uint16_t stackWords)&#10;{&#10;    xTaskCreate(taskEntry, name, stackWords, this, priority, &amp;m_handle);&#10;}&#10;void FreeTOSTask::taskEntry(void* arg)&#10;{&#10;    /* Recover the object pointer and call the member function */&#10;    static_cast&lt;FreeTOSTask*&gt;(arg)-&gt;run();&#10;}" />
             </PendingDiffInfo>
           </value>
         </entry>

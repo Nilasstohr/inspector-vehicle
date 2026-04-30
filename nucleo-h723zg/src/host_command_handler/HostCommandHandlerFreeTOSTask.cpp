@@ -8,24 +8,14 @@
 
 /**
  *
+ * @param uart
  * @param transceiver
  * @param intervalMs
  * @param encoder
  */
-HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver,const uint32_t intervalMs, const Encoder & encoder):
-m_intervalMs(intervalMs),m_uart(Uart(transceiver)),m_encoder(encoder){}
+HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(const Uart & uart):
+FreeTOSTask(),m_uart(uart) {}
 
-void HostCommandHandlerFreeTOSTask::start(const UBaseType_t priority, const uint16_t stackWords)
-{
-    xTaskCreate(taskEntry, "HostHandler", stackWords, this, priority, &m_handle);
-}
-
-/* ── taskEntry() — static trampoline ────────────────────────────────────── */
-void HostCommandHandlerFreeTOSTask::taskEntry(void* arg)
-{
-    /* Recover the object pointer and call the member function */
-    static_cast<HostCommandHandlerFreeTOSTask*>(arg)->run();
-}
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
 void HostCommandHandlerFreeTOSTask::run() const {
@@ -48,8 +38,6 @@ void HostCommandHandlerFreeTOSTask::run() const {
                 m_uart.logf("Invalid command: %s\n", received.data());
             }
         }
-        m_uart.logf("pin A tick: %ld\r\n", m_encoder.getCount());
-        vTaskDelay(pdMS_TO_TICKS(10));
         // no vTaskDelay — receive() blocks waiting for data
     }
 }

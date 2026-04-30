@@ -11,6 +11,6 @@
 class Transmitter {
 public:
     virtual ~Transmitter() = default;
-    virtual tl::expected<void, TransceiverError> transmit(const char* data, uint16_t len) = 0;
+    virtual tl::expected<void, TransceiverError> transmit(const char* data, uint16_t len) const = 0;
 };
 #endif //TRANSMITTER_H
