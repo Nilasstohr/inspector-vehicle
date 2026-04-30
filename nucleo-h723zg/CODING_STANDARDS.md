@@ -72,13 +72,29 @@ void Foo::process(Bar input) {   // unnecessary copy, non-const parameter
     transmit(scaled);
 }
 ```
-### 3.1 Prefer `const` where possible
-Mark variables and parameters `const` whenever they are not modified.
+### 3.2 Apply `[[nodiscard]]` to functions whose return value must not be ignored
+**Rule:** Any function that returns a value representing an error code, status, resource handle, or computed result that callers **must** act on shall be declared with `[[nodiscard]]`. This includes, but is not limited to:
+- Initialisation / setup functions that return a success/failure status.
+- Factory functions that return an object or pointer.
+- Functions returning `tl::expected`, error codes, or HAL status values.
 
-### 3.2 Use `reinterpret_cast` over C-style casts
+**Rationale:** `[[nodiscard]]` turns silent discard of critical return values into a compile-time warning, catching a whole class of bugs at zero run-time cost. Consistent with AUTOSAR A0-1-2 ("the result of a function call shall not be discarded").
+
+✅ **Good:**
+```cpp
+[[nodiscard]] HAL_StatusTypeDef init();
+[[nodiscard]] tl::expected<MotorHandle, MotorError> createMotor(uint8_t id);
+```
+
+❌ **Bad:**
+```cpp
+HAL_StatusTypeDef init();   // caller can silently discard the error status
+```
+
+### 3.3 Use `reinterpret_cast` over C-style casts
 Explicit C++ casts make intent clear and are easier to search/audit.
 
-### 3.3 Comment magic numbers
+### 3.4 Comment magic numbers
 Annotate timeouts, sizes, and hardware constants with a short comment.
 
 ```cpp

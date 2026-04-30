@@ -10,9 +10,10 @@
  *
  * @param transceiver
  * @param intervalMs
+ * @param encoder
  */
-HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver,const uint32_t intervalMs):
-m_intervalMs(intervalMs), m_uart(Uart(transceiver)){}
+HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(UartTransceiver &transceiver,const uint32_t intervalMs, const Encoder & encoder):
+m_intervalMs(intervalMs),m_uart(Uart(transceiver)),m_encoder(encoder){}
 
 void HostCommandHandlerFreeTOSTask::start(const UBaseType_t priority, const uint16_t stackWords)
 {
@@ -47,6 +48,8 @@ void HostCommandHandlerFreeTOSTask::run() const {
                 m_uart.logf("Invalid command: %s\n", received.data());
             }
         }
+        m_uart.logf("pin A tick: %ld\r\n", m_encoder.getCount());
+        vTaskDelay(pdMS_TO_TICKS(10));
         // no vTaskDelay — receive() blocks waiting for data
     }
 }

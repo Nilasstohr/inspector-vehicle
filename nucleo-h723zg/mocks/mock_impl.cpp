@@ -3,27 +3,42 @@
 #include "stm32h7xx_hal.h"
 #include "task.h"
 
-// ── UART flag mock ───────────────────────────────────────────────────────────
-FlagStatus mock_uart_rxne_flag = RESET;  // default: no data available
+// ── Fake GPIO port instances ──────────────────────────────────────────────────
+GPIO_TypeDef _mock_GPIOA{}, _mock_GPIOB{}, _mock_GPIOC{}, _mock_GPIOD{};
+GPIO_TypeDef _mock_GPIOE{}, _mock_GPIOF{}, _mock_GPIOG{}, _mock_GPIOH{};
+GPIO_TypeDef _mock_GPIOJ{}, _mock_GPIOK{};
 
-// ── HAL spy ──────────────────────────────────────────────────────────────────
+// ── UART flag mock ───────────────────────────────────────────────────────────
+FlagStatus mock_uart_rxne_flag = RESET;
+
+// ── HAL GPIO spies ────────────────────────────────────────────────────────────
 GPIO_TypeDef* g_lastToggledPort = nullptr;
 uint16_t g_lastToggledPin = 0;
+
+void HAL_GPIO_Init(GPIO_TypeDef* /*port*/, GPIO_InitTypeDef* /*init*/) {}
+void HAL_GPIO_DeInit(GPIO_TypeDef* /*port*/, uint32_t /*pin*/) {}
 
 void HAL_GPIO_TogglePin(GPIO_TypeDef* port, uint16_t pin) {
     g_lastToggledPort = port;
     g_lastToggledPin = pin;
 }
 
-HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef* /*huart*/, const uint8_t* /*pData*/,
-                                    uint16_t /*Size*/, uint32_t /*Timeout*/) {
-    return HAL_OK;
+static GPIO_PinState g_gpioState = GPIO_PIN_RESET;
+
+void HAL_GPIO_WritePin(GPIO_TypeDef* /*port*/, uint16_t /*pin*/, GPIO_PinState state) {
+    g_gpioState = state;
 }
 
-HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef* /*huart*/, const uint8_t* /*pData*/,
-                                    uint16_t /*Size*/, uint32_t /*Timeout*/) {
-    return HAL_OK;
+GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef* /*port*/, uint16_t /*pin*/) {
+    return g_gpioState;
 }
+
+// ── UART stubs ────────────────────────────────────────────────────────────────
+HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef* /*huart*/, const uint8_t* /*pData*/,
+                                    uint16_t /*Size*/, uint32_t /*Timeout*/) { return HAL_OK; }
+
+HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef* /*huart*/, const uint8_t* /*pData*/,
+                                    uint16_t /*Size*/, uint32_t /*Timeout*/) { return HAL_OK; }
 
 HAL_StatusTypeDef HAL_UARTEx_ReceiveToIdle(UART_HandleTypeDef* /*huart*/, uint8_t* /*pData*/,
                                             uint16_t /*Size*/, uint16_t* RxLen, uint32_t /*Timeout*/) {
