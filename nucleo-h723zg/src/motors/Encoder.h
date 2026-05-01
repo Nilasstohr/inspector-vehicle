@@ -17,13 +17,15 @@
 #define ENCODER_H
 
 #include <cstdint>
+#include <numbers>
 #include "gpio/GpioInput.h"
+#include "VehicleParameters.h"
 
 class Encoder {
 public:
-    static constexpr uint8_t kMaxInstances = 2U;    /* left + right */
-    static constexpr int32_t kCountsPerRev = 3200;  /* 64 CPR × 50:1 gear ratio */
-
+    static constexpr uint8_t kMaxInstances        = 2U;    /* left + right */
+    static constexpr int32_t kCountsPerRev        = VEHICLE_MOTOR_ENCODER_COUNT_PR_REV;  /* 64 CPR × 50:1 gear ratio */
+    static constexpr float   kCountsToCentiMeters = VEHICLE_WHEEL_DIAMETER_CM * std::numbers::pi_v<float> / static_cast<float>(kCountsPerRev);  /* cm/count */
     /**
      * @param pinA  GpioInput wired to encoder channel A (GPIO_MODE_IT_RISING_FALLING)
      * @param pinB  GpioInput wired to encoder channel B (GPIO_MODE_IT_RISING_FALLING)
@@ -45,25 +47,33 @@ public:
 
     /* ── Public API ────────────────────────────────────────────────────── */
 
-    /** Read the accumulated count. */
-    int32_t getCount() const;
+    /** Read the accumulated count (32-bit — single LDR, atomically safe). */
+    [[nodiscard]] int32_t getCount() const;
 
     /** Reset count to zero. */
     void resetCount();
 
-    /** Velocity in counts per second — derived from last two edge timestamps. */
-    int32_t getVelocityCps() const;
-
-    /** Angular velocity in radians per second — derived from last two edge timestamps. */
-    [[nodiscard]] float getAngularVelocityRps() const;
+    /**
+     * Elapsed microseconds between the last two encoder edges (32-bit — single
+     * LDR, atomically safe).  Consumed by DataSampleTimer ISR; heavy maths
+     * (velocity, distance) are deferred to task context in ControllerFreeRTOSTask.
+     */
+    [[nodiscard]] uint32_t getTickDeltaUs() const;
 
 private:
     const GpioInput& m_pinA;
     const GpioInput& m_pinB;
 
-    volatile int32_t  m_count       {0};
-    volatile uint32_t m_lastTick    {0};
-    volatile uint32_t m_currentTick {0};
+    volatile int32_t  m_count      {0};
+    /*
+     * Tick delta is computed entirely inside the encoder ISR and stored as a
+     * single 32-bit word.  A single STR/LDR on Cortex-M7 is atomic, so the
+     * lower-priority DataSampleTimer ISR can read m_tickDeltaUs without any
+     * critical section — no __disable_irq() / locking needed.
+     * m_lastTick is ISR-private scratch; it is never read outside the ISR.
+     */
+    volatile uint32_t m_lastTick    {0};   /* ISR-private — not read externally */
+    volatile uint32_t m_tickDeltaUs {0};   /* atomically consumed by DataSampleTimer ISR */
 
     uint8_t readPinA() const;
     uint8_t readPinB() const;

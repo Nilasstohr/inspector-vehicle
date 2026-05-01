@@ -18,7 +18,7 @@ FreeTOSTask(),m_uart(uart) {}
 
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
-void HostCommandHandlerFreeTOSTask::run() const {
+void HostCommandHandlerFreeTOSTask::run(){
     char buf[128];
     for (;;) {
         auto result = m_uart.getTransceiver().receive(buf, sizeof(buf));

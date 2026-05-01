@@ -25,7 +25,7 @@ public:
     BlinkyFreeRTOSTask(GpioOutput& pin, uint32_t intervalMs);
 
 private:/* The actual task loop — runs as a member function */
-    void run() const override;
+    void run() override;
     GpioOutput&  m_pin;
     uint32_t m_intervalMs;
 };

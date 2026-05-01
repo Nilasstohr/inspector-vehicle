@@ -4,7 +4,6 @@
  */
 
 #include "Encoder.h"
-#include "utils/EncoderMath.h"
 #include "utils/DwtTimer.h"
 
 /* ── Static registry ──────────────────────────────────────────────────────── */
@@ -60,8 +59,11 @@ void Encoder::handleChannelA() {
         m_count--;
     }
 
-    m_lastTick    = m_currentTick;
-    m_currentTick = DwtTimer::getMicros();
+    /* Compute delta here — single 32-bit store makes m_tickDeltaUs
+     * atomically readable by the lower-priority DataSampleTimer ISR. */
+    const uint32_t now = DwtTimer::getMicros();
+    m_tickDeltaUs = now - m_lastTick;  /* wraps correctly on overflow */
+    m_lastTick    = now;
 }
 
 void Encoder::handleChannelB() {
@@ -74,19 +76,12 @@ void Encoder::handleChannelB() {
         m_count++;
     }
 
-    m_lastTick    = m_currentTick;
-    m_currentTick = DwtTimer::getMicros();
+    const uint32_t now = DwtTimer::getMicros();
+    m_tickDeltaUs = now - m_lastTick;
+    m_lastTick    = now;
 }
 
 /* ── Public API ───────────────────────────────────────────────────────────── */
-int32_t Encoder::getCount() const  { return m_count; }
-void    Encoder::resetCount()      { m_count = 0; }
-
-int32_t Encoder::getVelocityCps() const {
-    return EncoderMath::deltaUsToCountsPerSecond(m_currentTick - m_lastTick);
-}
-
-float Encoder::getAngularVelocityRps() const {
-    return EncoderMath::angularVelocity(m_currentTick - m_lastTick, kCountsPerRev);
-}
-
+int32_t  Encoder::getCount()       const { return m_count; }
+void     Encoder::resetCount()           { m_count = 0; }
+uint32_t Encoder::getTickDeltaUs() const { return m_tickDeltaUs; }

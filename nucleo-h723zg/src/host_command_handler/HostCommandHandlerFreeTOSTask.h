@@ -17,7 +17,7 @@ class HostCommandHandlerFreeTOSTask final : public FreeTOSTask {
 public:
     HostCommandHandlerFreeTOSTask(const Uart &uart);
 private:
-    void run() const override;
+    void run() override;
     const Uart  &m_uart;
 };
 
