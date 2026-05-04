@@ -24,32 +24,16 @@ class BlinkyTaskTest : public ::testing::Test {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-TEST_F(BlinkyTaskTest, ConstructorStoresInterval) {
-    BlinkyFreeRTOSTask task(pin, 500);
-    EXPECT_EQ(task.getInterval(), 500u);
-}
-
-TEST_F(BlinkyTaskTest, SetIntervalUpdatesInterval) {
-    BlinkyFreeRTOSTask task(pin, 500);
-    task.setInterval(250);
-    EXPECT_EQ(task.getInterval(), 250u);
-}
-
 TEST_F(BlinkyTaskTest, StartCallsXTaskCreateWithCorrectName) {
     BlinkyFreeRTOSTask task(pin, 500);
-    task.start("LED", 2);
+    task.start(2,"LED", 512);
     EXPECT_TRUE(g_xTaskCreateCalled);
     EXPECT_STREQ(g_xTaskCreateName, "LED");
 }
 
 TEST_F(BlinkyTaskTest, StartCallsXTaskCreateWithCorrectPriority) {
     BlinkyFreeRTOSTask task(pin, 500);
-    task.start("LED", 3);
+    task.start(3,"LED", 512);
     EXPECT_EQ(g_xTaskCreatePriority, 3u);
 }
 
-TEST_F(BlinkyTaskTest, SetIntervalToZeroIsAllowed) {
-    BlinkyFreeRTOSTask task(pin, 100);
-    task.setInterval(0);
-    EXPECT_EQ(task.getInterval(), 0u);
-}

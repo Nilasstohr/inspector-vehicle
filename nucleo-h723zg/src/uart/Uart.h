@@ -25,6 +25,11 @@ class Uart
 public:
     explicit Uart(Transceiver & transceiver);
 
+    Uart(const Uart&)            = delete;
+    Uart& operator=(const Uart&) = delete;
+    Uart(Uart&&)                 = delete;
+    Uart& operator=(Uart&&)      = delete;
+
     /** Send a null-terminated string without a newline. */
     void print(const char* str) const;
 

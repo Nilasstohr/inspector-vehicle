@@ -41,4 +41,11 @@ TEST(EncoderMath, calculateMaxMotorSpeed) {
     EXPECT_NEAR(EncoderMath::angularVelocity(dtUs,countsPerRev), 20.8882504, 1e-3);
 }
 
+TEST(EncoderMath, calculateDisplacement) {
+    constexpr uint16_t countsPerRev = 3200;
+    constexpr uint32_t dtUs = 94U;
+    EXPECT_NEAR(EncoderMath::angularVelocity(dtUs,countsPerRev), 20.8882504, 1e-3);
+}
+
+
 

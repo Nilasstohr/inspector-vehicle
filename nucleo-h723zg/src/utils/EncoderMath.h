@@ -44,13 +44,13 @@ inline int32_t deltaUsToCountsPerSecond(const uint32_t dtUs) {
  * @param countsPerRev  Total encoder counts per full wheel revolution (e.g. 3200).
  * @return              Angular velocity magnitude in **rad/s** (always non-negative).
  */
-inline float angularVelocity(const uint32_t dtUs, const int32_t countsPerRev) {
+inline double angularVelocity(const double dtUs, const int32_t countsPerRev) {
     if (dtUs == 0U || countsPerRev == 0) {
-        return 0.0F;
+        return 0.0;
     }
     /* ω = (2π × 1 000 000) / (countsPerRev × dtUs) */
-    constexpr float kTwoPiMicros = 2.0F * std::numbers::pi_v<float> * 1'000'000.0F;
-    return kTwoPiMicros / (static_cast<float>(countsPerRev) * static_cast<float>(dtUs));
+    constexpr double kTwoPiMicros = 2.0 * std::numbers::pi_v<double> * 1'000'000.0;
+    return kTwoPiMicros / (static_cast<double>(countsPerRev) * dtUs);
 }
 
 } // namespace EncoderMath

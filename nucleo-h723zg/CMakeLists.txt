@@ -105,6 +105,8 @@ add_executable(${PROJECT_NAME}.elf
         src/gpio/GpioInput.cpp
         src/pwm/PwmOutput.cpp
         src/pwm/PwmOutput.h
+        src/timer/HardwareTimer.cpp
+        src/timer/HardwareTimer.h
         src/motors/MotorDriver.cpp
         src/motors/MotorDriver.h
         src/motors/Encoder.cpp
@@ -114,6 +116,12 @@ add_executable(${PROJECT_NAME}.elf
         src/freetos/FreeTOSTask.cpp
         src/motors/ControllerFreeTOSTask.cpp
         src/motors/ControllerFreeTOSTask.h
+        src/motors/TelemetryTask.cpp
+        src/motors/TelemetryTask.h
+        src/motors/DataSampleTimer.cpp
+        src/motors/DataSampleTimer.h
+        src/motors/TransposedIIRFilter.cpp
+        src/motors/TransposedIIRFilter.h
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE

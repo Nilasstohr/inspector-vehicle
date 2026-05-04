@@ -16,7 +16,7 @@ class UartTransceiver final : public Transceiver{
 public:
     explicit UartTransceiver(UART_HandleTypeDef & huart);
 
-    tl::expected<void, TransceiverError> transmit(const char* data, uint16_t len) const override;
+    tl::expected<void, TransceiverError> transmit(const char* data, uint16_t len)  override;
     tl::expected<uint8_t, TransceiverError> receive(char* buf, uint16_t maxLen) override;
     [[nodiscard]] bool isDataAvailable() const override;
 

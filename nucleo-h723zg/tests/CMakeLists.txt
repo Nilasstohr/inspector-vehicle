@@ -26,6 +26,7 @@ add_executable(unit_tests
     unit/test_UartLogger.cpp
     unit/test_HostCommandInterface.cpp
     unit/test_EncoderMath.cpp
+    ${ROOT}/src/freetos/FreeTOSTask.cpp
     ${ROOT}/src/BlinkyFreeRTOSTask.cpp
     ${ROOT}/src/gpio/GpioBase.cpp
     ${ROOT}/src/gpio/GpioOutput.cpp

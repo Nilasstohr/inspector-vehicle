@@ -7,7 +7,7 @@ BlinkyFreeRTOSTask::BlinkyFreeRTOSTask(GpioOutput& pin, uint32_t intervalMs)
 }
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
-void BlinkyFreeRTOSTask::run() const {
+void BlinkyFreeRTOSTask::run() {
     for (;;)
     {
         m_pin.toggle();

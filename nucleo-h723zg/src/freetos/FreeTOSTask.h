@@ -19,7 +19,7 @@ public:
     FreeTOSTask& operator=(FreeTOSTask&&)      = delete;
     void start(UBaseType_t priority, const char *name, uint16_t stackWords);
 protected:
-    virtual void run() const = 0;
+    virtual void run() = 0;
 private:
     static void taskEntry(void* arg);
     TaskHandle_t m_handle = nullptr;
