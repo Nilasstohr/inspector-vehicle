@@ -117,8 +117,8 @@ add_executable(${PROJECT_NAME}.elf
         src/freetos/FreeTOSTask.cpp
         src/motors/TelemetryTask.cpp
         src/motors/TelemetryTask.h
-        src/motors/DataSampleTimer.cpp
-        src/motors/DataSampleTimer.h
+        src/motors/PiMotorControl.cpp
+        src/motors/PiMotorControl.h
         src/motors/TransposedIIRFilter.cpp
         src/motors/TransposedIIRFilter.h
 )

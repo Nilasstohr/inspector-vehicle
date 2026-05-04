@@ -5,15 +5,17 @@
 #ifndef SAMPLETIMER_H
 #define SAMPLETIMER_H
 
+#include <atomic>
 #include <cstdint>
 #include <gpio/GpioOutput.h>
+#include <host_command_handler/VelocityCommand.h>
 
 #include "Encoder.h"
 #include "MotorDriver.h"
 #include "TransposedIIRFilter.h"
 
 /**
- * @class DataSampleTimer
+ * @class PiMotorControl
  * @brief Receives 100 µs ticks from TIM2 and runs the full PI controller loop
  *        directly in ISR context.
  *
@@ -38,18 +40,20 @@
  * while preempted (not inside a critical section), so occasional tearing is
  * acceptable for diagnostic telemetry.
  */
-class DataSampleTimer {
+class PiMotorControl {
 public:
-    DataSampleTimer(const Encoder &motor1_encoder, const Encoder &motor2_encoder, const MotorDriver &motor1_driver,
+    PiMotorControl(const Encoder &motor1_encoder, const Encoder &motor2_encoder, const MotorDriver &motor1_driver,
                     const MotorDriver &motor2_driver, const GpioOutput &timing_test_pin);
 
-    DataSampleTimer(const DataSampleTimer&)            = delete;
-    DataSampleTimer& operator=(const DataSampleTimer&) = delete;
-    DataSampleTimer(DataSampleTimer&&)                 = delete;
-    DataSampleTimer& operator=(DataSampleTimer&&)      = delete;
+    PiMotorControl(const PiMotorControl&)            = delete;
+    PiMotorControl& operator=(const PiMotorControl&) = delete;
+    PiMotorControl(PiMotorControl&&)                 = delete;
+    PiMotorControl& operator=(PiMotorControl&&)      = delete;
+
+    void setVelocities(float left, float right);
 
     /** Wire this instance to the ISR trampoline — call before start(). */
-    static void registerInstance(DataSampleTimer& inst);
+    static void registerInstance(PiMotorControl& inst);
 
     /** Called by TIM2_IRQHandler — do not call from application code. */
     static void isr();
@@ -61,16 +65,27 @@ public:
      * @brief Measured angular velocities — written by ISR, read by TelemetryTask.
      *        Acceptable for diagnostic use; see class-level note on tearing.
      */
-    double m_left_read_w  {0.0};
-    double m_right_read_w {0.0};
+     double m_left_read_w  {0.0};
+     double m_right_read_w {0.0};
 
     /**
      * @brief Current reference angular velocity (rad/s).
-     *        Write from a task (or main) before the scheduler starts.
-     *        ISR reads this every tick — write is a single 64-bit store on
-     *        Cortex-M7, acceptable for this use case.
+     *        Written by HostCommandHandlerFreeTOSTask via setVelocities(),
+     *        read by the TIM2 ISR every tick.
+     *
+     *        Ordering: memory_order_relaxed is used for all accesses.
+     *        On a single-core Cortex-M7 there is no other core to synchronise
+     *        with, so seq_cst's DMB barrier buys nothing and costs ~1–2 cycles
+     *        per access at 10 kHz.
+     *
+     *        Pair atomicity: the two stores in setVelocities() are not jointly
+     *        atomic — the ISR can theoretically read new_left + old_right on one
+     *        tick.  The window is ~2 ns vs a 100 µs period (~0.002 % per call)
+     *        and the effect is a single-tick mismatched command, which is
+     *        unobservable.  Accepted by design.
      */
-    double m_ref_w {0};
+    std::atomic<float> m_left_ref_w  {0.0F};
+    std::atomic<float> m_right_ref_w {0.0F};
 
 private:
     const Encoder& m_encoder1;
@@ -79,8 +94,6 @@ private:
 
     float  m_left_wheel_distance  {0.0F};
     float  m_right_wheel_distance {0.0F};
-    double wLeft  {0.0};
-    double wRight {0.0};
     int    m_minimumOutput {0};
     int    m_maximumOutput {0};
     TransposedIIRFilter m_delta_us_filter_left;
@@ -92,7 +105,7 @@ private:
     const GpioOutput &  m_timing_test_pin;
 
     void handleTick();   /* actual per-tick logic — runs in ISR context */
-    static DataSampleTimer* s_instance;
+    static PiMotorControl* s_instance;
 };
 
 #endif //SAMPLETIMER_H

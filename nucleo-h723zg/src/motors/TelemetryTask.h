@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <FreeTOSTask.h>
 #include <uart/Uart.h>
-#include "DataSampleTimer.h"
+#include "PiMotorControl.h"
 
 class TelemetryTask final : public FreeTOSTask {
 public:
@@ -30,7 +30,7 @@ public:
      *                     flooding.  Increase if output is too fast.
      */
     TelemetryTask(Uart& uart,
-                  const DataSampleTimer& data_sample_timer,
+                  const PiMotorControl& data_sample_timer,
                   uint32_t periodMs = 200U);  /* 5 Hz — tune to taste */
 
 protected:
@@ -38,7 +38,7 @@ protected:
 
 private:
     Uart&                        m_uart;
-    const DataSampleTimer& m_data_sample_timer;
+    const PiMotorControl& m_data_sample_timer;
     const uint32_t               m_periodMs;
 };
 

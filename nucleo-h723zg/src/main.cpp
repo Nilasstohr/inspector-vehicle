@@ -9,7 +9,7 @@
 #include <motors/Encoder.h>
 #include <motors/MotorDriver.h>
 #include <motors/MotorPinConfig.h>
-#include <motors/DataSampleTimer.h>
+#include <motors/PiMotorControl.h>
 #include <pwm/PwmOutput.h>
 #include <timer/HardwareTimer.h>
 
@@ -91,19 +91,25 @@ UART_HandleTypeDef huart3;
     /* Report any fault saved from the previous run before starting tasks */
     CrashHandler_checkAndReport(&uart);
 
-    static DataSampleTimer   sampler(motor1Encoder,motor2Encoder,motor1Driver,motor2Driver,timingTestPin);
+    static PiMotorControl   piMotorControl(
+        motor1Encoder,
+        motor2Encoder,
+        motor1Driver,
+        motor2Driver,timingTestPin);
+
     static HardwareTimer timer;
-    DataSampleTimer::registerInstance(sampler);  /* register BEFORE enabling IRQ */
+    PiMotorControl::registerInstance(piMotorControl);  /* register BEFORE enabling IRQ */
     timer.start();
 
     /* ── FreeTOSTasks ──────────────────────────────────── */
-    //static HostCommandHandlerFreeTOSTask hostHandler(uart);
+    static HostCommandHandlerFreeTOSTask hostHandler(uart,piMotorControl);
     static BlinkyFreeRTOSTask greenLed(greenLedPin, 1000);  /* 1 Hz       */
     /* TelemetryTask runs at the lowest priority so UART blocking never
      * interferes with the ISR controller loop.  200 ms period → 5 lines/s. */
-    static TelemetryTask telemetry(uart, sampler, /*periodMs=*/200U);
-    greenLed.start(1, "GreenLED", 512);
-    telemetry.start(1, "Telemetry", 512);  /* priority 1 — low priority for UART I/O */
+    //static TelemetryTask telemetry(uart, piMotorControl, /*periodMs=*/200U);
+    //greenLed.start(1, "GreenLED", 512);
+    hostHandler.start(1, "HostCmdHandler", 512);  /* priority 1 — low priority for UART I/O */
+    //telemetry.start(1, "Telemetry", 512);  /* priority 1 — low priority for UART I/O */
     vTaskStartScheduler();
     /* Unreachable — scheduler never returns on a correctly configured system */
 }

@@ -16,7 +16,7 @@
 
 #include "motors/Encoder.h"
 #include "motors/MotorPinConfig.h"
-#include "motors/DataSampleTimer.h"
+#include "motors/PiMotorControl.h"
 
 extern "C" {
 
@@ -46,7 +46,7 @@ void EXTI2_IRQHandler(void) {   /* PB2 — MOTOR1_ENC_B_PIN */
 /* ── Hardware timer (TIM2) ─────────────────────────────────────────────── */
 void TIM2_IRQHandler(void) {
     TIM2->SR &= ~TIM_SR_UIF;   /* clear update interrupt flag               */
-    DataSampleTimer::isr();
+    PiMotorControl::isr();
 }
 
 } // extern "C"

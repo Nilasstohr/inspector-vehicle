@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Debug STM32" type="com.jetbrains.cidr.embedded.customgdbserver.type" factoryName="com.jetbrains.cidr.embedded.customgdbserver.factory" PROGRAM_PARAMS="-f interface/stlink.cfg -f target/stm32h7x.cfg" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="nucleo-h723zg" TARGET_NAME="nucleo-h723zg.elf" CONFIG_NAME="STM32-Debug" version="1" RUN_TARGET_PROJECT_NAME="nucleo-h723zg" RUN_TARGET_NAME="nucleo-h723zg.elf">
+    <custom-gdb-server version="1" gdb-connect="tcp:localhost:3333" executable="/usr/bin/openocd" warmup-ms="0" download-type="ALWAYS" reset-cmd="monitor reset halt" reset-type="BOTH_TIMES" connection-mode="REMOTE" gdbserver-enable="true" console-enabled="false" console-port="0">
+      <debugger kind="GDB">/usr/bin/gdb-multiarch</debugger>
+      <extra-debugger-params debugger-working-dir="" debugger-env-pass-parent="true" custom-script="" />
+    </custom-gdb-server>
+    <method v="2">
+      <option name="CLION.COMPOUND.BUILD" enabled="true" />
+    </method>
+  </configuration>
+</component>

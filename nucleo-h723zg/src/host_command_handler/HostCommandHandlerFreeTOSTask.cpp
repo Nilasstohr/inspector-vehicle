@@ -9,12 +9,14 @@
 /**
  *
  * @param uart
+ * @param pi_motor_control
  * @param transceiver
  * @param intervalMs
  * @param encoder
  */
-HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(const Uart & uart):
-FreeTOSTask(),m_uart(uart) {}
+HostCommandHandlerFreeTOSTask::HostCommandHandlerFreeTOSTask(
+    const Uart & uart, PiMotorControl &pi_motor_control):
+FreeTOSTask(),m_uart(uart),m_pi_motor_control(pi_motor_control) {}
 
 
 /* ── run() — the actual task loop ──────────────────────────────────────── */
@@ -28,6 +30,8 @@ void HostCommandHandlerFreeTOSTask::run(){
                 if (cmd.command() == HostCommandName::Vel) {
                     if (VelocityCommand velocity_command(cmd.args()); velocity_command.valid()) {
                         m_uart.getTransceiver().transmit("ack", 3);
+                        m_uart.logf(" - l:%.2f  r:%.2f\n\r",velocity_command.left(),velocity_command.right());
+                        m_pi_motor_control.setVelocities(velocity_command.left(),velocity_command.right());
                     } else {
                         m_uart.logf("Invalid velocity args: %s\n", received.data());
                     }
