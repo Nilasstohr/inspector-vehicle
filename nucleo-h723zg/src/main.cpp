@@ -5,7 +5,6 @@
 
 #include <gpio/GpioOutput.h>
 #include <host_command_handler/HostCommandHandlerFreeTOSTask.h>
-#include <motors/ControllerFreeTOSTask.h>
 #include <motors/TelemetryTask.h>
 #include <motors/Encoder.h>
 #include <motors/MotorDriver.h>
@@ -78,6 +77,9 @@ UART_HandleTypeDef huart3;
     motor1PWM.setPwmRawValue(0);   /* example: ~50 % (1600 / 3200) */
     motor2PWM.setPwmRawValue(0);
 
+    /* ── User test pin──────────────────────────────────── */
+    static GpioOutput timingTestPin (GPIOA, GPIO_PIN_9);   /* LD1 — PB0  */
+
     /* ── User LEDs (Nucleo-H723ZG MB1364) ──────────────────────────────────── */
     static GpioOutput greenLedPin (GPIOB, GPIO_PIN_0);   /* LD1 — PB0  */
     //static GpioOutput yellowLedPin(GPIOE, GPIO_PIN_1);   /* LD2 — PE1  */
@@ -88,7 +90,7 @@ UART_HandleTypeDef huart3;
     /* Report any fault saved from the previous run before starting tasks */
     CrashHandler_checkAndReport(&uart);
 
-    static DataSampleTimer   sampler(motor1Encoder,motor2Encoder);
+    static DataSampleTimer   sampler(motor1Encoder,motor2Encoder,motor1Driver,motor2Driver,timingTestPin);
     static HardwareTimer timer;
     DataSampleTimer::registerInstance(sampler);  /* register BEFORE enabling IRQ */
     timer.start();
@@ -96,13 +98,11 @@ UART_HandleTypeDef huart3;
     /* ── FreeTOSTasks ──────────────────────────────────── */
     //static HostCommandHandlerFreeTOSTask hostHandler(uart);
     static BlinkyFreeRTOSTask greenLed(greenLedPin, 1000);  /* 1 Hz       */
-    static ControllerFreeTOSTask controller(uart, sampler, motor1Driver, motor2Driver);
     /* TelemetryTask runs at the lowest priority so UART blocking never
-     * interferes with the controller.  200 ms period → 5 lines/s. */
-    static TelemetryTask telemetry(uart, controller, /*periodMs=*/200U);
+     * interferes with the ISR controller loop.  200 ms period → 5 lines/s. */
+    static TelemetryTask telemetry(uart, sampler, /*periodMs=*/200U);
     greenLed.start(1, "GreenLED", 512);
-    controller.start(3, "Controller", 512);
-    telemetry.start(1, "Telemetry", 512);  /* priority 1 — below controller (3) */
+    telemetry.start(1, "Telemetry", 512);  /* priority 1 — low priority for UART I/O */
     vTaskStartScheduler();
     /* Unreachable — scheduler never returns on a correctly configured system */
 }

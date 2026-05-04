@@ -6,33 +6,42 @@
 #define SAMPLETIMER_H
 
 #include <cstdint>
-#include "FreeRTOS.h"
-#include "task.h"
+#include <gpio/GpioOutput.h>
+
 #include "Encoder.h"
+#include "MotorDriver.h"
+#include "TransposedIIRFilter.h"
 
 /**
  * @class DataSampleTimer
- * @brief Receives 100 µs ticks from TIM2 and snapshots raw encoder state.
+ * @brief Receives 100 µs ticks from TIM2 and runs the full PI controller loop
+ *        directly in ISR context.
  *
  * Mirrors the Encoder pattern:
  *   - registerInstance() wires the object to the static ISR trampoline.
  *   - isr() is called directly from TIM2_IRQHandler in isr_handlers.cpp.
- *   - All ISR work stays in handleTick() — no blocking FreeRTOS calls.
+ *   - All sensor filtering, angular-velocity computation, PI control, and
+ *     motor PWM updates happen inside handleTick().
  *
- * Lock-free design
+ * Design rationale
  * ────────────────
- * handleTick() reads only m_count (int32_t) and m_tickDeltaUs (uint32_t) from
- * each encoder — both 32-bit aligned, so each read is a single LDR instruction
- * (atomically safe on Cortex-M7).  The results are stored as the same 32-bit
- * types (single STR each).  No float/double maths are performed in ISR context.
+ * Measured execution time of the controller loop is ~17 µs and the ISR tick
+ * period is 100 µs, leaving ~83 µs of headroom.  The previous design offloaded
+ * the controller to a FreeRTOS task, but the vTaskNotifyGiveFromISR() overhead
+ * alone consumed ~18 µs, giving no latency benefit while adding scheduling
+ * jitter.  Moving the controller directly into the ISR eliminates that overhead
+ * and ensures deterministic, zero-jitter execution every 100 µs.
  *
- * ControllerFreeRTOSTask wakes via FreeRTOS task-notification (which acts as a
- * full memory barrier) and computes wheelDistance / angularVelocity from the
- * snapshots entirely in task context — no critical sections needed anywhere.
+ * m_left_read_w / m_right_read_w are public so TelemetryTask can snapshot them
+ * between ticks for UART logging.  On a single-core Cortex-M7 each is a 64-bit
+ * double written/read as two 32-bit stores/loads; TelemetryTask reads them only
+ * while preempted (not inside a critical section), so occasional tearing is
+ * acceptable for diagnostic telemetry.
  */
 class DataSampleTimer {
 public:
-    DataSampleTimer(const Encoder & motor1_encoder, const Encoder & motor2_encoder);
+    DataSampleTimer(const Encoder &motor1_encoder, const Encoder &motor2_encoder, const MotorDriver &motor1_driver,
+                    const MotorDriver &motor2_driver, const GpioOutput &timing_test_pin);
 
     DataSampleTimer(const DataSampleTimer&)            = delete;
     DataSampleTimer& operator=(const DataSampleTimer&) = delete;
@@ -49,39 +58,39 @@ public:
     [[nodiscard]] uint32_t tickCount() const;
 
     /**
-     * @brief Register the FreeRTOS task to be notified after each ISR tick.
-     *
-     * Call once from the task's run() body before entering the event loop:
-     * @code
-     *   m_data_sample_timer.setNotifyTask(xTaskGetCurrentTaskHandle());
-     * @endcode
-     * The ISR will call vTaskNotifyGiveFromISR() at the end of every handleTick(),
-     * replacing the vTaskDelay polling loop with an event-driven wake-up.
+     * @brief Measured angular velocities — written by ISR, read by TelemetryTask.
+     *        Acceptable for diagnostic use; see class-level note on tearing.
      */
-    void setNotifyTask(TaskHandle_t handle);
+    double m_left_read_w  {0.0};
+    double m_right_read_w {0.0};
 
     /**
-     * @brief Raw encoder snapshots — written by ISR as single 32-bit stores,
-     *        read by ControllerFreeRTOSTask as single 32-bit loads.
-     *        No critical section required on Cortex-M7.
+     * @brief Current reference angular velocity (rad/s).
+     *        Write from a task (or main) before the scheduler starts.
+     *        ISR reads this every tick — write is a single 64-bit store on
+     *        Cortex-M7, acceptable for this use case.
      */
-    [[nodiscard]] int32_t  getLeftCount()        const { return m_left_count; }
-    [[nodiscard]] uint32_t getLeftTickDeltaUs()  const { return m_left_tick_delta_us; }
-    [[nodiscard]] int32_t  getRightCount()       const { return m_right_count; }
-    [[nodiscard]] uint32_t getRightTickDeltaUs() const { return m_right_tick_delta_us; }
+    double m_ref_w {0};
 
 private:
     const Encoder& m_encoder1;
     const Encoder& m_encoder2;
 
-    /* Raw 32-bit snapshots — each written/read with a single STR/LDR (atomic). */
-    volatile int32_t  m_left_count          {0};
-    volatile uint32_t m_left_tick_delta_us  {0U};
-    volatile int32_t  m_right_count         {0};
-    volatile uint32_t m_right_tick_delta_us {0U};
+    float  m_left_wheel_distance  {0.0F};
+    float  m_right_wheel_distance {0.0F};
+    double wLeft  {0.0};
+    double wRight {0.0};
+    int    m_minimumOutput {0};
+    int    m_maximumOutput {0};
+    TransposedIIRFilter m_delta_us_filter_left;
+    TransposedIIRFilter m_delta_us_filter_right;
+    TransposedIIRFilter m_pi_control_filter_left;
+    TransposedIIRFilter m_pi_control_filter_right;
+    const MotorDriver & m_motor1_driver;
+    const MotorDriver & m_motor2_driver;
+    const GpioOutput &  m_timing_test_pin;
 
-    void         handleTick();   /* actual per-tick logic — runs in ISR context */
-    TaskHandle_t m_notify_task = nullptr; /* task woken after each tick */
+    void handleTick();   /* actual per-tick logic — runs in ISR context */
     static DataSampleTimer* s_instance;
 };
 

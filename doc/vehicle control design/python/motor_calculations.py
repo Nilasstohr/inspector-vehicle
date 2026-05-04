@@ -14,7 +14,7 @@ v_rad_s  = 2 * np.pi * pow(10, 6) / (N * t_count)
 
 print(v_rad_s, " rad/s")
 
-v_rad_s = 1;
+v_rad_s = 10;
 t_uq  = 2*np.pi*pow(10,6)/(N*v_rad_s)
 
 print(t_uq, " us")

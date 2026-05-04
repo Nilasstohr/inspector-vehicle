@@ -114,8 +114,6 @@ add_executable(${PROJECT_NAME}.elf
         src/isr_handlers.cpp
         src/freetos/FreeTOSTask.h
         src/freetos/FreeTOSTask.cpp
-        src/motors/ControllerFreeTOSTask.cpp
-        src/motors/ControllerFreeTOSTask.h
         src/motors/TelemetryTask.cpp
         src/motors/TelemetryTask.h
         src/motors/DataSampleTimer.cpp

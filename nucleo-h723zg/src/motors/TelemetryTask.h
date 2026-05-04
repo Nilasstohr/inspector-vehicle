@@ -1,17 +1,16 @@
 /**
  * @file    TelemetryTask.h
  * @brief   Low-priority FreeRTOS task that periodically logs controller
- *          state over UART without ever blocking the controller task.
+ *          state over UART without ever blocking the ISR controller loop.
  *
  * Problem: HAL_UART_Transmit() is blocking.  At 115200 baud a 33-char string
- * takes ~3 ms.  The controller runs every 100 µs — calling logf() from inside
- * the controller loop stalls ~30 consecutive control ticks and lets the PI
+ * takes ~3 ms.  The controller ISR runs every 100 µs — calling logf() from
+ * inside the ISR would stall ~30 consecutive control ticks and let the PI
  * integrator wind up, causing violent saturation.
  *
- * Solution: all UART I/O is confined here.  The controller task never touches
- * the UART directly.  On a single-core Cortex-M7 under FreeRTOS, the
- * telemetry task and the controller task cannot execute simultaneously, so
- * reading the controller's public double fields here is free of data races.
+ * Solution: all UART I/O is confined here.  The ISR never touches the UART.
+ * TelemetryTask snapshots DataSampleTimer's public diagnostic fields
+ * (m_left_read_w, m_right_read_w) at low priority for human-readable output.
  */
 
 #pragma once
@@ -19,7 +18,7 @@
 #include <cstdint>
 #include <FreeTOSTask.h>
 #include <uart/Uart.h>
-#include "ControllerFreeTOSTask.h"
+#include "DataSampleTimer.h"
 
 class TelemetryTask final : public FreeTOSTask {
 public:
@@ -31,7 +30,7 @@ public:
      *                     flooding.  Increase if output is too fast.
      */
     TelemetryTask(Uart& uart,
-                  const ControllerFreeTOSTask& controller,
+                  const DataSampleTimer& data_sample_timer,
                   uint32_t periodMs = 200U);  /* 5 Hz — tune to taste */
 
 protected:
@@ -39,7 +38,7 @@ protected:
 
 private:
     Uart&                        m_uart;
-    const ControllerFreeTOSTask& m_controller;
+    const DataSampleTimer& m_data_sample_timer;
     const uint32_t               m_periodMs;
 };
 
