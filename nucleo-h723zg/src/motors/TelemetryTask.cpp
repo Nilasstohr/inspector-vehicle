@@ -11,7 +11,7 @@
 #include "task.h"
 
 TelemetryTask::TelemetryTask(Uart& uart,
-                             const DataSampleTimer& data_sample_timer,
+                             const PiMotorControl& data_sample_timer,
                              const uint32_t periodMs)
     : m_uart(uart), m_data_sample_timer(data_sample_timer), m_periodMs(periodMs)
 {}

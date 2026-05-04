@@ -6,6 +6,7 @@
 
 #include <freetos/FreeTOSTask.h>
 #include <motors/Encoder.h>
+#include <motors/PiMotorControl.h>
 #include <uart/Uart.h>
 #include <uart/UartTransceiver.h>
 
@@ -13,12 +14,14 @@
 #define HOSTCOMMANDHANDLERFREETOSTASK_H
 
 
-class HostCommandHandlerFreeTOSTask final : public FreeTOSTask {
+class HostCommandHandlerFreeTOSTask final : public FreeTOSTask{
 public:
-    HostCommandHandlerFreeTOSTask(const Uart &uart);
+    HostCommandHandlerFreeTOSTask(const Uart & uart, PiMotorControl & pi_motor_control);
+
 private:
     void run() override;
     const Uart  &m_uart;
+    PiMotorControl &m_pi_motor_control;;
 };
 
 

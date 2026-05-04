@@ -2,13 +2,14 @@
 // Created by robotcentral on 4/30/26.
 //
 
-#include "DataSampleTimer.h"
+#include "PiMotorControl.h"
 #include <EncoderMath.h>
 
 /* ── Static registry ──────────────────────────────────────────────────────── */
-DataSampleTimer* DataSampleTimer::s_instance = nullptr;
+PiMotorControl* PiMotorControl::s_instance = nullptr;
 
-DataSampleTimer::DataSampleTimer(const Encoder &motor1_encoder, const Encoder &motor2_encoder,const MotorDriver & motor1_driver, const MotorDriver & motor2_driver,const GpioOutput & timing_test_pin):
+PiMotorControl::PiMotorControl(const Encoder &motor1_encoder, const Encoder &motor2_encoder,
+    const MotorDriver & motor1_driver, const MotorDriver & motor2_driver,const GpioOutput & timing_test_pin):
 m_encoder1(motor1_encoder), m_encoder2(motor2_encoder),
 m_delta_us_filter_left(
     TransposedIIRFilter(
@@ -45,14 +46,20 @@ m_pi_control_filter_right(
     m_maximumOutput = VEHICLE_MOTOR_DRIVER_PWM_MAX;
 }
 
+void PiMotorControl::setVelocities(const float left, const float right) {
+    /* relaxed: single-core Cortex-M7 — no DMB needed, plain STR is sufficient. */
+    m_left_ref_w.store(left,   std::memory_order_relaxed);
+    m_right_ref_w.store(right, std::memory_order_relaxed);
+}
+
 /* ── Registration ─────────────────────────────────────────────────────────── */
-void DataSampleTimer::registerInstance(DataSampleTimer& inst)
+void PiMotorControl::registerInstance(PiMotorControl& inst)
 {
     s_instance = &inst;
 }
 
 /* ── ISR trampoline ───────────────────────────────────────────────────────── */
-void DataSampleTimer::isr()
+void PiMotorControl::isr()
 {
     if (s_instance != nullptr) {
         s_instance->handleTick();
@@ -60,9 +67,14 @@ void DataSampleTimer::isr()
 }
 
 /* ── Per-tick PI controller (ISR context — no blocking calls) ────────────── */
-void DataSampleTimer::handleTick()
+void PiMotorControl::handleTick()
 {
     m_timing_test_pin.setHigh();
+
+    /* Snapshot velocity references once — guarantees both wheels use the same
+     * command pair for this tick even if setVelocities() is called concurrently. */
+    const float leftRefW  = m_left_ref_w.load(std::memory_order_relaxed);
+    const float rightRefW = m_right_ref_w.load(std::memory_order_relaxed);
 
     /* Read raw encoder state — each is a single 32-bit LDR (atomic on Cortex-M7). */
     const int32_t  leftCount   = m_encoder1.getCount();
@@ -85,7 +97,7 @@ void DataSampleTimer::handleTick()
     if (isinf(m_left_read_w)) {
         m_left_read_w = 0.0;
     }
-    wLeft = m_pi_control_filter_left.update(m_ref_w - m_left_read_w);
+    double wLeft = m_pi_control_filter_left.update(leftRefW - m_left_read_w);
     if (wLeft < m_minimumOutput) {
         wLeft = m_minimumOutput;
         m_pi_control_filter_left.resetToOutput(wLeft);   /* anti-windup */
@@ -98,7 +110,7 @@ void DataSampleTimer::handleTick()
     if (isinf(m_right_read_w)) {
         m_right_read_w = 0.0;
     }
-    wRight = m_pi_control_filter_right.update(m_ref_w - m_right_read_w);
+    double wRight = m_pi_control_filter_right.update(rightRefW - m_right_read_w);
     if (wRight < m_minimumOutput) {
         wRight = m_minimumOutput;
         m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
@@ -106,10 +118,6 @@ void DataSampleTimer::handleTick()
         wRight = m_maximumOutput;
         m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
     }
-
-    /* Drive motors with the clamped controller output.
-     * wLeft/wRight are in [VEHICLE_MOTOR_DRIVER_PWM_MIN, VEHICLE_MOTOR_DRIVER_PWM_MAX]
-     * which fits safely in uint16_t (max 65535). */
     m_motor1_driver.setMotorPwm(static_cast<uint16_t>(wLeft));
     m_motor2_driver.setMotorPwm(static_cast<uint16_t>(wRight));
 
