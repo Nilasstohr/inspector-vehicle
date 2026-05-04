@@ -524,3 +524,40 @@ DMA-accessible by default.
 
 *Generated: April 2026 — Nucleo-H723ZG bring-up with VS Code + CMake + FreeRTOS*
 
+---
+## 14. CLion Setup (New Machine)
+The `.idea/` folder is committed to the repo — CLion will pick up all CMake profiles and run configurations automatically. You only need to install the host tools.
+### One-time tool install
+```bash
+sudo apt install gcc-arm-none-eabi gdb-multiarch openocd stlink-tools cmake ninja-build
+```
+### udev rules (flash without sudo)
+```bash
+sudo tee /etc/udev/rules.d/49-stlinkv3.rules << 'EOF2'
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="0666", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374e", MODE="0666", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374f", MODE="0666", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3753", MODE="0666", GROUP="plugdev"
+EOF2
+sudo udevadm control --reload-rules && sudo udevadm trigger
+sudo usermod -aG plugdev $USER   # log out + back in
+```
+### CMake profiles (auto-loaded from `.idea/cmake.xml`)
+| Profile | Purpose |
+|---|---|
+| **Debug** | Firmware build — uses `cmake/stm32_toolchain.cmake` (arm-none-eabi, auto-detected from PATH) |
+| **Tests-Native** | Host unit tests — uses system GCC, no cross-compile |
+### Run configurations (auto-loaded from `.idea/runConfigurations/`)
+| Configuration | What it does |
+|---|---|
+| **Flash & Debug (OpenOCD)** | Builds firmware, flashes via STLINK-V3, opens GDB debug session |
+| **Flash Only** | Runs the CMake `flash` target — quick deploy without a debug session |
+| **Unit Tests** | Builds and runs Google Test unit tests on the host |
+### First open
+1. Open the `nucleo-h723zg/` folder in CLion.
+2. CLion detects both CMake profiles — click **Load CMake Project** if prompted.
+3. Wait for the **Debug** profile to configure (downloads ~50 MB of deps on first run).
+4. Connect the Nucleo board via USB.
+5. Select **Flash & Debug (OpenOCD)** in the run-config dropdown → press the debug button (⇧F9 / green bug icon).
+> **Tip:** If the Debug CMake profile shows a red cross, the ARM toolchain is not on PATH.  
+> Verify with: `arm-none-eabi-gcc --version`

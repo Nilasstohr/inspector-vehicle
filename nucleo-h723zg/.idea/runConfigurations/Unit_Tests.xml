@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <!--
+    Runs the host-native unit tests (Google Test).
+    Uses the Tests-Native CMake profile — no ARM toolchain needed.
+    Build output: tests/build-tests/tests/unit_tests
+  -->
+  <configuration default="false"
+                 name="Unit Tests"
+                 type="CMakeRunConfiguration"
+                 factoryName="Application">
+    <CMakeRunConfigurationSettings BUILD_TARGET="unit_tests"
+                                   PROFILE="Tests-Native" />
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask"
+              enabled="true" />
+    </method>
+  </configuration>
+</component>
+
