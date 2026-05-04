@@ -100,8 +100,8 @@ private:
     TransposedIIRFilter m_delta_us_filter_right;
     TransposedIIRFilter m_pi_control_filter_left;
     TransposedIIRFilter m_pi_control_filter_right;
-    const MotorDriver & m_motor1_driver;
-    const MotorDriver & m_motor2_driver;
+    const MotorDriver & m_motor_left_driver;
+    const MotorDriver & m_motor_right_driver;
     const GpioOutput &  m_timing_test_pin;
 
     void handleTick();   /* actual per-tick logic — runs in ISR context */
