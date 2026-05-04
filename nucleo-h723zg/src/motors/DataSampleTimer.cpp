@@ -3,12 +3,47 @@
 //
 
 #include "DataSampleTimer.h"
+#include <EncoderMath.h>
 
 /* ── Static registry ──────────────────────────────────────────────────────── */
 DataSampleTimer* DataSampleTimer::s_instance = nullptr;
 
-DataSampleTimer::DataSampleTimer(const Encoder &motor1_encoder, const Encoder &motor2_encoder):
-    m_encoder1(motor1_encoder), m_encoder2(motor2_encoder) {}
+DataSampleTimer::DataSampleTimer(const Encoder &motor1_encoder, const Encoder &motor2_encoder,const MotorDriver & motor1_driver, const MotorDriver & motor2_driver,const GpioOutput & timing_test_pin):
+m_encoder1(motor1_encoder), m_encoder2(motor2_encoder),
+m_delta_us_filter_left(
+    TransposedIIRFilter(
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_A1
+    )
+),
+m_delta_us_filter_right(
+    TransposedIIRFilter(
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B0,
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_B1,
+    VEHICLE_TRANPOSED_IIR_FILTER_SENSOR_A1
+    )
+),
+m_pi_control_filter_left(
+    TransposedIIRFilter(
+    VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+    VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+    VEHICLE_PI_CONTROL_COEFFICIENT_A1
+    )
+),
+m_pi_control_filter_right(
+    TransposedIIRFilter(
+    VEHICLE_PI_CONTROL_COEFFICIENT_B0,
+    VEHICLE_PI_CONTROL_COEFFICIENT_B1,
+    VEHICLE_PI_CONTROL_COEFFICIENT_A1
+    )
+)
+,m_motor1_driver(motor1_driver), m_motor2_driver(motor2_driver),m_timing_test_pin(timing_test_pin)
+{
+    m_timing_test_pin.setLow();
+    m_minimumOutput = VEHICLE_MOTOR_DRIVER_PWM_MIN;
+    m_maximumOutput = VEHICLE_MOTOR_DRIVER_PWM_MAX;
+}
 
 /* ── Registration ─────────────────────────────────────────────────────────── */
 void DataSampleTimer::registerInstance(DataSampleTimer& inst)
@@ -24,29 +59,59 @@ void DataSampleTimer::isr()
     }
 }
 
-/* ── Registration of notify task ──────────────────────────────────────────── */
-void DataSampleTimer::setNotifyTask(TaskHandle_t handle)
-{
-    m_notify_task = handle;
-}
-
-
-/* ── Per-tick logic (ISR context — no blocking calls, no float/double maths) ─ */
+/* ── Per-tick PI controller (ISR context — no blocking calls) ────────────── */
 void DataSampleTimer::handleTick()
 {
-    /* Snapshot raw encoder state — each is a single 32-bit LDR (atomic on
-     * Cortex-M7).  No critical section needed.  The heavy maths (wheelDistance,
-     * angularVelocity) are deferred to ControllerFreeRTOSTask in task context. */
-    m_left_count          = m_encoder1.getCount();
-    m_left_tick_delta_us  = m_encoder1.getTickDeltaUs();
-    m_right_count         = m_encoder2.getCount();
-    m_right_tick_delta_us = m_encoder2.getTickDeltaUs();
+    m_timing_test_pin.setHigh();
 
-    /* Wake the controller task, if registered. */
-    if (m_notify_task != nullptr) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(m_notify_task, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    /* Read raw encoder state — each is a single 32-bit LDR (atomic on Cortex-M7). */
+    const int32_t  leftCount   = m_encoder1.getCount();
+    const uint32_t leftDeltaUs = m_encoder1.getTickDeltaUs();
+    const int32_t  rightCount  = m_encoder2.getCount();
+    const uint32_t rightDeltaUs = m_encoder2.getTickDeltaUs();
+
+    /* Wheel distance (cm) — stored for diagnostics / future odometry use. */
+    m_left_wheel_distance  = static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters;
+    m_right_wheel_distance = static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters;
+
+    /* Sensor IIR filter → angular velocity estimate. */
+    m_delta_us_filter_left.update(leftDeltaUs);
+    m_delta_us_filter_right.update(rightDeltaUs);
+
+    m_left_read_w  = EncoderMath::angularVelocity(m_delta_us_filter_left.get(),  Encoder::kCountsPerRev);
+    m_right_read_w = EncoderMath::angularVelocity(m_delta_us_filter_right.get(), Encoder::kCountsPerRev);
+
+    /* PI controller — left wheel */
+    if (isinf(m_left_read_w)) {
+        m_left_read_w = 0.0;
     }
-}
+    wLeft = m_pi_control_filter_left.update(m_ref_w - m_left_read_w);
+    if (wLeft < m_minimumOutput) {
+        wLeft = m_minimumOutput;
+        m_pi_control_filter_left.resetToOutput(wLeft);   /* anti-windup */
+    } else if (wLeft > m_maximumOutput) {
+        wLeft = m_maximumOutput;
+        m_pi_control_filter_left.resetToOutput(wLeft);   /* anti-windup */
+    }
 
+    /* PI controller — right wheel */
+    if (isinf(m_right_read_w)) {
+        m_right_read_w = 0.0;
+    }
+    wRight = m_pi_control_filter_right.update(m_ref_w - m_right_read_w);
+    if (wRight < m_minimumOutput) {
+        wRight = m_minimumOutput;
+        m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
+    } else if (wRight > m_maximumOutput) {
+        wRight = m_maximumOutput;
+        m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
+    }
+
+    /* Drive motors with the clamped controller output.
+     * wLeft/wRight are in [VEHICLE_MOTOR_DRIVER_PWM_MIN, VEHICLE_MOTOR_DRIVER_PWM_MAX]
+     * which fits safely in uint16_t (max 65535). */
+    m_motor1_driver.setMotorPwm(static_cast<uint16_t>(wLeft));
+    m_motor2_driver.setMotorPwm(static_cast<uint16_t>(wRight));
+
+    m_timing_test_pin.setLow();
+}
