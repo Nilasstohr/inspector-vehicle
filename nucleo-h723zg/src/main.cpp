@@ -37,6 +37,7 @@ UART_HandleTypeDef huart3;
     DwtTimer::init();   /* enable µs cycle counter — must be before any Encoder use */
     UART3_Init();
 
+
     // Motor 1
     static PwmOutput motor1PWM(TIM1, TIM_CHANNEL_2);  /* PE11 — TIM1_CH2 (AF1) — D5 (CN10) */
     static GpioOutput motor1INA(MOTOR1_INA_PORT, MOTOR1_INA_PIN);  /* D3  starts LOW */

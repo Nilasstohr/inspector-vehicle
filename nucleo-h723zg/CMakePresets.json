@@ -1,0 +1,45 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "tests-native",
+      "displayName": "Tests-Native",
+      "description": "Native host build — compiles and runs GTest/Catch2 unit & integration tests",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/cmake-build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "stm32-debug",
+      "displayName": "STM32-Debug",
+      "description": "Cross-compile for Nucleo-H723ZG (Cortex-M7) using arm-none-eabi-gcc",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/cmake-build-stm32-debug",
+      "toolchainFile": "${sourceDir}/cmake/stm32_toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "tests-native",
+      "displayName": "Tests-Native",
+      "configurePreset": "tests-native",
+      "jobs": 6
+    },
+    {
+      "name": "stm32-debug",
+      "displayName": "STM32-Debug",
+      "configurePreset": "stm32-debug",
+      "targets": ["nucleo-h723zg.elf"],
+      "jobs": 6
+    }
+  ]
+}
+

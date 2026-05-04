@@ -16,43 +16,44 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Result<T,E> / std::expected backport (C++14/17). Single-header, no heap, no exceptions.
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
+# DOWNLOAD_EXTRACT_TIMESTAMP was added in CMake 3.24; guard it so the project
+# also configures cleanly on 3.22 (Ubuntu 22.04 ships 3.22).
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+    cmake_policy(SET CMP0135 NEW)   # silence the timestamp warning on 3.24+
+endif()
+
 FetchContent_Declare(tl_expected
     URL https://github.com/TartanLlama/expected/archive/refs/tags/v1.1.0.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(tl_expected)
 
 # ── Firmware (cross-compile only) ────────────────────────────────────────────
 if(CMAKE_CROSSCOMPILING)
 
-include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)  # Don't re-download on every cmake run
 
 # ── 1. ARM CMSIS-Core headers (core_cm7.h etc.) ──────────────────────────────
 FetchContent_Declare(cmsis_core
     URL https://github.com/ARM-software/CMSIS_5/archive/refs/tags/5.9.0.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(cmsis_core)
 
 # ── 2. STM32H7 CMSIS Device (stm32h723xx.h, startup, system_stm32h7xx.c) ────
 FetchContent_Declare(cmsis_device_h7
     URL https://github.com/STMicroelectronics/cmsis_device_h7/archive/refs/tags/v1.10.3.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(cmsis_device_h7)
 
 # ── 3. STM32H7 HAL Driver ────────────────────────────────────────────────────
 FetchContent_Declare(hal_h7
     URL https://github.com/STMicroelectronics/stm32h7xx_hal_driver/archive/refs/tags/v1.11.3.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(hal_h7)
 
 # ── 4. FreeRTOS Kernel ───────────────────────────────────────────────────────
 FetchContent_Declare(freertos_kernel
     URL https://github.com/FreeRTOS/FreeRTOS-Kernel/archive/refs/tags/V11.1.0.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 # FreeRTOS-Kernel requires a 'freertos_config' target that provides FreeRTOSConfig.h
 add_library(freertos_config INTERFACE)
