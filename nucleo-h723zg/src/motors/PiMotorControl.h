@@ -42,18 +42,19 @@
  */
 class PiMotorControl {
 public:
-    PiMotorControl(const Encoder &motor1_encoder, const Encoder &motor2_encoder, const MotorDriver &motor1_driver,
+    PiMotorControl( Encoder &motor1_encoder, Encoder &motor2_encoder, const MotorDriver &motor1_driver,
                     const MotorDriver &motor2_driver, const GpioOutput &timing_test_pin);
 
     PiMotorControl(const PiMotorControl&)            = delete;
     PiMotorControl& operator=(const PiMotorControl&) = delete;
-
-    float getLeftWheelDistance() const;
-
-    float getRightWheelDistance() const;
-
     PiMotorControl(PiMotorControl&&)                 = delete;
     PiMotorControl& operator=(PiMotorControl&&)      = delete;
+
+    [[nodiscard]] float getLeftWheelDistance() const;
+
+    [[nodiscard]] float getRightWheelDistance() const;
+
+    void reset();
 
     void setVelocities(float left, float right);
 
@@ -63,15 +64,12 @@ public:
     /** Called by TIM2_IRQHandler — do not call from application code. */
     static void isr();
 
-    /** @return Total tick count (each tick = 100 µs). */
-    [[nodiscard]] uint32_t tickCount() const;
-
     /**
      * @brief Measured angular velocities — written by ISR, read by TelemetryTask.
      *        Acceptable for diagnostic use; see class-level note on tearing.
      */
-     double m_left_read_w  {0.0};
-     double m_right_read_w {0.0};
+     volatile double m_left_read_w  {0.0};
+     volatile double m_right_read_w {0.0};
 
     /**
      * @brief Current reference angular velocity (rad/s).
@@ -93,8 +91,8 @@ public:
     std::atomic<float> m_right_ref_w {0.0F};
 
 private:
-    const Encoder& m_encoder1;
-    const Encoder& m_encoder2;
+    Encoder& m_encoder1;
+    Encoder& m_encoder2;
 
 
     std::atomic<float>  m_left_wheel_distance  {0.0F};

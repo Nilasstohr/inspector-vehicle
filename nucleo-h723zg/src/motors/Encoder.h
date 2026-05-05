@@ -35,6 +35,9 @@ public:
     /* Non-copyable, non-movable — holds hardware references and lives in a static registry */
     Encoder(const Encoder&)            = delete;
     Encoder& operator=(const Encoder&) = delete;
+
+    void reset();
+
     Encoder(Encoder&&)                 = delete;
     Encoder& operator=(Encoder&&)      = delete;
 

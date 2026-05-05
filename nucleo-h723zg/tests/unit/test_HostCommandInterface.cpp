@@ -15,7 +15,7 @@ class HostCommandInterfaceTest : public ::testing::Test {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 TEST_F(HostCommandInterfaceTest, CanHandleMissingEndChar) {
-   const auto cmd = ReceiveCommand("VEL 3.12 4.56");
+   const auto cmd = ReceiveCommand("v 3.12 4.56");
    // Check the command is valid
    EXPECT_TRUE(!cmd.valid());
 }
@@ -34,7 +34,7 @@ TEST_F(HostCommandInterfaceTest, CanHandleEmptyCommand) {
 
 
 TEST_F(HostCommandInterfaceTest, CanHandleknownCommand) {
-   const auto cmd = ReceiveCommand("VEL 3.12 4.56;");
+   const auto cmd = ReceiveCommand("v 3.12 4.56;");
    // Check the command is valid
    EXPECT_TRUE(cmd.valid());
    // Compare the command name
@@ -43,7 +43,7 @@ TEST_F(HostCommandInterfaceTest, CanHandleknownCommand) {
 
 
 TEST_F(HostCommandInterfaceTest, CanHandleCommandArgs) {
-   const auto cmd = ReceiveCommand("VEL 3.12 4.56;");
+   const auto cmd = ReceiveCommand("v 3.12 4.56;");
    // Compare individual args
    const auto args = cmd.args();
    ASSERT_EQ(args.size(), 2u);          // stop test if wrong size
@@ -53,7 +53,7 @@ TEST_F(HostCommandInterfaceTest, CanHandleCommandArgs) {
 
 
 TEST_F(HostCommandInterfaceTest, CanBuildVelocityCommand) {
-   const auto cmd = ReceiveCommand("VEL 3.12 4.56;");
+   const auto cmd = ReceiveCommand("v 3.12 4.56;");
    ASSERT_EQ(cmd.command(), HostCommandName::Vel);
    const auto velocityCommand  = VelocityCommand(cmd.args());
    EXPECT_TRUE(velocityCommand.valid());
@@ -62,7 +62,7 @@ TEST_F(HostCommandInterfaceTest, CanBuildVelocityCommand) {
 }
 
 TEST_F(HostCommandInterfaceTest, CanHandleVelocityCommandMissingArgs) {
-   const auto cmd = ReceiveCommand("VEL 3.12;");
+   const auto cmd = ReceiveCommand("v 3.12;");
    ASSERT_EQ(cmd.command(), HostCommandName::Vel);
    const auto velocityCommand  = VelocityCommand(cmd.args());
    EXPECT_FALSE(velocityCommand.valid());
@@ -70,7 +70,7 @@ TEST_F(HostCommandInterfaceTest, CanHandleVelocityCommandMissingArgs) {
 
 
 TEST_F(HostCommandInterfaceTest, CanAcceptWheelDistanceCommand) {
-   const auto cmd = ReceiveCommand("DIS;");
+   const auto cmd = ReceiveCommand("p;");
    ASSERT_EQ(cmd.command(), HostCommandName::Dis);
    EXPECT_TRUE(cmd.valid());
 }
@@ -126,3 +126,8 @@ TEST_F(HostCommandInterfaceTest, PositionRequest_NegativeOneAndOne) {
    EXPECT_STREQ(response.c_str(), "-1.000 1.000");
 }
 
+TEST_F(HostCommandInterfaceTest, CanAcceptRestCommand) {
+   const auto cmd = ReceiveCommand("r;");
+   ASSERT_EQ(cmd.command(), HostCommandName::Reset);
+   EXPECT_TRUE(cmd.valid());
+}

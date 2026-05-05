@@ -10,6 +10,8 @@
 #include <uart/Uart.h>
 #include <uart/UartTransceiver.h>
 
+#include "ReceiveCommand.h"
+
 #ifndef HOSTCOMMANDHANDLERFREETOSTASK_H
 #define HOSTCOMMANDHANDLERFREETOSTASK_H
 
@@ -20,6 +22,9 @@ public:
 
 private:
     void run() override;
+
+    void handleCommand(const ReceiveCommand &cmd, const std::string_view &received) const;
+
     const Uart  &m_uart;
     PiMotorControl &m_pi_motor_control;;
 };

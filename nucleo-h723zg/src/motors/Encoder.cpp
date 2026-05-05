@@ -13,6 +13,12 @@ Encoder* Encoder::s_instances[Encoder::kMaxInstances] = {};
 Encoder::Encoder(const GpioInput& pinA, const GpioInput& pinB)
     : m_pinA(pinA), m_pinB(pinB) {}
 
+void Encoder::reset() {
+    m_count = 0;
+    m_tickDeltaUs = 0;
+    m_lastTick = DwtTimer::getMicros();
+}
+
 /* ── Registration ─────────────────────────────────────────────────────────── */
 void Encoder::registerInstance(const uint8_t index, Encoder& inst) {
     if (index < kMaxInstances) {
