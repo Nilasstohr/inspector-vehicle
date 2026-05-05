@@ -10,11 +10,13 @@
 
 enum class HostCommandName : uint8_t {
     Vel,
+    Dis,
     Unknown
 };
 
 inline std::optional<HostCommandName> toHostCommand(std::string_view s) {
-    if (s == "VEL") return HostCommandName::Vel;
+    if (s == "v") return HostCommandName::Vel;
+    if (s == "p") return HostCommandName::Dis;
     return HostCommandName::Unknown;  // unknown command
 }
 

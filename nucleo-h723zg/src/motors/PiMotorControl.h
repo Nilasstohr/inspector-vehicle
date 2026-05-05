@@ -47,6 +47,11 @@ public:
 
     PiMotorControl(const PiMotorControl&)            = delete;
     PiMotorControl& operator=(const PiMotorControl&) = delete;
+
+    float getLeftWheelDistance() const;
+
+    float getRightWheelDistance() const;
+
     PiMotorControl(PiMotorControl&&)                 = delete;
     PiMotorControl& operator=(PiMotorControl&&)      = delete;
 
@@ -92,16 +97,16 @@ private:
     const Encoder& m_encoder2;
 
 
-    float  m_left_wheel_distance  {0.0F};
-    float  m_right_wheel_distance {0.0F};
+    std::atomic<float>  m_left_wheel_distance  {0.0F};
+    std::atomic<float>  m_right_wheel_distance {0.0F};
     int    m_minimumOutput {0};
     int    m_maximumOutput {0};
     TransposedIIRFilter m_delta_us_filter_left;
     TransposedIIRFilter m_delta_us_filter_right;
     TransposedIIRFilter m_pi_control_filter_left;
     TransposedIIRFilter m_pi_control_filter_right;
-    const MotorDriver & m_motor1_driver;
-    const MotorDriver & m_motor2_driver;
+    const MotorDriver & m_motor_left_driver;
+    const MotorDriver & m_motor_right_driver;
     const GpioOutput &  m_timing_test_pin;
 
     void handleTick();   /* actual per-tick logic — runs in ISR context */

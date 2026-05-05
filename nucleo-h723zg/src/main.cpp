@@ -92,10 +92,11 @@ UART_HandleTypeDef huart3;
     CrashHandler_checkAndReport(&uart);
 
     static PiMotorControl   piMotorControl(
-        motor1Encoder,
         motor2Encoder,
+        motor1Encoder,
+        motor2Driver,
         motor1Driver,
-        motor2Driver,timingTestPin);
+        timingTestPin);
 
     static HardwareTimer timer;
     PiMotorControl::registerInstance(piMotorControl);  /* register BEFORE enabling IRQ */

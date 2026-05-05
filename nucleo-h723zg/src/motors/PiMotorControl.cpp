@@ -39,11 +39,19 @@ m_pi_control_filter_right(
     VEHICLE_PI_CONTROL_COEFFICIENT_A1
     )
 )
-,m_motor1_driver(motor1_driver), m_motor2_driver(motor2_driver),m_timing_test_pin(timing_test_pin)
+,m_motor_left_driver(motor1_driver), m_motor_right_driver(motor2_driver),m_timing_test_pin(timing_test_pin)
 {
     m_timing_test_pin.setLow();
     m_minimumOutput = VEHICLE_MOTOR_DRIVER_PWM_MIN;
     m_maximumOutput = VEHICLE_MOTOR_DRIVER_PWM_MAX;
+}
+
+float PiMotorControl::getLeftWheelDistance() const {
+    return m_left_wheel_distance.load(std::memory_order_relaxed);
+}
+
+float PiMotorControl::getRightWheelDistance() const {
+    return m_right_wheel_distance.load(std::memory_order_relaxed);
 }
 
 void PiMotorControl::setVelocities(const float left, const float right) {
@@ -71,20 +79,37 @@ void PiMotorControl::handleTick()
 {
     m_timing_test_pin.setHigh();
 
-    /* Snapshot velocity references once — guarantees both wheels use the same
-     * command pair for this tick even if setVelocities() is called concurrently. */
-    const float leftRefW  = m_left_ref_w.load(std::memory_order_relaxed);
-    const float rightRefW = m_right_ref_w.load(std::memory_order_relaxed);
-
     /* Read raw encoder state — each is a single 32-bit LDR (atomic on Cortex-M7). */
     const int32_t  leftCount   = m_encoder1.getCount();
     const uint32_t leftDeltaUs = m_encoder1.getTickDeltaUs();
     const int32_t  rightCount  = m_encoder2.getCount();
     const uint32_t rightDeltaUs = m_encoder2.getTickDeltaUs();
+    /* Snapshot velocity references once — guarantees both wheels use the same
+     * command pair for this tick even if setVelocities() is called concurrently. */
+    float left_ref_w  = m_left_ref_w.load(std::memory_order_relaxed);
+    float right_ref_w = m_right_ref_w.load(std::memory_order_relaxed);
+
+    if(left_ref_w < 0 && right_ref_w < 0){
+        m_motor_left_driver.setReverse();
+        m_motor_right_driver.setReverse();
+        left_ref_w = abs(left_ref_w);
+        right_ref_w= abs(right_ref_w);
+    }else if(left_ref_w<0){
+        m_motor_left_driver.setReverse();
+        m_motor_right_driver.setForward();
+        left_ref_w = abs(left_ref_w);
+    }else if(right_ref_w<0){
+        m_motor_left_driver.setForward();
+        m_motor_right_driver.setReverse();
+        right_ref_w= abs(right_ref_w);
+    }else {
+        m_motor_left_driver.setForward();
+        m_motor_right_driver.setForward();
+    }
 
     /* Wheel distance (cm) — stored for diagnostics / future odometry use. */
-    m_left_wheel_distance  = static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters;
-    m_right_wheel_distance = static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters;
+    m_left_wheel_distance.store(static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
+    m_right_wheel_distance.store(static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
 
     /* Sensor IIR filter → angular velocity estimate. */
     m_delta_us_filter_left.update(leftDeltaUs);
@@ -97,7 +122,7 @@ void PiMotorControl::handleTick()
     if (isinf(m_left_read_w)) {
         m_left_read_w = 0.0;
     }
-    double wLeft = m_pi_control_filter_left.update(leftRefW - m_left_read_w);
+    double wLeft = m_pi_control_filter_left.update(left_ref_w - m_left_read_w);
     if (wLeft < m_minimumOutput) {
         wLeft = m_minimumOutput;
         m_pi_control_filter_left.resetToOutput(wLeft);   /* anti-windup */
@@ -110,7 +135,7 @@ void PiMotorControl::handleTick()
     if (isinf(m_right_read_w)) {
         m_right_read_w = 0.0;
     }
-    double wRight = m_pi_control_filter_right.update(rightRefW - m_right_read_w);
+    double wRight = m_pi_control_filter_right.update(right_ref_w - m_right_read_w);
     if (wRight < m_minimumOutput) {
         wRight = m_minimumOutput;
         m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
@@ -118,8 +143,8 @@ void PiMotorControl::handleTick()
         wRight = m_maximumOutput;
         m_pi_control_filter_right.resetToOutput(wRight); /* anti-windup */
     }
-    m_motor1_driver.setMotorPwm(static_cast<uint16_t>(wLeft));
-    m_motor2_driver.setMotorPwm(static_cast<uint16_t>(wRight));
+    m_motor_left_driver.setMotorPwm(static_cast<uint16_t>(wLeft));
+    m_motor_right_driver.setMotorPwm(static_cast<uint16_t>(wRight));
 
     m_timing_test_pin.setLow();
 }

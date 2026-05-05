@@ -28,6 +28,13 @@ FetchContent_Declare(tl_expected
 )
 FetchContent_MakeAvailable(tl_expected)
 
+# ── ETL (Embedded Template Library) — no heap, no exceptions, C++17 ──────────
+FetchContent_Declare(etl
+    URL https://github.com/ETLCPP/etl/archive/refs/tags/20.47.1.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(etl)
+
 # ── Firmware (cross-compile only) ────────────────────────────────────────────
 if(CMAKE_CROSSCOMPILING)
 
@@ -121,6 +128,7 @@ add_executable(${PROJECT_NAME}.elf
         src/motors/PiMotorControl.h
         src/motors/TransposedIIRFilter.cpp
         src/motors/TransposedIIRFilter.h
+        src/host_command_handler/DistanceReadRequestCommand.h
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
@@ -149,6 +157,7 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
 target_link_libraries(${PROJECT_NAME}.elf PRIVATE
     freertos_kernel
     tl::expected
+    etl::etl
 )
 
 target_link_options(${PROJECT_NAME}.elf PRIVATE
