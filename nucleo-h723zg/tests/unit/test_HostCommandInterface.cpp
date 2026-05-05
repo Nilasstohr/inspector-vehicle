@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <string>
+#include <algorithm>
 #include <VelocityCommand.h>
 
+#include "DistanceReadRequestCommand.h"
 #include "host_command_handler/ReceiveCommand.h"
 
 // ── Test fixture ─────────────────────────────────────────────────────────────
@@ -65,3 +67,62 @@ TEST_F(HostCommandInterfaceTest, CanHandleVelocityCommandMissingArgs) {
    const auto velocityCommand  = VelocityCommand(cmd.args());
    EXPECT_FALSE(velocityCommand.valid());
 }
+
+
+TEST_F(HostCommandInterfaceTest, CanAcceptWheelDistanceCommand) {
+   const auto cmd = ReceiveCommand("DIS;");
+   ASSERT_EQ(cmd.command(), HostCommandName::Dis);
+   EXPECT_TRUE(cmd.valid());
+}
+
+TEST_F(HostCommandInterfaceTest, CanHandleWheelDistanceCommand) {
+   constexpr float left = 4.65f;
+   constexpr float right = -206.6f;
+   auto response = DistanceReadRequestCommand::handle(left, right);
+   EXPECT_STREQ(response.c_str(), "4.650 -206.600");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_BothZero) {
+   const auto response = DistanceReadRequestCommand::handle(0.0f, 0.0f);
+   EXPECT_STREQ(response.c_str(), "0.000 0.000");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_BothPositiveIntegers) {
+   const auto response = DistanceReadRequestCommand::handle(100.0f, 200.0f);
+   EXPECT_STREQ(response.c_str(), "100.000 200.000");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_BothNegative) {
+   // 0.5 and 2.5 are exactly representable in IEEE-754 single precision
+   const auto response = DistanceReadRequestCommand::handle(-1.5f, -2.5f);
+   EXPECT_STREQ(response.c_str(), "-1.500 -2.500");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_NegativeLeftPositiveRight) {
+   const auto response = DistanceReadRequestCommand::handle(-99.5f, 99.5f);
+   EXPECT_STREQ(response.c_str(), "-99.500 99.500");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_ZeroLeftNegativeRight) {
+   const auto response = DistanceReadRequestCommand::handle(0.0f, -5.0f);
+   EXPECT_STREQ(response.c_str(), "0.000 -5.000");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_ExactThreeDecimalPlaces) {
+   // 0.125 = 1/8, exactly representable; precision(3) should render it exactly
+   const auto response = DistanceReadRequestCommand::handle(0.125f, 0.25f);
+   EXPECT_STREQ(response.c_str(), "0.125 0.250");
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_AlwaysContainsSingleSpace) {
+   const auto response = DistanceReadRequestCommand::handle(1.0f, 2.0f);
+   const std::string s = response.c_str();
+   const auto spaceCount = std::count(s.begin(), s.end(), ' ');
+   EXPECT_EQ(spaceCount, 1);
+}
+
+TEST_F(HostCommandInterfaceTest, PositionRequest_NegativeOneAndOne) {
+   const auto response = DistanceReadRequestCommand::handle(-1.0f, 1.0f);
+   EXPECT_STREQ(response.c_str(), "-1.000 1.000");
+}
+

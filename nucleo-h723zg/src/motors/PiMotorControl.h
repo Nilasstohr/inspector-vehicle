@@ -47,6 +47,11 @@ public:
 
     PiMotorControl(const PiMotorControl&)            = delete;
     PiMotorControl& operator=(const PiMotorControl&) = delete;
+
+    float getLeftWheelDistance() const;
+
+    float getRightWheelDistance() const;
+
     PiMotorControl(PiMotorControl&&)                 = delete;
     PiMotorControl& operator=(PiMotorControl&&)      = delete;
 
@@ -92,8 +97,8 @@ private:
     const Encoder& m_encoder2;
 
 
-    float  m_left_wheel_distance  {0.0F};
-    float  m_right_wheel_distance {0.0F};
+    std::atomic<float>  m_left_wheel_distance  {0.0F};
+    std::atomic<float>  m_right_wheel_distance {0.0F};
     int    m_minimumOutput {0};
     int    m_maximumOutput {0};
     TransposedIIRFilter m_delta_us_filter_left;

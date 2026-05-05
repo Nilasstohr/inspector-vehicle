@@ -26,6 +26,7 @@ add_executable(unit_tests
     unit/test_UartLogger.cpp
     unit/test_HostCommandInterface.cpp
     unit/test_EncoderMath.cpp
+    unit/test_StringUtils.cpp
     ${ROOT}/src/freetos/FreeTOSTask.cpp
     ${ROOT}/src/BlinkyFreeRTOSTask.cpp
     ${ROOT}/src/gpio/GpioBase.cpp
@@ -50,7 +51,7 @@ target_include_directories(unit_tests PRIVATE
     ${ROOT}/src/utils
 )
 
-target_link_libraries(unit_tests PRIVATE GTest::gtest_main tl::expected)
+target_link_libraries(unit_tests PRIVATE GTest::gtest_main tl::expected etl::etl)
 
 include(GoogleTest)
 

@@ -46,6 +46,14 @@ m_pi_control_filter_right(
     m_maximumOutput = VEHICLE_MOTOR_DRIVER_PWM_MAX;
 }
 
+float PiMotorControl::getLeftWheelDistance() const {
+    return m_left_wheel_distance.load(std::memory_order_relaxed);
+}
+
+float PiMotorControl::getRightWheelDistance() const {
+    return m_right_wheel_distance.load(std::memory_order_relaxed);
+}
+
 void PiMotorControl::setVelocities(const float left, const float right) {
     /* relaxed: single-core Cortex-M7 — no DMB needed, plain STR is sufficient. */
     m_left_ref_w.store(left,   std::memory_order_relaxed);
@@ -76,6 +84,28 @@ void PiMotorControl::handleTick()
     const uint32_t leftDeltaUs = m_encoder1.getTickDeltaUs();
     const int32_t  rightCount  = m_encoder2.getCount();
     const uint32_t rightDeltaUs = m_encoder2.getTickDeltaUs();
+    /* Snapshot velocity references once — guarantees both wheels use the same
+     * command pair for this tick even if setVelocities() is called concurrently. */
+    float left_ref_w  = m_left_ref_w.load(std::memory_order_relaxed);
+    float right_ref_w = m_right_ref_w.load(std::memory_order_relaxed);
+
+    if(left_ref_w < 0 && right_ref_w < 0){
+        m_motor_left_driver.setReverse();
+        m_motor_right_driver.setReverse();
+        left_ref_w = abs(left_ref_w);
+        right_ref_w= abs(right_ref_w);
+    }else if(left_ref_w<0){
+        m_motor_left_driver.setReverse();
+        m_motor_right_driver.setForward();
+        left_ref_w = abs(left_ref_w);
+    }else if(right_ref_w<0){
+        m_motor_left_driver.setForward();
+        m_motor_right_driver.setReverse();
+        right_ref_w= abs(right_ref_w);
+    }else {
+        m_motor_left_driver.setForward();
+        m_motor_right_driver.setForward();
+    }
 
     /* Snapshot velocity references once — guarantees both wheels use the same
      * command pair for this tick even if setVelocities() is called concurrently. */
@@ -101,8 +131,8 @@ void PiMotorControl::handleTick()
     }
 
     /* Wheel distance (cm) — stored for diagnostics / future odometry use. */
-    m_left_wheel_distance  = static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters;
-    m_right_wheel_distance = static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters;
+    m_left_wheel_distance.store(static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
+    m_right_wheel_distance.store(static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
 
     /* Sensor IIR filter → angular velocity estimate. */
     m_delta_us_filter_left.update(leftDeltaUs);
