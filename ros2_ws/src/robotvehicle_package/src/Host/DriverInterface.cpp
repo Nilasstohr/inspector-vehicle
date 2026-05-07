@@ -4,38 +4,40 @@
 
 #include "DriverInterface.h"
 
-DriverInterface::DriverInterface(SerialInterface& serialInterface): serialInterface(serialInterface) {}
+#include <iostream>
 
-void DriverInterface::getWheelsTraveled(double &left, double &right) {
-    serialInterface.sendRequest("p");
-    response.append(serialInterface.getResponse()->c_str());
-    //ROS_INFO(odomStr->c_str());
+DriverInterface::DriverInterface(SerialInterface& serialInterface): serialInterface(serialInterface),
+                                                                    serialInterface2("/dev/ttyACM0", 115200) {}
+
+void DriverInterface::getWheelsTraveled(double &left, double &right) {;
+    serialInterface2.sendRequest("p");
+    std::string response = serialInterface2.getResponse();
+    //std::cout << "getWheelsTraveled response: '" << response << "'" << std::endl;
     left = std::stod(response.substr(0, response.find(" ")));
     right = std::stod(response.substr(response.find(" "), response.size()));
     response.clear();
 }
 
 void DriverInterface::reset() {
-    serialInterface.sendRequest("r");
+    serialInterface2.sendRequest("r");
 }
 
 void DriverInterface::setAngularVelocity(const double wl, const double wr) {
-    request.clear();
-    response.clear();
+    std::string request;
     request.append("v ");
     request.append(std::to_string(wl));
     request.append(" ");
     request.append(std::to_string(wr));
-    request.append(";");
-    serialInterface.sendRequest(&request);
+    std::cout << "setAngularVelocity request: '" << request << "'" << std::endl;
+    serialInterface2.sendRequest(request);
 }
 
-void DriverInterface::stopAndResetDisplacement() const {
-    serialInterface.sendRequest("s");
-    serialInterface.sendRequest("r");
+void DriverInterface::stopAndResetDisplacement() {
+    serialInterface2.sendRequest("s");
+    serialInterface2.sendRequest("r");
 }
 
-void DriverInterface::stop() const {
-    serialInterface.sendRequest("s");
+void DriverInterface::stop()  {
+    serialInterface2.sendRequest("s");
 }
 

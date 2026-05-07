@@ -102,6 +102,8 @@ add_executable(${PROJECT_NAME}.elf
         src/uart/Transmitter.h
         src/uart/UartTransceiver.cpp
         src/uart/UartTransceiver.h
+        src/uart/UartLineReceiver.cpp
+        src/uart/UartLineReceiver.h
         src/host_command_handler/HostCommandHandlerFreeTOSTask.cpp
         src/host_command_handler/HostCommandHandlerFreeTOSTask.h
         src/host_command_handler/ReceiveCommand.cpp

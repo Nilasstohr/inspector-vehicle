@@ -22,12 +22,12 @@ angular_z(0)
     odom = Odom();
     aStar = AStar();
     //gripMap->loadGridMap();
-    if (serialInterface.hasResponse()) {
-        ROS_INFO(serialInterface.getResponse()->c_str());
-    }
+    //if (serialInterface.hasResponse()) {
+    //    ROS_INFO(serialInterface.getResponse()->c_str());
+    //}
     posePublisher_ = node->create_publisher<std_msgs::msg::String>("topic_pose_string", 10);
     gridMapPublisher_ = node->create_publisher<std_msgs::msg::String>("topic_grid_map", 10);
-    serialInterface.sendRequest("r");
+   driverInterface.reset();//serialInterface.sendRequest("r");
 }
 
 Navigator & MissionController::getNavigator(){
@@ -67,7 +67,7 @@ void MissionController::update(const std::vector<PointPolarForm> & lidarScanPola
     localization.update(lidarScanPolarPoints,posLeft,posRight);
     //odom->update(sensorData->getPosLeft(),sensorData->getPosRight());
     //navigator->setNav2Velocities(angular_z,linear_x);
-    updateMapAndPath(lidarScanPolarPoints,localization.getPose());
+    //updateMapAndPath(lidarScanPolarPoints,localization.getPose());
 
     // ./StartLidar.sh
     // ./StartSlamTF.sh

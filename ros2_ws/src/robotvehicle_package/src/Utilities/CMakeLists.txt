@@ -5,6 +5,7 @@ add_library(UtilitiesLib
     MatrixHelper.cpp
     Pose.cpp
     SerialInterface.cpp
+    SerialInterface2.cpp
     Transformations.cpp
     UsbSerial.cpp
     Verify2DArea.cpp

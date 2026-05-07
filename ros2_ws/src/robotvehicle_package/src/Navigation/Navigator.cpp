@@ -6,7 +6,7 @@
 #include "Navigator.h"
 
 #define GOAL_ACCEPTANCE_TRESHOLD_CM 5
-#define MIN_W_NORMAL 1
+#define MIN_W_NORMAL 2
 #define MAX_W_NORMAL 4
 #define MIN_W_TURN -4
 

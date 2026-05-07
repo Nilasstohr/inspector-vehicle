@@ -10,10 +10,10 @@
  * @param received_data
  */
 ReceiveCommand::ReceiveCommand(std::string_view received_data): m_commandName(HostCommandName::Unknown) {
-    if(received_data.back() != ';') {
+    if(received_data.back() != '\n') {
         return;
     }
-    received_data.remove_suffix(1);  // strip the trailing ';'
+    received_data.remove_suffix(1);  // strip the trailing '\n'
     while (!received_data.empty() && m_tokenCount < MAX_COMMAND_TOKENS) {
         const auto start = received_data.find_first_not_of(' ');
         if (start == std::string_view::npos)

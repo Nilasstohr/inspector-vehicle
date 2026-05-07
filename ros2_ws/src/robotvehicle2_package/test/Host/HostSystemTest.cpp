@@ -11,8 +11,14 @@ void updatePosition(double &leftWheelPosition,double &rightWheelPosition) {
     driver_interface->getWheelsTraveled(leftWheelPosition,rightWheelPosition    );
 }
 
+TEST(host_system_test, test)
+{
+    updatePosition(leftWheelPosition,rightWheelPosition);
+}
+
 TEST(host_system_test, position_zero_after_reset)
 {
+
     driver_interface->reset();
     updatePosition(leftWheelPosition,rightWheelPosition);
     driver_interface->stop();

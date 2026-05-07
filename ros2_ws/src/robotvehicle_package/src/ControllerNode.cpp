@@ -48,6 +48,7 @@ posRight(0)
 }
 
 void ControllerNode::topic_callback(const sensor_msgs::msg::LaserScan::SharedPtr scan) {
+   // ROS_INFO("Received laser scan with %zu ranges", scan->ranges.size());
     rawLidarScan = scan;
     scanReady=true;
 }

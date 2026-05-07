@@ -16,6 +16,9 @@ SerialInterface::SerialInterface(const char *serialDevice) {
     Serial.setSerialDevice(serialDevice);
     m_buffer = new std::string();
     Serial.begin();
+    // STM32 CDC VCP needs ~500 ms after the host opens the port before it
+    // is ready to receive — skip this and the first command gets lost.
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     awaitTimer = new AwaitTimer(5000);
 }
 
@@ -25,12 +28,12 @@ void SerialInterface::reopen() {
 }
 
 bool SerialInterface::hasResponse() {
-    m_buffer->clear();
     char c;
     while (Serial.available()){
         c = Serial.readChar();
-        if(c=='\n')
+        if(c=='\n') {
             return true;
+        }
         m_buffer->push_back(c);
     }
     return false;
@@ -63,6 +66,7 @@ void SerialInterface::sendRequest(std::string *text) {
 void SerialInterface::send(){
     m_buffer->push_back('\n');
     Serial.writeString(m_buffer);
+    m_buffer->clear();  // done with the request; now accumulate the response
     awaitTimer->start();
     while(!awaitTimer->hasWaitingTimeExceeded()){
         if(hasResponse()){

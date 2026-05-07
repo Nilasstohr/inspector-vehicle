@@ -59,9 +59,14 @@ include(GoogleTest)
 # Run with: ./build-tests/bin/integration_tests --port /dev/ttyACM0 --baud 115200
 add_executable(integration_tests
     integration/test_vel_command.cpp
+    integration/SerialInterface2.cpp
 )
 
 target_compile_features(integration_tests PRIVATE cxx_std_20)
+
+target_include_directories(integration_tests PRIVATE
+    integration
+)
 
 target_link_libraries(integration_tests PRIVATE GTest::gtest)
 

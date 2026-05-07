@@ -4,18 +4,24 @@
 
 #include <chrono>
 #include <rclcpp/utilities.hpp>
+#include <stdexcept>
 #include <thread>
 #include "SerialInterface.h"
+
+#include <iostream>
 
 #define ACK "ack"
 
 // https://www.linkedin.com/pulse/linux-serial-port-programming-c-mohammad-t-abdoli
 
 SerialInterface::SerialInterface(const char *serialDevice) {
-    Serial =  UsbSerial();
-    Serial.setSerialDevice(serialDevice);
-    m_buffer = new std::string();
-    Serial.begin();
+    //Serial =  UsbSerial();
+    //Serial.setSerialDevice(serialDevice);
+   // m_buffer = new std::string();
+    //Serial.begin();
+    // STM32 CDC VCP needs ~500 ms after the host opens the port before it
+    // is ready to receive — skip this and the first command gets lost.
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     awaitTimer = new AwaitTimer(5000);
 }
 
@@ -25,12 +31,17 @@ void SerialInterface::reopen() {
 }
 
 bool SerialInterface::hasResponse() {
-    m_buffer->clear();
-    char c;
-    while (Serial.available()){
-        c = Serial.readChar();
-        if(c=='\n')
+    std::cout << "\nchecking for response: " << *m_buffer << " ";
+    // Read all currently available bytes without sleeping inside the loop.
+    // If no '\n' is found this call, the outer polling loop in send() will
+    // retry after a short sleep, allowing more bytes to arrive.
+    while (Serial.available()) {
+        const char c = Serial.readChar();
+        std::cout << c;
+        if (c == '\n') {
+            std::cout << "response received: " << *m_buffer << std::endl;
             return true;
+        }
         m_buffer->push_back(c);
     }
     return false;
@@ -62,7 +73,9 @@ void SerialInterface::sendRequest(std::string *text) {
 
 void SerialInterface::send(){
     m_buffer->push_back('\n');
+    std::cout << "Sending request: " << *m_buffer << std::endl;
     Serial.writeString(m_buffer);
+    m_buffer->clear();  // done with the request; now accumulate the response
     awaitTimer->start();
     while(!awaitTimer->hasWaitingTimeExceeded()){
         if(hasResponse()){
@@ -76,7 +89,7 @@ void SerialInterface::send(){
 
 void SerialInterface::validateResponse(std::string *response) {
     if (response->find(ACK) == std::string::npos) {
-        throw "invalid response missing acknowledgment";
+        throw std::runtime_error("invalid response: missing acknowledgment (got: " + *response + ")");
     }
     stripAck(response);
 }

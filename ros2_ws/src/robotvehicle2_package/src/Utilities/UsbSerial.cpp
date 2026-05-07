@@ -8,41 +8,33 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <string.h> // needed for memset
+#include <string.h>   // needed for memset
+#include <stdexcept>
+#include <string>
 void UsbSerial::begin() {
 
     // https://en.wikibooks.org/wiki/Serial_Programming/termios
 
-    m_serial_id = open(serialDevice, O_RDWR);
-    fcntl(m_serial_id, F_SETFL, FNDELAY);
+    // Single open: O_NOCTTY = don't become controlling terminal,
+    // O_NONBLOCK = don't block waiting for carrier detect.
+    m_serial_id = open(serialDevice, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (m_serial_id < 0) {
+        throw std::runtime_error(std::string("Failed to open serial device: ") + serialDevice);
+    }
 
     struct termios tio;
-    struct termios stdio;
+    memset(&tio, 0, sizeof(tio));
+    tio.c_iflag = 0;
+    tio.c_oflag = 0;
+    tio.c_cflag = CS8 | CREAD | CLOCAL;    // 8n1
+    tio.c_lflag = 0;
+    tio.c_cc[VMIN]  = 1;
+    tio.c_cc[VTIME] = 5;
 
-    memset(&stdio,0,sizeof(stdio));
-    stdio.c_iflag=0;
-    stdio.c_oflag=0;
-    stdio.c_cflag=0;
-    stdio.c_lflag=0;
-    stdio.c_cc[VMIN]=1;
-    stdio.c_cc[VTIME]=0;
-    tcsetattr(STDOUT_FILENO,TCSANOW,&stdio);
-    tcsetattr(STDOUT_FILENO,TCSAFLUSH,&stdio);
-    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);       // make the reads non-blocking
+    cfsetospeed(&tio, B115200);             // 115200 baud
+    cfsetispeed(&tio, B115200);             // 115200 baud
 
-    memset(&tio,0,sizeof(tio));
-    tio.c_iflag=0;
-    tio.c_oflag=0;
-    tio.c_cflag=CS8|CREAD|CLOCAL;           // 8n1, see termios.h for more information
-    tio.c_lflag=0;
-    tio.c_cc[VMIN]=1;
-    tio.c_cc[VTIME]=5;
-
-    m_serial_id=open(serialDevice, O_RDWR | O_NONBLOCK);        // O_NONBLOCK might override VMIN and VTIME, so read() may return immediately.
-    cfsetospeed(&tio,B4000000);            // 115200 baud
-    cfsetispeed(&tio,B4000000);            // 115200 baud
-
-    tcsetattr(m_serial_id,TCSANOW,&tio);
+    tcsetattr(m_serial_id, TCSANOW, &tio);
 }
 
 bool UsbSerial::available(){

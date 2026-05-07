@@ -26,7 +26,6 @@ void DriverInterface::setAngularVelocity(const double wl, const double wr) {
     request.append(std::to_string(wl));
     request.append(" ");
     request.append(std::to_string(wr));
-    request.append(";");
     serialInterface.sendRequest(&request);
 }
 

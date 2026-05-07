@@ -12,6 +12,8 @@
 #include <motors/PiMotorControl.h>
 #include <pwm/PwmOutput.h>
 #include <timer/HardwareTimer.h>
+#include <uart/UartLineReceiver.h>
+#include <uart/UartTransceiver.h>
 
 #include "BlinkyFreeRTOSTask.h"
 #include "CrashHandler.h"
@@ -88,6 +90,8 @@ UART_HandleTypeDef huart3;
 
     static auto uartTransceiver = UartTransceiver(huart3);
     static Uart uart(uartTransceiver);
+    static UartLineReceiver uartLineReceiver(huart3);
+    UartLineReceiver::setInstance(&uartLineReceiver);
     /* Report any fault saved from the previous run before starting tasks */
     CrashHandler_checkAndReport(&uart);
 
@@ -103,7 +107,7 @@ UART_HandleTypeDef huart3;
     timer.start();
 
     /* ── FreeTOSTasks ──────────────────────────────────── */
-    static HostCommandHandlerFreeTOSTask hostHandler(uart,piMotorControl);
+    static HostCommandHandlerFreeTOSTask hostHandler(uart,uartLineReceiver,piMotorControl);
     static BlinkyFreeRTOSTask greenLed(greenLedPin, 1000);  /* 1 Hz       */
     /* TelemetryTask runs at the lowest priority so UART blocking never
      * interferes with the ISR controller loop.  200 ms period → 5 lines/s. */
@@ -166,6 +170,15 @@ static void UART3_Init(void) {
     huart3.Init.OverSampling = UART_OVERSAMPLING_16;
     huart3.FifoMode = UART_FIFOMODE_ENABLE;
     HAL_UART_Init(&huart3);
+
+    /* Enable the receive interrupt permanently — USART3_IRQHandler reads RDR
+   * directly, so no HAL_UART_Receive_IT / re-arming is ever needed.
+   * RXNEIE_RXFNEIE fires for every byte whether FIFO is enabled or not. */
+    __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+
+    /* Priority 6 — inside the FreeRTOS managed zone (≥ configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY = 5) */
+    HAL_NVIC_SetPriority(USART3_IRQn, /*preempt=*/6, /*sub=*/0);
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
 
 /* ── All ISRs and FreeRTOS hooks need extern "C" in a .cpp file ─────────── *

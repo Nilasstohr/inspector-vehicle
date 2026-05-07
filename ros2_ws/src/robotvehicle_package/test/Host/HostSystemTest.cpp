@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 #include <gtest/gtest.h>
 #include "Host/DriverInterface.h"
 #include "Utilities/SerialInterface.h"
@@ -31,6 +33,23 @@ TEST(host_system_test,confirm_position_increase) {
         EXPECT_TRUE(false) << "motors does not seem to be running";
     }
 }
+
+TEST(host_system_test,stress_test) {
+    driver_interface->reset();
+    while(1) {
+        updatePosition(leftWheelPosition,rightWheelPosition);
+        driver_interface->setAngularVelocity(0,0);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    driver_interface->setAngularVelocity(2,2 );
+    sleep(2 );
+    updatePosition(leftWheelPosition,rightWheelPosition);
+    driver_interface->stop();
+    if(leftWheelPosition<=0 && rightWheelPosition<=0) {
+        EXPECT_TRUE(false) << "motors does not seem to be running";
+    }
+}
+
 
 int main(int argc, char ** argv)
 {
