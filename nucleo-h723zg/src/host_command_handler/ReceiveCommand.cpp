@@ -10,7 +10,7 @@
  * @param received_data
  */
 ReceiveCommand::ReceiveCommand(std::string_view received_data): m_commandName(HostCommandName::Unknown) {
-    if(received_data.back() != ';') {
+    if(received_data.back() != '\n') {
         return;
     }
     received_data.remove_suffix(1);  // strip the trailing ';'

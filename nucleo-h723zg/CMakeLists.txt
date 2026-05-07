@@ -100,6 +100,8 @@ add_executable(${PROJECT_NAME}.elf
     # Startup (assembly) — provided by ST CMSIS device package
     ${cmsis_device_h7_SOURCE_DIR}/Source/Templates/gcc/startup_stm32h723xx.s
         src/uart/Transmitter.h
+        src/uart/UartLineReceiver.cpp
+        src/uart/UartLineReceiver.h
         src/uart/UartTransceiver.cpp
         src/uart/UartTransceiver.h
         src/host_command_handler/HostCommandHandlerFreeTOSTask.cpp

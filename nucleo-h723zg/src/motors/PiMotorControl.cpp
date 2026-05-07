@@ -107,29 +107,6 @@ void PiMotorControl::handleTick()
         m_motor_right_driver.setForward();
     }
 
-    /* Snapshot velocity references once — guarantees both wheels use the same
-     * command pair for this tick even if setVelocities() is called concurrently. */
-    float left_ref_w  = m_left_ref_w.load(std::memory_order_relaxed);
-    float right_ref_w = m_right_ref_w.load(std::memory_order_relaxed);
-
-    if(left_ref_w < 0 && right_ref_w < 0){
-        m_motor_left_driver.setReverse();
-        m_motor_right_driver.setReverse();
-        left_ref_w = abs(left_ref_w);
-        right_ref_w= abs(right_ref_w);
-    }else if(left_ref_w<0){
-        m_motor_left_driver.setReverse();
-        m_motor_right_driver.setForward();
-        left_ref_w = abs(left_ref_w);
-    }else if(right_ref_w<0){
-        m_motor_left_driver.setForward();
-        m_motor_right_driver.setReverse();
-        right_ref_w= abs(right_ref_w);
-    }else {
-        m_motor_left_driver.setForward();
-        m_motor_right_driver.setForward();
-    }
-
     /* Wheel distance (cm) — stored for diagnostics / future odometry use. */
     m_left_wheel_distance.store(static_cast<float>(leftCount)  * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
     m_right_wheel_distance.store(static_cast<float>(rightCount) * Encoder::kCountsToCentiMeters, std::memory_order_relaxed);
